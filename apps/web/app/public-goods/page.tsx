@@ -37,11 +37,13 @@ export default function PublicGoodsPage() {
             Token + ATA + Memo, Solana Pay (transfer-request + transaction-request + reference
             pubkeys), Address Lookup Tables + v0 versioned transactions, Bubblegum V1 cNFTs,
             Solana Attestation Service (verified merchants), Squads V4 detection, Lighthouse
-            transaction assertions, Jupiter Lite API, Bonfida SNS, Helius RPC + WebSocket{" "}
-            onLogs subscription, Helius Sender (Jito-bundle wrapper for confirmed-on-first-try
-            sends), Solana Actions / Blinks, VAPID Web Push (RFC 8291/8292). What we leave on
-            the table for v0.4 — Bubblegum V2, Token-2022 transfer hooks, Solana Mobile MWA,
-            Pyth pull oracle, Codama-generated client — is documented honestly in{" "}
+            transaction assertions, Jupiter Lite API, <strong>Pyth Hermes pull oracle</strong>{" "}
+            (live SOL/USD ticker), Bonfida SNS, Helius RPC + WebSocket onLogs subscription,
+            Helius Sender (Jito-bundle wrapper for confirmed-on-first-try sends), Solana
+            Actions / Blinks, VAPID Web Push (RFC 8291/8292), and a{" "}
+            <strong>Codama-equivalent IDL drift detector</strong> in CI. What we leave on the
+            table for v0.4 — Bubblegum V2, Token-2022 transfer hooks, Solana Mobile MWA,
+            Codama-generated runtime client — is documented honestly in{" "}
             <code>docs/PRODUCT_SPEC.md §7</code>.
           </Block>
 

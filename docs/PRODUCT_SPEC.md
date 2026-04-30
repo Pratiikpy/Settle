@@ -640,8 +640,10 @@ The agent-payment endpoint. Validates dual-sig (wallet sig over canonical reques
 | **Memo program** | Per-payment memo carrying note/reference correlation. |
 | **VAPID Web Push (RFC 8291/8292)** | Hand-rolled in `apps/web/lib/web-push.ts`. |
 | **Bonfida SNS resolver** | Forward `<name>.sol` → pubkey resolution in `/api/resolve`. |
+| **Pyth Hermes pull oracle** | `/api/price/sol-usd` proxies the official Pyth Hermes endpoint with 30 s edge cache. `<PythPriceTicker>` polls every 5 s on `/sandbox` + `/send`, surfaces stale-warn after 30 s. |
 | **Solana Attestation Service (SAS)** | Verified-merchant lookup with trusted_db fallback. |
 | **Squads V4 detection** | `detectSquadsMultisig` for "team-managed card" UI surface. |
+| **Codama-equivalent IDL drift detector** | `scripts/verify-idl.ts` deep-diffs the Anchor-generated `target/idl/settle_agent_card.json` against `packages/sdk/src/idl.ts::SETTLE_IDL`. Runs in CI on every PR; fails red on structural drift. |
 
 ### What we leave on the table for v0.3 (intentional)
 | Primitive | Why we don't use it (v0.3) |
@@ -652,10 +654,9 @@ The agent-payment endpoint. Validates dual-sig (wallet sig over canonical reques
 | **Bubblegum V2** | We use V1 — fine for v0.3 receipt scale (thousands). V2 has nicer collection ergonomics; cost-equivalent. |
 | **ZK Compression (Light Protocol)** | Would scale receipts to millions cheaply. v0.3 doesn't need it. |
 | **Squads spend-flow integration** | We detect Squads-managed cards but the spend flow doesn't generate Squads proposal txs. UI surfaces "team-managed card · X-of-Y signers"; full proposal flow is V2. |
-| **Pyth pull oracle** | Currently using a static API for SOL/USD price feed (`/api/price/sol-usd`). Pyth would be more authoritative; small refactor for V0.4. |
 | **Switchboard randomness** | Not needed by any v0.3 feature. |
 | **Solana Mobile / MWA** | No mobile-wallet-adapter beyond Phantom. Web-first product. |
-| **Codama / generated TS client** | We hand-maintain `idl.ts` + `anchor-client.ts`. Codama drift-detection is V0.4 polish. |
+| **Codama as runtime client** | We hand-maintain `idl.ts` + `anchor-client.ts`. Drift detection (the *purpose* of Codama) is now in CI via `scripts/verify-idl.ts`, so the ergonomics gap is the only remaining reason — V0.4. |
 | **Solana Programs Verifiable Build** | For trust signaling at production launch. Not in scope for hackathon devnet. |
 
 ---
@@ -762,7 +763,7 @@ The agent-payment endpoint. Validates dual-sig (wallet sig over canonical reques
 
 10. **Lighthouse defense-in-depth** is currently only on `spend_via_pact` (proxy path). `claim_streaming` and `release_delivery_escrow` could carry the same `AssertTokenAccountAmount` ix — V0.4 hardening.
 
-11. **Pyth pull oracle for SOL/USD** not used. Static API in `/api/price/sol-usd` is acceptable for v0.3; mainnet polish should swap to Pyth.
+11. **Pyth Hermes pull oracle is wired** as of v0.3 polish — `/api/price/sol-usd` proxies Hermes with 30 s edge cache. `<PythPriceTicker>` lives on `/sandbox` + `/send` and shows stale-warn at 30 s. **Note:** this is the *display* path. We don't (yet) post Pyth price updates on-chain to gate any spend logic — that would be a v0.4 hardening for any feature that needs an on-chain authoritative price.
 
 ---
 

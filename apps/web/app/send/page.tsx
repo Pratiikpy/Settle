@@ -10,6 +10,7 @@ import { parseHandleInput, displayHandle } from "@settle/sdk";
 import { getSolscanUrl, NETWORK_NAME, getUsdcMint } from "../../lib/solana";
 import { TokenPicker, type SelectedToken } from "../../components/token-picker";
 import { ScreenshotDropzone } from "../../components/screenshot-dropzone";
+import { PythPriceTicker } from "../../components/pyth-price-ticker";
 
 /**
  * F12 — Pay With Any Token.
@@ -275,6 +276,9 @@ export default function SendPage() {
           >
             Send via link →
           </a>
+        </div>
+        <div className="mt-3">
+          <PythPriceTicker />
         </div>
       </div>
 

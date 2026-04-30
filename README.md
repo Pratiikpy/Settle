@@ -96,9 +96,9 @@ Full spec in [`docs/PRODUCT_SPEC.md`](docs/PRODUCT_SPEC.md). Build plan in [`doc
 
 **On-chain (used today):** Anchor 0.31.1 · SPL Token + ATA · SPL Memo · Solana Pay (transfer-request, transaction-request, reference pubkeys) · Compressed NFTs (Bubblegum V1) for receipts · Address Lookup Tables (Jupiter v0 tx) · Versioned transactions (v0) · Lighthouse transaction assertion (defense-in-depth on x402 spend, gated)
 
-**Off-chain (used today):** Helius RPC + WebSocket `onLogs` subscription · Helius Sender (Jito bundle wrapper for confirmed-on-first-try sends) · Jupiter Lite API (quote + swap-instructions) · Solana Attestation Service (verified merchant lookup) · Squads V4 detection (UI surface) · Bonfida SNS resolver · Solana Actions / Blinks · Dialect actions.json compatible · VAPID Web Push (RFC 8291/8292)
+**Off-chain (used today):** Helius RPC + WebSocket `onLogs` subscription · Helius Sender (Jito-bundle wrapper for confirmed-on-first-try sends) · Jupiter Lite API (quote + swap-instructions) · **Pyth Hermes pull oracle** (live SOL/USD ticker on `/sandbox` + `/send`) · Solana Attestation Service (verified merchant lookup) · Squads V4 detection (UI surface) · Bonfida SNS resolver · Solana Actions / Blinks · Dialect actions.json compatible · VAPID Web Push (RFC 8291/8292) · **Codama-equivalent IDL drift detector** in CI (`scripts/verify-idl.ts`)
 
-**Intentionally not used in v0.3** (deferred to v0.4): Bubblegum V2 · Token-2022 transfer hooks · ZK compression / Light Protocol · Squads spend-flow integration (we detect, not propose) · Solana Mobile MWA · Pyth pull oracle for SOL/USD price (currently a static API) · Codama-generated client as runtime truth (we hand-maintain `idl.ts`).
+**Intentionally not used in v0.3** (deferred to v0.4): Bubblegum V2 · Token-2022 transfer hooks · ZK compression / Light Protocol · Squads spend-flow integration (we detect, not propose) · Solana Mobile MWA · Codama-generated runtime client (we hand-maintain `idl.ts` and verify it against the Anchor-generated IDL JSON in CI).
 
 See [`docs/PRODUCT_SPEC.md` §7](docs/PRODUCT_SPEC.md#7-solana-primitive-inventory) for the honest used / not-used / why table.
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { fireSettlementConfetti } from "../../lib/confetti";
+import { PythPriceTicker } from "../../components/pyth-price-ticker";
 
 /**
  * /sandbox — Devnet sandbox. Phantom required (we don't teach skipping the wallet step).
@@ -40,7 +41,10 @@ export default function SandboxPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">Devnet sandbox</h1>
+      <div className="flex items-baseline justify-between gap-4">
+        <h1 className="text-3xl font-semibold tracking-tight">Devnet sandbox</h1>
+        <PythPriceTicker />
+      </div>
       <p className="mt-2 text-sm text-foreground/60">
         Real Phantom wallet. Free devnet funds. Play with the full app for 5 minutes.
       </p>

@@ -11,8 +11,11 @@ test-ledger/
 
 # Whitelist Anchor's generated IDL JSON so the Codama drift-detector
 # (scripts/verify-idl.ts) can compare it against the hand-maintained idl.ts.
+# Pattern: re-ignore everything under target/ except idl/*.json specifically.
 !programs/settle-agent-card/target/
+programs/settle-agent-card/target/*
 !programs/settle-agent-card/target/idl/
+programs/settle-agent-card/target/idl/*
 !programs/settle-agent-card/target/idl/*.json
 
 # env
