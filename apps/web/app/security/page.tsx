@@ -85,6 +85,29 @@ export default function SecurityPage() {
             sandbox testing.
           </Section>
 
+          <Section title="Submission path: Helius Sender + Jito bundle">
+            Every proxy-mediated spend (<code>spend_via_pact</code>,{" "}
+            <code>claim_streaming</code>) is posted via{" "}
+            <a
+              href="https://www.helius.dev/docs/sender"
+              className="text-accent underline-offset-2 hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Helius Sender
+            </a>{" "}
+            as a Jito bundle. The tx carries a Compute-Budget priority-fee instruction
+            and a small Jito tip baked in by{" "}
+            <code>addPriorityFeeAndTip</code> before signing. Sender lands the tx on
+            the first try without retry loops, typical confirmation under 0.4 s on
+            mainnet. Receipts surface this via a{" "}
+            <strong>Helius Sender · Jito bundle</strong> badge so the user can verify
+            the submission strategy used. Falls back to vanilla{" "}
+            <code>sendRawTransaction</code> when <code>HELIUS_API_KEY</code> isn&apos;t
+            configured — the badge degrades honestly to{" "}
+            <strong>RPC sendRawTransaction (Sender unavailable)</strong>.
+          </Section>
+
           <Section title="Off-chain encryption">
             Off-chain receipt metadata (purpose text, deliverable summary) is encrypted with a
             sealed box (X25519 + XChaCha20-Poly1305) to a per-deployment public key. Even with

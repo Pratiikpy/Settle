@@ -158,3 +158,28 @@ export async function sendAndConfirmViaHeliusSender(
   );
   return sig;
 }
+
+/**
+ * True iff the Sender path will actually be taken (HELIUS_API_KEY configured).
+ * False means sendViaHeliusSender will silently fall back to the vanilla RPC
+ * `sendRawTransaction`. UI surfaces use this to badge a receipt's submission
+ * method honestly: "Helius Sender · Jito bundle" vs "RPC sendRawTransaction".
+ */
+export function isHeliusSenderAvailable(): boolean {
+  return Boolean(process.env.HELIUS_API_KEY);
+}
+
+export type SubmissionMethod = "helius_sender_jito" | "rpc_fallback" | "wallet_send";
+
+/**
+ * Best-effort label for how a tx hit the network. The proxy path uses
+ * Helius Sender when the API key is set; otherwise the lib falls back to RPC.
+ * Wallet-signed tx (e.g. a /send transfer) is always wallet_send because the
+ * wallet adapter posts directly via sendRawTransaction.
+ */
+export function describeSubmissionMethod(
+  source: "proxy" | "wallet",
+): SubmissionMethod {
+  if (source === "wallet") return "wallet_send";
+  return isHeliusSenderAvailable() ? "helius_sender_jito" : "rpc_fallback";
+}

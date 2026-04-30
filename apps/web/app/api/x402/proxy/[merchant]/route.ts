@@ -30,6 +30,7 @@ import { checkLivePolicy, fetchAgentCard, fetchPact } from "../../../../../lib/a
 import { checkMerchantSasAttestation } from "../../../../../lib/sas";
 import {
   addPriorityFeeAndTip,
+  describeSubmissionMethod,
   sendAndConfirmViaHeliusSender,
 } from "../../../../../lib/helius-sender";
 import { mintReceiptCnft } from "../../../../../lib/cnft";
@@ -860,6 +861,10 @@ export async function POST(
     spend_signature: spendSig,
     pact: pactPubkey ? pactPubkey.toBase58() : null,
     cnft: cnftMint,
+    // Honest claim: tx submission path. helius_sender_jito = posted as Jito bundle
+    // via Helius Sender (HELIUS_API_KEY configured); rpc_fallback = vanilla RPC
+    // sendRawTransaction (Sender unavailable).
+    submission_method: describeSubmissionMethod("proxy"),
   });
 }
 

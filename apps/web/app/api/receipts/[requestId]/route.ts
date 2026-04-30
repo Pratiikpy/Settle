@@ -189,6 +189,16 @@ export async function GET(
       policy_version: data.policy_version,
       public_feed: Boolean(data.public_feed),
       created_at: data.created_at,
+      // Computed (not persisted): pact-scoped receipts went through the x402 proxy
+      // which submits via Helius Sender (Jito bundle) when HELIUS_API_KEY is set.
+      // Direct sends are wallet-signed via sendRawTransaction. We don't claim to
+      // have *verified* the network path — this is a best-effort label of the
+      // submission strategy used, not a confirmed-via-Jito attestation.
+      submission_method: data.pact_pubkey
+        ? process.env.HELIUS_API_KEY
+          ? "helius_sender_jito"
+          : "rpc_fallback"
+        : "wallet_send",
     },
     pact,
   });

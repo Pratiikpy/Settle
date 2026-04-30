@@ -40,6 +40,7 @@ interface ReceiptResponse {
     policy_version: number;
     public_feed: boolean;
     created_at: string;
+    submission_method?: "helius_sender_jito" | "rpc_fallback" | "wallet_send";
   };
   pact:
     | {
@@ -1064,6 +1065,35 @@ export default function ReceiptDetailPage() {
           <div className="mt-3 text-[11px] text-foreground/45">
             Slot {r.decision_slot} · policy v{r.policy_version} · {new Date(r.created_at).toLocaleString()}
           </div>
+          {r.submission_method && (
+            <div
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-foreground/[0.03] px-2.5 py-1 text-[10px]"
+              title={
+                r.submission_method === "helius_sender_jito"
+                  ? "Posted as Jito bundle via Helius Sender for confirmed-on-first-try landing. Compute-budget priority fee + Jito tip baked into the tx."
+                  : r.submission_method === "rpc_fallback"
+                    ? "Posted via vanilla RPC sendRawTransaction (HELIUS_API_KEY unset; Jito-bundle path skipped)."
+                    : "Submitted directly by the user's wallet via sendRawTransaction."
+              }
+            >
+              {r.submission_method === "helius_sender_jito" ? (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="font-medium text-emerald-400">Helius Sender · Jito bundle</span>
+                </>
+              ) : r.submission_method === "rpc_fallback" ? (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                  <span className="text-foreground/60">RPC sendRawTransaction (Sender unavailable)</span>
+                </>
+              ) : (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                  <span className="text-foreground/60">Wallet sendRawTransaction</span>
+                </>
+              )}
+            </div>
+          )}
         </section>
 
         <p className="mt-8 text-center text-[11px] text-foreground/40">
