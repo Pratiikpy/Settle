@@ -30,7 +30,7 @@ export async function GET(
   const { data, error } = await supabase
     .from("receipts")
     .select(
-      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, capability_hash, purpose_text_hash, purpose_hash, receipt_hash, reason_hash, policy_snapshot_hash, target_method, target_path, sig_solscan, decision_slot, policy_version, public_feed, created_at",
+      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, capability_hash, purpose_text_hash, purpose_hash, receipt_hash, reason_hash, policy_snapshot_hash, target_method, target_path, sig_solscan, decision_slot, policy_version, public_feed, created_at, request_initiated_at, upstream_called_at, upstream_returned_at",
     )
     .eq("request_id", requestId)
     .maybeSingle();
@@ -189,6 +189,11 @@ export async function GET(
       policy_version: data.policy_version,
       public_feed: Boolean(data.public_feed),
       created_at: data.created_at,
+      // P10 server-clock timing — populated by the proxy in the same process so
+      // subtractions are clock-drift-safe. NULL on pre-P10 rows.
+      request_initiated_at: data.request_initiated_at ?? null,
+      upstream_called_at: data.upstream_called_at ?? null,
+      upstream_returned_at: data.upstream_returned_at ?? null,
       // Computed (not persisted): pact-scoped receipts went through the x402 proxy
       // which submits via Helius Sender (Jito bundle) when HELIUS_API_KEY is set.
       // Direct sends are wallet-signed via sendRawTransaction. We don't claim to

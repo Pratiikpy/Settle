@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -16,6 +16,7 @@ import { fireSettlementConfetti, trustGesture } from "../../../lib/confetti";
 import { VoiceRecorder, encryptVoiceNote } from "../../../lib/voice-note";
 import { asAuthHeaders, fetchAuthHeaders, withAuthQuery } from "../../../lib/client-auth";
 import { EscrowState } from "../../../components/escrow-state";
+import { ReceiptTimeline } from "../../../components/receipt-timeline";
 
 interface ReceiptResponse {
   ok: true;
@@ -40,6 +41,9 @@ interface ReceiptResponse {
     policy_version: number;
     public_feed: boolean;
     created_at: string;
+    request_initiated_at?: string | null;
+    upstream_called_at?: string | null;
+    upstream_returned_at?: string | null;
     submission_method?: "helius_sender_jito" | "rpc_fallback" | "wallet_send";
   };
   pact:
@@ -124,6 +128,9 @@ const APPROX_SLOT_MS = 400;
 
 export default function ReceiptDetailPage() {
   const params = useParams<{ requestId: string }>();
+  const search = useSearchParams();
+  // ?view=raw collapses the forensic timeline (default = timeline on top).
+  const showTimeline = search?.get("view") !== "raw";
   const { connected, publicKey, signTransaction, signMessage } = useWallet();
   const { connection } = useConnection();
 
@@ -700,6 +707,9 @@ export default function ReceiptDetailPage() {
             })();
           }}
         />
+
+        {/* Forensic timeline — story shape over the same data. ?view=raw hides this. */}
+        {showTimeline && <ReceiptTimeline r={r} />}
 
         {/* Live status surface */}
         {liveStatus && (
