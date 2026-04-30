@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Footer } from "../../components/footer";
+import { CapabilityHeatmap } from "../../components/capability-heatmap";
 import { lamportsToUsdc, timeAgo } from "../../lib/format";
 
 /**
@@ -52,6 +53,14 @@ export default function LeaderboardIndexPage() {
           Top services by real public_feed volume. The audit data is the marketing
           surface — every number comes straight from on-chain receipts.
         </p>
+
+        {/* Live market view — sits above the all-time top list. Realtime feed
+            of the last 60s of ALLOW receipts as a glowing grid. */}
+        <div className="mt-6">
+          <CapabilityHeatmap />
+        </div>
+
+        <h2 className="mt-12 text-base font-medium tracking-tight">All-time leaders</h2>
 
         {error ? (
           <div className="mt-8 rounded-2xl border border-red-500/30 bg-red-500/5 p-6 text-sm">
