@@ -9,11 +9,16 @@
     "start": "tsx src/index.ts",
     "dev:escrow-cron": "tsx watch src/escrow-cron.ts",
     "start:escrow-cron": "tsx src/escrow-cron.ts",
+    "dev:badge-cron": "tsx watch src/badge-cron.ts",
+    "start:badge-cron": "tsx src/badge-cron.ts",
     "typecheck": "tsc --noEmit",
     "lint": "echo 'no lint configured yet'",
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
+    "@metaplex-foundation/mpl-core": "^1.1.1",
+    "@metaplex-foundation/umi": "^0.9.2",
+    "@metaplex-foundation/umi-bundle-defaults": "^0.9.2",
     "@settle/sdk": "workspace:*",
     "@settle/types": "workspace:*",
     "@solana/web3.js": "^1.95.5",

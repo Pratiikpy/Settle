@@ -9,6 +9,7 @@ import { Footer } from "../../../components/footer";
 import { LivePresence } from "../../../components/live-presence";
 import { HandlePayCta } from "../../../components/handle-pay-cta";
 import { FollowButton } from "../../../components/follow-button";
+import { ReputationBadges } from "../../../components/reputation-badges";
 import { lamportsToUsdc, timeAgo } from "../../../lib/format";
 import { getSolscanUrl } from "../../../lib/solana";
 import { asAuthHeaders, fetchAuthHeaders } from "../../../lib/client-auth";
@@ -296,6 +297,9 @@ export default function HandleProfilePage() {
             </div>
           )}
         </div>
+
+        {/* Soulbound reputation badges (renders nothing if user has zero). */}
+        <ReputationBadges handle={profile.handle} />
 
         {/* Public receipts feed */}
         <h2 className="mt-12 text-lg font-medium">Public activity</h2>

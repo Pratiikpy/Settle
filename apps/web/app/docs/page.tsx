@@ -83,6 +83,7 @@ const ok = verifyWebhookSignature({
             <li><code>GET /api/feed</code> — public-feed-flagged receipts (decisions only, no purpose)</li>
             <li><code>GET /api/handles/[handle]/profile</code> — public profile + earnings block (F18)</li>
             <li><code>GET /api/handles/[handle]/relationship</code> — wallet-aware "you've sent $X" (F15)</li>
+            <li><code>GET /api/handles/[handle]/badges</code> — soulbound MPL Core badges minted to this user</li>
             <li><code>POST /api/follows/[handle]</code>, <code>GET /api/follows/[handle]/stats</code> — follow graph (F16)</li>
             <li><code>GET /api/leaderboard</code>, <code>GET /api/leaderboard/[capabilityHash]</code> — capability leaderboard (F17)</li>
             <li><code>POST /api/receipts/[requestId]/refund</code> — mode-routed refund (close_pact / dispute_delivery_escrow)</li>
@@ -153,6 +154,44 @@ const ok = verifyWebhookSignature({
               (carries <code>is_buyer_confirmed</code> flag), <code>DeliveryEscrowDisputedEvent</code>
             </li>
           </ul>
+        </Section>
+
+        <Section title="Reputation badges (soulbound)">
+          <p>
+            Six on-chain achievements minted as MPL Core assets with the{" "}
+            <code>PermanentFreezeDelegate</code> plugin (frozen at create time —
+            non-transferable, non-burnable, true SBT semantics). The badge-cron
+            worker (<code>apps/indexer/src/badge-cron.ts</code>) polls Postgres
+            every 5 minutes; when a user crosses a threshold, an asset is created
+            and a row inserted into <code>reputation_badges</code>. The cron is
+            idempotent via a unique <code>(user_pubkey, badge_kind)</code> constraint.
+          </p>
+          <ul>
+            <li>
+              <strong>🏁 First Payer</strong> — first ALLOW receipt to any merchant.
+            </li>
+            <li>
+              <strong>🧠 Polymath</strong> — paid 5+ distinct capability hashes.
+            </li>
+            <li>
+              <strong>⚡ High-Frequency Operator</strong> — 100+ ALLOW receipts lifetime.
+            </li>
+            <li>
+              <strong>🌊 Long Streamer</strong> — active streaming pact for 30+ days.
+            </li>
+            <li>
+              <strong>⚖ Honest Disputer</strong> — first successful{" "}
+              <code>dispute_delivery_escrow</code> within window.
+            </li>
+            <li>
+              <strong>📡 Public Spender</strong> — first <code>public_feed=true</code> receipt.
+            </li>
+          </ul>
+          <p>
+            Catalogue source: <code>packages/types/src/badges.ts</code> (single
+            source of truth — both UI and cron import from here, so no MPL Core
+            dep in the SDK / browser bundle).
+          </p>
         </Section>
 
         <Section title="More">
