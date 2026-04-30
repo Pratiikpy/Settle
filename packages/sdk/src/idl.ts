@@ -1,0 +1,396 @@
+/**
+ * Hand-written Anchor IDL for `settle-agent-card` v0.3.0.
+ *
+ * Truth of the program interface until `anchor build` runs locally and Codama replaces
+ * this with a generated client. Keep byte-aligned with:
+ *   programs/settle-agent-card/programs/settle-agent-card/src/lib.rs
+ *   programs/settle-agent-card/programs/settle-agent-card/src/state.rs
+ *   programs/settle-agent-card/programs/settle-agent-card/src/events.rs
+ *
+ * Anchor 0.31 uses an 8-byte sighash discriminator: sha256(`global:<ix_name>`)[..8] for
+ * ixs and sha256(`account:<TypeName>`)[..8] for accounts. Field naming in the generated
+ * IDL is camelCase; in the on-the-wire layout, ordering and types are what matter.
+ *
+ * v0.3.0: Pact.mode is now a PactMode enum (OneShot | Streaming). The Streaming variant
+ * adds the per-slot rate-limited spend primitive (P1) used by claim_streaming /
+ * pause_streaming / resume_streaming. OneShot preserves the v0.2 cap_lamports + spent
+ * fields verbatim, so existing on-chain pact data deserializes by being wrapped into
+ * the OneShot variant tag (variant index 0). Devnet pacts created under v0.2 are no
+ * longer compatible because the byte layout shifts; this is acceptable for devnet.
+ */
+
+const PLACEHOLDER_PROGRAM_ID = "SettLe1111111111111111111111111111111111111";
+
+export const SETTLE_PROGRAM_ID =
+  process.env.NEXT_PUBLIC_SETTLE_PROGRAM_ID ??
+  process.env.SETTLE_AGENT_CARD_PROGRAM_ID ??
+  PLACEHOLDER_PROGRAM_ID;
+
+export function isProgramIdConfigured(): boolean {
+  return SETTLE_PROGRAM_ID !== PLACEHOLDER_PROGRAM_ID;
+}
+
+export const SETTLE_IDL = {
+  version: "0.3.0",
+  name: "settle_agent_card",
+  instructions: [
+    {
+      name: "createCard",
+      args: [{ name: "params", type: { defined: "CreateCardParams" } }],
+    },
+    {
+      name: "spend",
+      args: [
+        { name: "amount", type: "u64" },
+        { name: "capabilityHash", type: { array: ["u8", 32] } },
+        { name: "receiptHash", type: { array: ["u8", 32] } },
+        { name: "reasonHash", type: { array: ["u8", 32] } },
+        { name: "policySnapshotHash", type: { array: ["u8", 32] } },
+      ],
+    },
+    {
+      name: "spendViaPact",
+      args: [
+        { name: "amount", type: "u64" },
+        { name: "capabilityHash", type: { array: ["u8", 32] } },
+        { name: "receiptHash", type: { array: ["u8", 32] } },
+        { name: "reasonHash", type: { array: ["u8", 32] } },
+        { name: "policySnapshotHash", type: { array: ["u8", 32] } },
+      ],
+    },
+    { name: "revoke", args: [] },
+    {
+      name: "recordDenial",
+      args: [
+        { name: "denyCode", type: "u8" },
+        { name: "merchant", type: "publicKey" },
+        { name: "pact", type: "publicKey" },
+        { name: "receiptHash", type: { array: ["u8", 32] } },
+        { name: "reasonHash", type: { array: ["u8", 32] } },
+        { name: "policySnapshotHash", type: { array: ["u8", 32] } },
+      ],
+    },
+    {
+      name: "openPact",
+      args: [{ name: "params", type: { defined: "OpenPactParams" } }],
+    },
+    { name: "closePact", args: [] },
+    {
+      name: "openStreamingPact",
+      args: [{ name: "params", type: { defined: "OpenStreamingPactParams" } }],
+    },
+    {
+      name: "claimStreaming",
+      args: [
+        { name: "capabilityHash", type: { array: ["u8", 32] } },
+        { name: "receiptHash", type: { array: ["u8", 32] } },
+        { name: "reasonHash", type: { array: ["u8", 32] } },
+        { name: "policySnapshotHash", type: { array: ["u8", 32] } },
+      ],
+    },
+    { name: "pauseStreaming", args: [] },
+    { name: "resumeStreaming", args: [] },
+    {
+      name: "openDeliveryEscrow",
+      args: [{ name: "params", type: { defined: "OpenDeliveryEscrowParams" } }],
+    },
+    { name: "releaseDeliveryEscrow", args: [] },
+    { name: "disputeDeliveryEscrow", args: [] },
+  ],
+  accounts: [
+    {
+      name: "AgentCard",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "authority", type: "publicKey" },
+          { name: "agentPubkey", type: "publicKey" },
+          { name: "labelHash", type: { array: ["u8", 32] } },
+          { name: "usdcMint", type: "publicKey" },
+          { name: "dailyCapLamports", type: "u64" },
+          { name: "perCallMaxLamports", type: "u64" },
+          { name: "usedToday", type: "u64" },
+          { name: "lastResetSlot", type: "u64" },
+          { name: "allowlist", type: { vec: { defined: "AllowlistEntry" } } },
+          { name: "expirySlot", type: "u64" },
+          { name: "revoked", type: "bool" },
+          { name: "policyVersion", type: "u32" },
+          { name: "createdAt", type: "i64" },
+          { name: "bump", type: "u8" },
+        ],
+      },
+    },
+    {
+      name: "Pact",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "parentCard", type: "publicKey" },
+          { name: "authority", type: "publicKey" },
+          { name: "agentPubkey", type: "publicKey" },
+          { name: "scopeLabelHash", type: { array: ["u8", 32] } },
+          { name: "usdcMint", type: "publicKey" },
+          { name: "mode", type: { defined: "PactMode" } },
+          { name: "allowlist", type: { vec: { defined: "AllowlistEntry" } } },
+          { name: "expirySlot", type: "u64" },
+          { name: "closed", type: "bool" },
+          { name: "createdAt", type: "i64" },
+          { name: "bump", type: "u8" },
+          { name: "vaultBump", type: "u8" },
+        ],
+      },
+    },
+  ],
+  types: [
+    {
+      name: "AllowlistEntry",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "merchantPubkey", type: "publicKey" },
+          { name: "capabilityHash", type: { option: { array: ["u8", 32] } } },
+        ],
+      },
+    },
+    {
+      name: "CreateCardParams",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "agentPubkey", type: "publicKey" },
+          { name: "labelHash", type: { array: ["u8", 32] } },
+          { name: "dailyCapLamports", type: "u64" },
+          { name: "perCallMaxLamports", type: "u64" },
+          { name: "allowlist", type: { vec: { defined: "AllowlistEntry" } } },
+          { name: "expirySlot", type: "u64" },
+          { name: "policyVersion", type: "u32" },
+        ],
+      },
+    },
+    {
+      name: "OpenPactParams",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "scopeLabelHash", type: { array: ["u8", 32] } },
+          { name: "capLamports", type: "u64" },
+          { name: "allowlist", type: { vec: { defined: "AllowlistEntry" } } },
+          { name: "expirySlot", type: "u64" },
+        ],
+      },
+    },
+    {
+      name: "OpenStreamingPactParams",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "scopeLabelHash", type: { array: ["u8", 32] } },
+          { name: "rateLamportsPerSlot", type: "u64" },
+          { name: "maxTotalLamports", type: "u64" },
+          { name: "allowlist", type: { vec: { defined: "AllowlistEntry" } } },
+          { name: "expirySlot", type: "u64" },
+        ],
+      },
+    },
+    {
+      name: "PactMode",
+      type: {
+        kind: "enum",
+        variants: [
+          {
+            name: "OneShot",
+            fields: [
+              { name: "capLamports", type: "u64" },
+              { name: "spent", type: "u64" },
+            ],
+          },
+          {
+            name: "Streaming",
+            fields: [
+              { name: "rateLamportsPerSlot", type: "u64" },
+              { name: "maxTotalLamports", type: "u64" },
+              { name: "claimed", type: "u64" },
+              { name: "lastClaimSlot", type: "u64" },
+              { name: "paused", type: "bool" },
+              { name: "pauseStartedSlot", type: "u64" },
+              { name: "pauseAccumulatedSlots", type: "u64" },
+            ],
+          },
+          {
+            name: "DeliveryEscrow",
+            fields: [
+              { name: "amount", type: "u64" },
+              { name: "merchant", type: "publicKey" },
+              { name: "capabilityHash", type: { array: ["u8", 32] } },
+              { name: "confirmDeadlineSlot", type: "u64" },
+              { name: "disputeDeadlineSlot", type: "u64" },
+              { name: "released", type: "bool" },
+              { name: "refunded", type: "bool" },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      name: "OpenDeliveryEscrowParams",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "scopeLabelHash", type: { array: ["u8", 32] } },
+          { name: "amount", type: "u64" },
+          { name: "merchant", type: "publicKey" },
+          { name: "capabilityHash", type: { array: ["u8", 32] } },
+          { name: "confirmDeadlineSlot", type: "u64" },
+          { name: "disputeDeadlineSlot", type: "u64" },
+          { name: "expirySlot", type: "u64" },
+        ],
+      },
+    },
+  ],
+  events: [
+    {
+      name: "PolicyDecisionEvent",
+      fields: [
+        { name: "card", type: "publicKey", index: false },
+        { name: "merchant", type: "publicKey", index: false },
+        { name: "decision", type: "u8", index: false },
+        { name: "denyCode", type: "u8", index: false },
+        { name: "amount", type: "u64", index: false },
+        { name: "receiptHash", type: { array: ["u8", 32] }, index: false },
+        { name: "reasonHash", type: { array: ["u8", 32] }, index: false },
+        { name: "policySnapshotHash", type: { array: ["u8", 32] }, index: false },
+        { name: "slot", type: "u64", index: false },
+        { name: "policyVersion", type: "u32", index: false },
+        { name: "pact", type: "publicKey", index: false },
+      ],
+    },
+    {
+      name: "CardCreatedEvent",
+      fields: [
+        { name: "card", type: "publicKey", index: false },
+        { name: "authority", type: "publicKey", index: false },
+        { name: "agentPubkey", type: "publicKey", index: false },
+        { name: "usdcMint", type: "publicKey", index: false },
+        { name: "dailyCap", type: "u64", index: false },
+        { name: "perCallMax", type: "u64", index: false },
+        { name: "allowlistCount", type: "u8", index: false },
+        { name: "expirySlot", type: "u64", index: false },
+        { name: "policyVersion", type: "u32", index: false },
+      ],
+    },
+    {
+      name: "CardRevokedEvent",
+      fields: [
+        { name: "card", type: "publicKey", index: false },
+        { name: "authority", type: "publicKey", index: false },
+        { name: "policyVersion", type: "u32", index: false },
+        { name: "slot", type: "u64", index: false },
+      ],
+    },
+    {
+      name: "PactOpenedEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "parentCard", type: "publicKey", index: false },
+        { name: "vault", type: "publicKey", index: false },
+        { name: "cap", type: "u64", index: false },
+        { name: "fundedAmount", type: "u64", index: false },
+        { name: "expirySlot", type: "u64", index: false },
+        { name: "allowlistCount", type: "u8", index: false },
+      ],
+    },
+    {
+      name: "PactClosedEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "parentCard", type: "publicKey", index: false },
+        { name: "spent", type: "u64", index: false },
+        { name: "refundAmount", type: "u64", index: false },
+        { name: "slot", type: "u64", index: false },
+      ],
+    },
+    {
+      name: "PactSpendEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "card", type: "publicKey", index: false },
+        { name: "merchant", type: "publicKey", index: false },
+        { name: "amount", type: "u64", index: false },
+        { name: "spentAfter", type: "u64", index: false },
+        { name: "capRemainingAfter", type: "u64", index: false },
+        { name: "slot", type: "u64", index: false },
+      ],
+    },
+    {
+      name: "StreamingPactOpenedEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "parentCard", type: "publicKey", index: false },
+        { name: "vault", type: "publicKey", index: false },
+        { name: "rateLamportsPerSlot", type: "u64", index: false },
+        { name: "maxTotalLamports", type: "u64", index: false },
+        { name: "fundedAmount", type: "u64", index: false },
+        { name: "openedSlot", type: "u64", index: false },
+        { name: "expirySlot", type: "u64", index: false },
+        { name: "allowlistCount", type: "u8", index: false },
+      ],
+    },
+    {
+      name: "PactStreamClaimEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "card", type: "publicKey", index: false },
+        { name: "merchant", type: "publicKey", index: false },
+        { name: "amount", type: "u64", index: false },
+        { name: "billableSlots", type: "u64", index: false },
+        { name: "claimedAfter", type: "u64", index: false },
+        { name: "maxRemainingAfter", type: "u64", index: false },
+        { name: "slot", type: "u64", index: false },
+      ],
+    },
+    {
+      name: "PactStreamPauseEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "paused", type: "bool", index: false },
+        { name: "slot", type: "u64", index: false },
+      ],
+    },
+    {
+      name: "DeliveryEscrowOpenedEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "parentCard", type: "publicKey", index: false },
+        { name: "vault", type: "publicKey", index: false },
+        { name: "merchant", type: "publicKey", index: false },
+        { name: "capabilityHash", type: { array: ["u8", 32] }, index: false },
+        { name: "amount", type: "u64", index: false },
+        { name: "confirmDeadlineSlot", type: "u64", index: false },
+        { name: "disputeDeadlineSlot", type: "u64", index: false },
+        { name: "openedSlot", type: "u64", index: false },
+      ],
+    },
+    {
+      name: "DeliveryEscrowReleasedEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "merchant", type: "publicKey", index: false },
+        { name: "caller", type: "publicKey", index: false },
+        { name: "isBuyerConfirmed", type: "bool", index: false },
+        { name: "amount", type: "u64", index: false },
+        { name: "slot", type: "u64", index: false },
+      ],
+    },
+    {
+      name: "DeliveryEscrowDisputedEvent",
+      fields: [
+        { name: "pact", type: "publicKey", index: false },
+        { name: "authority", type: "publicKey", index: false },
+        { name: "amount", type: "u64", index: false },
+        { name: "slot", type: "u64", index: false },
+      ],
+    },
+  ],
+} as const;
+
+export type SettleIdl = typeof SETTLE_IDL;

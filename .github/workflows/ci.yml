@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, codemachine/dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ts:
+    name: typescript (lint + typecheck + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+
+  anchor:
+    name: anchor build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v2.0.21/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Install Anchor (avm)
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install 0.31.1
+          avm use 0.31.1
+      - name: Build program
+        working-directory: programs/settle-agent-card
+        run: anchor build
+      - name: Upload IDL
+        uses: actions/upload-artifact@v4
+        with:
+          name: idl
+          path: programs/settle-agent-card/target/idl/settle_agent_card.json

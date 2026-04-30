@@ -1,0 +1,30 @@
+{
+  "name": "@settle/indexer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Helius LaserStream subscriber that watches PolicyDecisionEvent emissions on the Settle program and writes to Supabase. Powers the live activity feed.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "dev:escrow-cron": "tsx watch src/escrow-cron.ts",
+    "start:escrow-cron": "tsx src/escrow-cron.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'no lint configured yet'",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@settle/sdk": "workspace:*",
+    "@settle/types": "workspace:*",
+    "@solana/web3.js": "^1.95.5",
+    "@supabase/supabase-js": "^2.45.4",
+    "@noble/hashes": "^1.5.0",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

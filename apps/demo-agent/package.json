@@ -1,0 +1,27 @@
+{
+  "name": "@settle/demo-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Generic AI agent ('Agent-1') that signs x402 requests with a Settle credential and fetches real deliverables. Used in the 90-second demo. Not branded as Claude.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'no lint configured yet'",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@settle/sdk": "workspace:*",
+    "@settle/types": "workspace:*",
+    "@noble/curves": "^1.6.0",
+    "@noble/hashes": "^1.5.0",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

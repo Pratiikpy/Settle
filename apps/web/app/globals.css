@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 10 10 10;
+    --foreground: 245 245 245;
+    --muted: 156 156 156;
+    --border: 38 38 38;
+    --accent: 20 241 149;
+    --success: 20 241 149;
+    --warn: 251 191 36;
+    --danger: 244 63 94;
+    --solana-purple-rgb: 153 69 255;
+    --solana-green-rgb: 20 241 149;
+  }
+
+  body {
+    background: rgb(var(--background));
+    color: rgb(var(--foreground));
+    font-feature-settings: "ss01", "cv05";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.25);
+    color: rgb(var(--foreground));
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--border));
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--muted) / 0.5);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #9945FF 0%, #14F195 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .card-surface {
+    background:
+      radial-gradient(120% 100% at 0% 0%, rgba(153, 69, 255, 0.18) 0%, transparent 50%),
+      radial-gradient(120% 100% at 100% 100%, rgba(20, 241, 149, 0.12) 0%, transparent 50%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%),
+      rgb(20 20 22);
+  }
+
+  .pact-surface {
+    background:
+      radial-gradient(120% 100% at 100% 0%, rgba(20, 241, 149, 0.18) 0%, transparent 50%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%),
+      rgb(18 18 20);
+  }
+
+  .cnft-surface {
+    background:
+      conic-gradient(from 180deg at 50% 50%, rgba(153, 69, 255, 0.25), rgba(20, 241, 149, 0.25), rgba(153, 69, 255, 0.25));
+  }
+}

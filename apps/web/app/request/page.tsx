@@ -1,0 +1,175 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import QRCode from "qrcode";
+import { toast } from "sonner";
+import { Keypair, PublicKey } from "@solana/web3.js";
+
+/**
+ * /request — User journey #7: Be a merchant.
+ * Generates Solana Pay URL (transfer-request) + QR + Blink.
+ * Customer scans QR → pays USDC → Solana Pay reference indexed → loyalty receipt.
+ */
+
+const USDC_MINT = {
+  mainnet: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  devnet: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+};
+
+function getUsdcMint(): string {
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? "devnet";
+  return cluster === "mainnet" ? USDC_MINT.mainnet : USDC_MINT.devnet;
+}
+
+export default function RequestPage() {
+  const { connected, publicKey } = useWallet();
+  const [amount, setAmount] = useState("");
+  const [memo, setMemo] = useState("");
+  const [generated, setGenerated] = useState<{
+    url: string;
+    reference: string;
+    blink: string;
+  } | null>(null);
+  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  function handleGenerate() {
+    if (!amount || !publicKey) {
+      toast.error("Connect Phantom + enter amount.");
+      return;
+    }
+    const decimal = parseFloat(amount);
+    if (!Number.isFinite(decimal) || decimal <= 0) {
+      toast.error("Invalid amount.");
+      return;
+    }
+
+    // Build canonical Solana Pay transfer URL
+    // Spec: solana:<recipient>?spl-token=<mint>&amount=<decimal>&reference=<pubkey>&memo=<utf8>
+    const reference = Keypair.generate().publicKey;
+    const usdcMint = new PublicKey(getUsdcMint());
+
+    const params = new URLSearchParams();
+    params.set("spl-token", usdcMint.toBase58());
+    params.set("amount", decimal.toString());
+    params.set("reference", reference.toBase58());
+    if (memo.trim()) params.set("memo", memo.trim().slice(0, 200));
+    params.set("label", "Settle");
+    params.set("message", `Pay $${decimal} USDC`);
+
+    const url = `solana:${publicKey.toBase58()}?${params.toString()}`;
+    const blink = `${window.location.origin}/request/${reference.toBase58()}`;
+
+    setGenerated({ url, reference: reference.toBase58(), blink });
+  }
+
+  useEffect(() => {
+    if (!generated || !qrCanvasRef.current) return;
+    void QRCode.toCanvas(qrCanvasRef.current, generated.url, {
+      width: 256,
+      margin: 2,
+      color: {
+        dark: "#14F195",
+        light: "#0A0A0A",
+      },
+      errorCorrectionLevel: "M",
+    });
+  }, [generated]);
+
+  function copyUrl() {
+    if (!generated) return;
+    void navigator.clipboard.writeText(generated.url);
+    toast.success("Solana Pay URL copied.");
+  }
+  function copyBlink() {
+    if (!generated) return;
+    void navigator.clipboard.writeText(generated.blink);
+    toast.success("Shareable Blink URL copied.");
+  }
+
+  return (
+    <main className="mx-auto max-w-md px-6 py-12">
+      <h1 className="text-3xl font-semibold tracking-tight">Request payment</h1>
+      <p className="mt-2 text-sm text-foreground/60">
+        Generate a Solana Pay QR or Blink. Customer scans. Receipt indexed automatically.
+      </p>
+
+      <form
+        className="mt-8 space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleGenerate();
+        }}
+      >
+        <div>
+          <label className="block text-xs font-medium text-foreground/60">Amount (USDC)</label>
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="5.00"
+            inputMode="decimal"
+            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-foreground/60">Memo (optional)</label>
+          <input
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+            placeholder="Invoice #1024"
+            maxLength={200}
+            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={!connected}
+          className="w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
+        >
+          {!connected ? "Connect Phantom to generate" : "Generate"}
+        </button>
+      </form>
+
+      {generated && (
+        <div className="mt-8 space-y-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+          <div>
+            <div className="mb-3 text-xs text-foreground/50">Solana Pay QR</div>
+            <div className="flex justify-center rounded-xl bg-black p-4">
+              <canvas ref={qrCanvasRef} />
+            </div>
+            <p className="mt-3 text-center text-xs text-foreground/40">
+              Scan with Phantom or any Solana Pay wallet
+            </p>
+          </div>
+
+          <div>
+            <div className="text-xs text-foreground/50">Reference pubkey</div>
+            <code className="mt-1 block break-all rounded bg-foreground/5 p-2 font-mono text-[10px]">
+              {generated.reference}
+            </code>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={copyUrl}
+              className="rounded-lg border border-foreground/20 py-2 text-xs hover:bg-foreground/5"
+            >
+              Copy URL
+            </button>
+            <button
+              onClick={copyBlink}
+              className="rounded-lg border border-foreground/20 py-2 text-xs hover:bg-foreground/5"
+            >
+              Copy Blink
+            </button>
+          </div>
+        </div>
+      )}
+
+      <p className="mt-6 text-xs text-foreground/40">
+        Solana Pay reference pubkey embedded for tracking — locate the eventual tx via
+        <code> getSignaturesForAddress(reference)</code>.
+      </p>
+    </main>
+  );
+}

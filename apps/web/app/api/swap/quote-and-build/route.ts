@@ -1,0 +1,331 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  TransactionMessage,
+  VersionedTransaction,
+  Keypair,
+  TransactionInstruction,
+  AddressLookupTableAccount,
+  clusterApiUrl,
+} from "@solana/web3.js";
+import {
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddress,
+  getAccount,
+  createAssociatedTokenAccountInstruction,
+} from "@solana/spl-token";
+import {
+  getJupiterQuote,
+  getJupiterSwapInstructions,
+  USDC_MINTS,
+  isUsdcMint,
+  type JupiterIx,
+  type JupiterQuoteResponse,
+  JupiterError,
+} from "../../../../lib/jupiter";
+
+export const runtime = "nodejs";
+
+/**
+ * F12 — Pay With Any Token via Jupiter.
+ *
+ * Three response modes:
+ *   • direct_usdc    Input is USDC. We build a standard TransferChecked + Solana Pay
+ *                    reference. Works on devnet AND mainnet. No swap.
+ *   • jupiter_swap   Input is non-USDC. Jupiter quote + swap-instructions composed
+ *                    with a post-swap TransferChecked from buyer's USDC ATA to recipient.
+ *                    Works on mainnet ONLY (Jupiter has no devnet liquidity).
+ *   • mainnet_only   Input is non-USDC and we're on devnet. Returns a live quote (best
+ *                    effort — the Jupiter token list may not include the input mint at
+ *                    all) plus a clear "swap activates on mainnet" message. The UI shows
+ *                    the quote so the user sees the expected outcome.
+ *
+ * Honest devnet shape: USDC paths work end-to-end. Multi-token paths show real quotes
+ * but defer execution to mainnet. This is what the build plan committed to.
+ *
+ * Mainnet path uses TransactionMessage v0 + the lookup-table addresses Jupiter returns,
+ * which is the standard Jupiter integration pattern.
+ */
+
+const Body = z.object({
+  from: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/),
+  to: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/),
+  inputMint: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/),
+  inputAmountAtomic: z.string().regex(/^\d+$/),
+  outputMint: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/).optional(),
+  slippageBps: z.number().int().min(1).max(10_000).optional(),
+  note: z.string().max(200).optional(),
+});
+
+function getRpcUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_RPC_URL;
+  if (explicit) return explicit;
+  const heliusKey = process.env.HELIUS_API_KEY;
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? "devnet";
+  if (heliusKey) return `https://${cluster}.helius-rpc.com/?api-key=${heliusKey}`;
+  return clusterApiUrl(cluster === "mainnet" ? "mainnet-beta" : "devnet");
+}
+
+function jupiterIxToWeb3Ix(ix: JupiterIx): TransactionInstruction {
+  return new TransactionInstruction({
+    programId: new PublicKey(ix.programId),
+    keys: ix.accounts.map((a) => ({
+      pubkey: new PublicKey(a.pubkey),
+      isSigner: a.isSigner,
+      isWritable: a.isWritable,
+    })),
+    data: Buffer.from(ix.data, "base64"),
+  });
+}
+
+async function fetchLookupTables(
+  connection: Connection,
+  addresses: string[],
+): Promise<AddressLookupTableAccount[]> {
+  if (addresses.length === 0) return [];
+  const results = await Promise.all(
+    addresses.map(async (addr) => {
+      const acc = await connection.getAddressLookupTable(new PublicKey(addr));
+      return acc.value;
+    }),
+  );
+  return results.filter((a): a is AddressLookupTableAccount => a !== null);
+}
+
+export async function POST(req: NextRequest) {
+  let parsed: z.infer<typeof Body>;
+  try {
+    parsed = Body.parse(await req.json());
+  } catch (e) {
+    return NextResponse.json(
+      { error: "invalid_body", message: (e as Error).message },
+      { status: 400 },
+    );
+  }
+
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER === "mainnet" ? "mainnet" : "devnet";
+  const usdcMint = parsed.outputMint ?? USDC_MINTS[cluster];
+  const slippageBps = parsed.slippageBps ?? 50;
+  const connection = new Connection(getRpcUrl(), { commitment: "confirmed" });
+
+  let from: PublicKey;
+  let to: PublicKey;
+  try {
+    from = new PublicKey(parsed.from);
+    to = new PublicKey(parsed.to);
+  } catch {
+    return NextResponse.json({ error: "invalid_pubkey" }, { status: 400 });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Path A: input IS USDC. Direct TransferChecked. Works on any cluster.
+  // ─────────────────────────────────────────────────────────────────────────
+  if (isUsdcMint(parsed.inputMint, cluster)) {
+    const inputUsdcMint = new PublicKey(parsed.inputMint);
+    const fromAta = await getAssociatedTokenAddress(inputUsdcMint, from);
+    const toAta = await getAssociatedTokenAddress(inputUsdcMint, to);
+    const reference = Keypair.generate().publicKey;
+
+    const tx = new Transaction();
+
+    let toAtaExists = true;
+    try {
+      await getAccount(connection, toAta);
+    } catch {
+      toAtaExists = false;
+    }
+    if (!toAtaExists) {
+      tx.add(createAssociatedTokenAccountInstruction(from, toAta, to, inputUsdcMint));
+    }
+
+    const transferIx = createTransferCheckedInstruction(
+      fromAta,
+      inputUsdcMint,
+      toAta,
+      from,
+      BigInt(parsed.inputAmountAtomic),
+      6,
+    );
+    transferIx.keys.push({ pubkey: reference, isSigner: false, isWritable: false });
+    tx.add(transferIx);
+
+    if (parsed.note && parsed.note.trim().length > 0) {
+      const memoProgram = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+      tx.add({
+        keys: [],
+        programId: memoProgram,
+        data: Buffer.from(parsed.note.trim().slice(0, 200), "utf8"),
+      });
+    }
+
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
+    tx.recentBlockhash = blockhash;
+    tx.lastValidBlockHeight = lastValidBlockHeight;
+    tx.feePayer = from;
+
+    const txBase64 = Buffer.from(
+      tx.serialize({ requireAllSignatures: false, verifySignatures: false }),
+    ).toString("base64");
+
+    return NextResponse.json({
+      ok: true,
+      mode: "direct_usdc",
+      cluster,
+      transaction: txBase64,
+      blockhash,
+      last_valid_block_height: lastValidBlockHeight,
+      reference: reference.toBase58(),
+      amount_usdc: (Number(parsed.inputAmountAtomic) / 1_000_000).toFixed(6),
+      message: `Send $${(Number(parsed.inputAmountAtomic) / 1_000_000).toFixed(2)} USDC.`,
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Non-USDC path. Always try to fetch a quote (informational on devnet).
+  // ─────────────────────────────────────────────────────────────────────────
+  let quote: JupiterQuoteResponse | null = null;
+  let quoteError: string | null = null;
+  try {
+    quote = await getJupiterQuote({
+      inputMint: parsed.inputMint,
+      outputMint: usdcMint,
+      amount: parsed.inputAmountAtomic,
+      slippageBps,
+      restrictIntermediateTokens: true,
+    });
+  } catch (e) {
+    quoteError = e instanceof JupiterError ? `${e.status ?? "?"} ${e.message}` : String(e);
+  }
+
+  if (cluster === "devnet") {
+    return NextResponse.json({
+      ok: true,
+      mode: "mainnet_only",
+      cluster,
+      quote: quote
+        ? {
+            in_amount: quote.inAmount,
+            out_amount: quote.outAmount,
+            price_impact_pct: quote.priceImpactPct,
+            slippage_bps: quote.slippageBps,
+            route: quote.routePlan
+              .map((r) => r.swapInfo.label)
+              .filter((s, i, arr) => arr.indexOf(s) === i)
+              .slice(0, 4),
+          }
+        : null,
+      quote_error: quoteError,
+      message:
+        "Jupiter has no devnet liquidity. Quote is shown for reference only — swap+send activates on mainnet. Pick USDC to send directly on devnet today.",
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Mainnet: real swap + post-swap transfer to recipient.
+  //
+  // Strategy: use Jupiter's destinationTokenAccount param to route swap output directly
+  // to the recipient's USDC ATA. Saves an extra transfer ix and avoids the buyer needing
+  // their own USDC ATA. Pre-create the recipient ATA in setup if it doesn't exist.
+  // ─────────────────────────────────────────────────────────────────────────
+  if (!quote) {
+    return NextResponse.json(
+      { error: "quote_failed", message: quoteError ?? "no_route" },
+      { status: 502 },
+    );
+  }
+
+  const outputMint = new PublicKey(usdcMint);
+  const recipientUsdcAta = await getAssociatedTokenAddress(outputMint, to);
+
+  // Check if recipient ATA exists; if not, prepend a CreateATA ix paid by the buyer.
+  let recipAtaExists = true;
+  try {
+    await getAccount(connection, recipientUsdcAta);
+  } catch {
+    recipAtaExists = false;
+  }
+
+  let swapIxs;
+  try {
+    swapIxs = await getJupiterSwapInstructions({
+      quoteResponse: quote,
+      userPublicKey: parsed.from,
+      destinationTokenAccount: recipientUsdcAta.toBase58(),
+      wrapAndUnwrapSol: true,
+      dynamicComputeUnitLimit: true,
+    });
+  } catch (e) {
+    return NextResponse.json(
+      {
+        error: "swap_instructions_failed",
+        message: e instanceof JupiterError ? e.message : String(e),
+      },
+      { status: 502 },
+    );
+  }
+
+  // Build the v0 message with all Jupiter ixs + optional ATA-create + memo + Solana Pay reference
+  const reference = Keypair.generate().publicKey;
+  const ixs: TransactionInstruction[] = [];
+
+  ixs.push(...swapIxs.computeBudgetInstructions.map(jupiterIxToWeb3Ix));
+
+  if (!recipAtaExists) {
+    ixs.push(createAssociatedTokenAccountInstruction(from, recipientUsdcAta, to, outputMint));
+  }
+
+  ixs.push(...swapIxs.setupInstructions.map(jupiterIxToWeb3Ix));
+  ixs.push(jupiterIxToWeb3Ix(swapIxs.swapInstruction));
+  if (swapIxs.cleanupInstruction) {
+    ixs.push(jupiterIxToWeb3Ix(swapIxs.cleanupInstruction));
+  }
+
+  // Solana Pay reference — append a no-op memo carrying the reference pubkey so the
+  // recipient can locate the tx via getSignaturesForAddress(reference).
+  const memoProgram = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+  ixs.push({
+    keys: [{ pubkey: reference, isSigner: false, isWritable: false }],
+    programId: memoProgram,
+    data: Buffer.from(
+      `settle:swap:${quote.inAmount}:${quote.outAmount}${parsed.note ? `:${parsed.note.slice(0, 60)}` : ""}`,
+      "utf8",
+    ),
+  });
+
+  const lookupTables = await fetchLookupTables(connection, swapIxs.addressLookupTableAddresses);
+
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
+  const message = new TransactionMessage({
+    payerKey: from,
+    recentBlockhash: blockhash,
+    instructions: ixs,
+  }).compileToV0Message(lookupTables);
+
+  const versionedTx = new VersionedTransaction(message);
+  const txBase64 = Buffer.from(versionedTx.serialize()).toString("base64");
+
+  return NextResponse.json({
+    ok: true,
+    mode: "jupiter_swap",
+    cluster,
+    transaction: txBase64,
+    is_versioned: true,
+    blockhash,
+    last_valid_block_height: lastValidBlockHeight,
+    quote: {
+      in_amount: quote.inAmount,
+      out_amount: quote.outAmount,
+      price_impact_pct: quote.priceImpactPct,
+      slippage_bps: quote.slippageBps,
+      route: quote.routePlan
+        .map((r) => r.swapInfo.label)
+        .filter((s, i, arr) => arr.indexOf(s) === i)
+        .slice(0, 4),
+    },
+    reference: reference.toBase58(),
+    message: "Sign to swap + send in one tx.",
+  });
+}

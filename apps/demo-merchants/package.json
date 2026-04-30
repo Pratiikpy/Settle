@@ -1,0 +1,24 @@
+{
+  "name": "@settle/demo-merchants",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Three demo x402 merchants: ArxivFetch ($0.10), TranslateAPI ($0.30), SummaryLLM ($0.05). Used in the 90-second demo to drive real x402 calls.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'no lint configured yet'",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.5",
+    "hono": "^4.6.5",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}
