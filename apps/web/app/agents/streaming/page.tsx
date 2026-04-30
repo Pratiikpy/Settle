@@ -6,6 +6,7 @@ import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
 import { trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
+import { PauseOnBlur } from "../../../components/pause-on-blur";
 
 /**
  * F13 / F14 — Streaming Pact full lifecycle UI.
@@ -587,6 +588,14 @@ function StreamingCard({
         Live estimate ticks in the browser. The on-chain truth advances on each
         successful claim_streaming.
       </p>
+
+      <PauseOnBlur
+        pactPubkey={pact.pact_pubkey}
+        scopeLabel={pact.scope_label}
+        ratePerSlot={BigInt(pact.rate_lamports_per_slot ?? "0")}
+        paused={pact.paused}
+        onChanged={onClaimed}
+      />
     </article>
   );
 }
