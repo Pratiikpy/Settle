@@ -22,6 +22,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm lint
+      # Codama-equivalent IDL drift detector: compares the committed Anchor-generated
+      # IDL JSON against the hand-maintained packages/sdk/src/idl.ts literal. Fails red
+      # if Rust struct edits aren't reflected in TS, or vice-versa.
+      - name: Verify IDL hasn't drifted (Codama-equivalent)
+        run: pnpm verify:idl
 
   anchor:
     name: anchor build
@@ -40,6 +45,16 @@ jobs:
       - name: Build program
         working-directory: programs/settle-agent-card
         run: anchor build
+      # If anchor build produced an IDL different from what's committed, the dev
+      # forgot to commit the regenerated JSON. Fail red to make this loud.
+      - name: Verify committed IDL JSON matches fresh build
+        run: |
+          if ! git diff --quiet programs/settle-agent-card/target/idl/settle_agent_card.json; then
+            echo "::error::Committed target/idl/settle_agent_card.json differs from fresh anchor build."
+            echo "::error::Run 'cd programs/settle-agent-card && anchor build' locally and commit the regenerated JSON."
+            git --no-pager diff programs/settle-agent-card/target/idl/settle_agent_card.json | head -100
+            exit 1
+          fi
       - name: Upload IDL
         uses: actions/upload-artifact@v4
         with:
