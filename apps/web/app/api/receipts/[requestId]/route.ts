@@ -30,7 +30,7 @@ export async function GET(
   const { data, error } = await supabase
     .from("receipts")
     .select(
-      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, capability_hash, purpose_text_hash, purpose_hash, receipt_hash, reason_hash, policy_snapshot_hash, target_method, target_path, sig_solscan, decision_slot, policy_version, public_feed, created_at, request_initiated_at, upstream_called_at, upstream_returned_at",
+      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, capability_hash, purpose_text_hash, purpose_hash, receipt_hash, reason_hash, policy_snapshot_hash, target_method, target_path, sig_solscan, decision_slot, policy_version, public_feed, created_at, request_initiated_at, upstream_called_at, upstream_returned_at, compressed_sig, compressed_addr",
     )
     .eq("request_id", requestId)
     .maybeSingle();
@@ -204,6 +204,11 @@ export async function GET(
           ? "helius_sender_jito"
           : "rpc_fallback"
         : "wallet_send",
+      // ZK Compression mirror — populated async by compress-cron, NULL until then.
+      // The 4-hash on-chain commit on `sig_solscan` is the canonical proof; this
+      // is a secondary, cheaper-to-store record indexed by Photon RPC.
+      compressed_sig: (data.compressed_sig as string | null) ?? null,
+      compressed_addr: (data.compressed_addr as string | null) ?? null,
     },
     pact,
   });

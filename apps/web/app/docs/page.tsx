@@ -156,6 +156,47 @@ const ok = verifyWebhookSignature({
           </ul>
         </Section>
 
+        <Section title="ZK Compressed receipts (Light Protocol)">
+          <p>
+            Every ALLOW receipt earns a secondary mirror: a 1-unit compressed-
+            token transfer of the <code>SETTLE_RECEIPT</code> mint to the
+            buyer&apos;s wallet, written via{" "}
+            <code>@lightprotocol/compressed-token</code> at{" "}
+            <strong>~$0.001/account</strong> (vs ~$0.00204 for a regular Solana
+            account). Indexed by Photon RPC; queryable via{" "}
+            <code>getCompressedTokenAccountsByOwner</code> in any Light Protocol-
+            aware explorer.
+          </p>
+          <p>
+            <strong>Architecture:</strong> the user-facing payment route never
+            blocks on Light Protocol RPC. Receipts persist immediately to
+            Postgres + the on-chain 4-hash commit chain. The{" "}
+            <code>compress-cron</code> worker (<code>apps/indexer/src/compress-cron.ts</code>)
+            polls every 30 s for ALLOW receipts where{" "}
+            <code>compressed_sig IS NULL</code>, mints, and updates the row.
+            Decoupling means: the canonical proof never depends on Photon
+            availability, and a worker outage just means receipts stay
+            &ldquo;uncompressed&rdquo; in the UI until the next tick.
+          </p>
+          <p>
+            <strong>Setup (devnet):</strong>
+          </p>
+          <pre className="block rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
+            <code>{`pnpm zk:keygen          # generates SETTLE_ZK_RECEIPT_AUTHORITY_PRIVKEY
+solana airdrop 1 <pubkey> --url devnet
+pnpm zk:mint-setup      # one-time createMint, prints SETTLE_ZK_RECEIPT_MINT
+pnpm --filter @settle/indexer dev:compress-cron`}</code>
+          </pre>
+          <p>
+            <strong>Why a separate cron, not inline in the proxy:</strong> a
+            mintTo round-trip is 1-3 s including state-tree contention waits.
+            Putting it in the user&apos;s payment hot path would inflate p99
+            latency for the paying party. The cron is the same pattern
+            escrow-cron and badge-cron use — fan-out-async with idempotent
+            poll-by-NULL.
+          </p>
+        </Section>
+
         <Section title="Reputation badges (soulbound)">
           <p>
             Six on-chain achievements minted as MPL Core assets with the{" "}

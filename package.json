@@ -26,6 +26,8 @@
     "vapid:keygen": "tsx scripts/vapid-keygen.ts",
     "seal:keygen": "tsx scripts/seal-keygen.ts",
     "badge:keygen": "tsx scripts/badge-keygen.ts",
+    "zk:keygen": "tsx scripts/zk-receipt-keygen.ts",
+    "zk:mint-setup": "tsx scripts/zk-receipt-mint-setup.ts",
     "verify:idl": "tsx scripts/verify-idl.ts",
     "codegen": "turbo run codegen",
     "clean": "turbo run clean && rm -rf node_modules"

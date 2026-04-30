@@ -45,6 +45,8 @@ interface ReceiptResponse {
     upstream_called_at?: string | null;
     upstream_returned_at?: string | null;
     submission_method?: "helius_sender_jito" | "rpc_fallback" | "wallet_send";
+    compressed_sig?: string | null;
+    compressed_addr?: string | null;
   };
   pact:
     | {
@@ -1102,6 +1104,50 @@ export default function ReceiptDetailPage() {
                   <span className="text-foreground/60">Wallet sendRawTransaction</span>
                 </>
               )}
+            </div>
+          )}
+
+          {/* ZK Compression mirror — populated async by compress-cron. The
+              on-chain 4-hash commit on sig_solscan above is the canonical
+              proof; this is a Light Protocol-indexed secondary record at
+              ~$0.001/account, queryable via Photon RPC. */}
+          {r.compressed_sig && (
+            <div className="mt-3 rounded-2xl border border-violet-500/20 bg-violet-500/[0.04] p-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
+                  <span className="text-xs font-medium text-violet-200">
+                    ZK Compressed receipt
+                  </span>
+                </div>
+                <span className="text-[10px] text-foreground/40">
+                  Light Protocol · ~$0.001
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] text-foreground/55">
+                Mirrored as a 1-unit compressed token to the buyer&rsquo;s wallet.
+                Indexed by Photon RPC and visible in Light-Protocol-aware
+                explorers.
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-1.5 text-[11px]">
+                <div className="grid grid-cols-[88px,1fr] gap-2">
+                  <span className="text-foreground/40">mint</span>
+                  <code className="truncate font-mono text-foreground/70">
+                    {r.compressed_addr ?? "—"}
+                  </code>
+                </div>
+                <div className="grid grid-cols-[88px,1fr] gap-2">
+                  <span className="text-foreground/40">tx</span>
+                  <a
+                    href={getSolscanUrl(r.compressed_sig)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="truncate font-mono text-violet-300 hover:text-violet-200"
+                  >
+                    {r.compressed_sig.slice(0, 24)}…{r.compressed_sig.slice(-8)} ↗
+                  </a>
+                </div>
+              </div>
             </div>
           )}
         </section>
