@@ -137,7 +137,7 @@ connection.onLogs(
       } else if (disc.equals(DISC_CARD_CREATED)) {
         console.log(`[indexer] CardCreated ${logs.signature.slice(0, 8)}…`);
       } else if (disc.equals(DISC_CARD_REVOKED)) {
-        console.log(`[indexer] CardRevoked ${logs.signature.slice(0, 8)}…`);
+        handleCardRevoked(data, logs.signature);
       } else {
         console.log(
           `[indexer] unknown event disc=${disc.toString("hex")} sig=${logs.signature.slice(0, 8)}…`,
@@ -282,6 +282,36 @@ function handlePactSpend(data: Buffer, signature: string) {
     .eq("pact_pubkey", pact)
     .then(({ error }) => {
       if (error) console.warn("[indexer] pact update (spend) failed:", error.message);
+    });
+}
+
+/**
+ * CardRevokedEvent layout:
+ *   card(32) authority(32) policy_version(u32) slot(u64)
+ * total: 32 + 32 + 4 + 8 = 76 bytes
+ *
+ * Persists revoked=true + bumps policy_version on the agent_cards row. The
+ * /cards page subscribes to Realtime UPDATEs on this row to drive the
+ * killchain animation (every Pact under the card freezes when revoked
+ * transitions false → true).
+ */
+function handleCardRevoked(data: Buffer, signature: string) {
+  if (data.length < 76) return;
+  const card = bs58.encode(data.subarray(0, 32));
+  const policyVersion = data.readUInt32LE(64);
+  const slot = data.readBigUInt64LE(68);
+  console.log(
+    `[indexer] CardRevoked card=${card.slice(0, 6)}… policy_version=${policyVersion} slot=${slot} sig=${signature.slice(0, 8)}…`,
+  );
+  void supabase
+    .from("agent_cards")
+    .update({
+      revoked: true,
+      policy_version: policyVersion,
+    })
+    .eq("card_pubkey", card)
+    .then(({ error }) => {
+      if (error) console.warn("[indexer] card revoke update failed:", error.message);
     });
 }
 
