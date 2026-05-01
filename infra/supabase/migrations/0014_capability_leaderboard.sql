@@ -22,14 +22,14 @@ select
     capability_hash,
     merchant_pubkey,
     count(*)::int as completed,
-    avg(extract(epoch from (created_at - request_initiated_at)) * 1000)::numeric(10,1)
-        filter (where request_initiated_at is not null) as avg_total_latency_ms,
-    avg(extract(epoch from (upstream_returned_at - upstream_called_at)) * 1000)::numeric(10,1)
+    (avg(extract(epoch from (created_at - request_initiated_at)) * 1000)
+        filter (where request_initiated_at is not null))::numeric(10,1) as avg_total_latency_ms,
+    (avg(extract(epoch from (upstream_returned_at - upstream_called_at)) * 1000)
         filter (
             where upstream_called_at is not null
               and upstream_returned_at is not null
               and upstream_returned_at >= upstream_called_at
-        ) as avg_merchant_latency_ms,
+        ))::numeric(10,1) as avg_merchant_latency_ms,
     avg(amount_lamports)::bigint as avg_amount_lamports,
     sum(amount_lamports)::bigint as total_volume,
     count(distinct card_pubkey)::int as unique_users,
