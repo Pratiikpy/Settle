@@ -156,6 +156,33 @@ const ok = verifyWebhookSignature({
           </ul>
         </Section>
 
+        <Section title="Capability heatmap (live market view)">
+          <p>
+            <Link href="/leaderboard" className="text-accent">
+              /leaderboard
+            </Link>{" "}
+            renders a realtime grid of the last 60 s of public_feed ALLOW
+            receipts, grouped by capability hash. Each cell pulses on every
+            new receipt (Framer Motion); cells fade out as their receipts
+            slide out of the rolling window. The tab title shows the live
+            count (<code>(N) Settle</code>) so the page advertises activity
+            even when backgrounded.
+          </p>
+          <p>
+            <strong>Implementation:</strong> client-side Supabase Realtime
+            subscription on <code>receipts</code> filtered to{" "}
+            <code>decision=ALLOW AND public_feed=true</code>. A 60-second
+            sliding window aggregates per-capability counts in-memory; no
+            server-side state. Append <code>?simulate=1</code> to the URL to
+            inject synthetic receipts for the demo path so the heatmap is
+            never empty even on a fresh devnet.
+          </p>
+          <p>
+            Source: <code>apps/web/components/capability-heatmap.tsx</code>{" "}
+            (340 LOC, fully self-contained component).
+          </p>
+        </Section>
+
         <Section title="ZK Compressed receipts (Light Protocol)">
           <p>
             Every ALLOW receipt earns a secondary mirror: a 1-unit compressed-

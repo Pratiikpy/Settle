@@ -94,11 +94,11 @@ Full spec in [`docs/PRODUCT_SPEC.md`](docs/PRODUCT_SPEC.md). Build plan in [`doc
 
 ## Solana primitives composed
 
-**On-chain (used today):** Anchor 0.31.1 · SPL Token + ATA · SPL Memo · Solana Pay (transfer-request, transaction-request, reference pubkeys) · Compressed NFTs (Bubblegum V1) for receipts · Address Lookup Tables (Jupiter v0 tx) · Versioned transactions (v0) · Lighthouse transaction assertion (defense-in-depth on x402 spend, gated)
+**On-chain (used today):** Anchor 0.31.1 · SPL Token + ATA · SPL Memo · Solana Pay (transfer-request, transaction-request, reference pubkeys) · Compressed NFTs (Bubblegum V1) for receipts · Address Lookup Tables (Jupiter v0 tx) · Versioned transactions (v0) · Lighthouse transaction assertion (defense-in-depth on x402 spend, gated) · **MPL Core soulbound assets** (PermanentFreezeDelegate plugin, frozen-at-create — true SBT semantics) for the 6 reputation badges · **Light Protocol compressed tokens** (`@lightprotocol/compressed-token` v1) — every ALLOW receipt earns a 1-unit compressed-token mirror at ~$0.001/account vs ~$0.00204 for a regular Solana account
 
-**Off-chain (used today):** Helius RPC + WebSocket `onLogs` subscription · Helius Sender (Jito-bundle wrapper for confirmed-on-first-try sends) · Jupiter Lite API (quote + swap-instructions) · **Pyth Hermes pull oracle** (live SOL/USD ticker on `/sandbox` + `/send`) · Solana Attestation Service (verified merchant lookup) · Squads V4 detection (UI surface) · Bonfida SNS resolver · Solana Actions / Blinks · Dialect actions.json compatible · VAPID Web Push (RFC 8291/8292) · **Codama-equivalent IDL drift detector** in CI (`scripts/verify-idl.ts`)
+**Off-chain (used today):** Helius RPC + WebSocket `onLogs` subscription · Helius Sender (Jito-bundle wrapper for confirmed-on-first-try sends) · Jupiter Lite API (quote + swap-instructions) · **Pyth Hermes pull oracle** (live SOL/USD ticker on `/sandbox` + `/send`) · **Photon RPC** (Light Protocol compressed-account indexer, bundled in Helius endpoint) · Solana Attestation Service (verified merchant lookup) · Squads V4 detection (UI surface) · Bonfida SNS resolver · Solana Actions / Blinks · Dialect actions.json compatible · VAPID Web Push (RFC 8291/8292) · **Codama-equivalent IDL drift detector** in CI (`scripts/verify-idl.ts`) · **Capability heatmap** (`/leaderboard`) — Supabase Realtime rolling-60-s aggregation of public_feed ALLOW receipts as a glowing grid
 
-**Intentionally not used in v0.3** (deferred to v0.4): Bubblegum V2 · Token-2022 transfer hooks · ZK compression / Light Protocol · Squads spend-flow integration (we detect, not propose) · Solana Mobile MWA · Codama-generated runtime client (we hand-maintain `idl.ts` and verify it against the Anchor-generated IDL JSON in CI).
+**Intentionally not used in v0.3** (deferred to v0.4): Bubblegum V2 · Token-2022 transfer hooks · Squads spend-flow integration (we detect, not propose) · Solana Mobile MWA · Codama-generated runtime client (we hand-maintain `idl.ts` and verify it against the Anchor-generated IDL JSON in CI).
 
 See [`docs/PRODUCT_SPEC.md` §7](docs/PRODUCT_SPEC.md#7-solana-primitive-inventory) for the honest used / not-used / why table.
 
@@ -114,6 +114,8 @@ DevNet is the development cluster for v0.3. Most features work end-to-end on dev
 | USDC sends, streaming pacts, delivery escrow, splits, collabs, follows, leaderboard | ✅ | ✅ |
 | **Jupiter non-USDC swap execution** | ❌ — no DEX liquidity. UI shows live quote + "swap activates on mainnet" banner | ✅ |
 | Receipt cNFT mints (Bubblegum V1) | ✅ via Helius DAS | ✅; visible on Tensor / Magic Eden |
+| MPL Core soulbound badges (`PermanentFreezeDelegate`) | ✅ once `pnpm badge:keygen` + airdrop | ✅; render in Phantom + Solscan |
+| Light Protocol ZK Compressed receipts | ✅ once `pnpm zk:keygen` + `pnpm zk:mint-setup` + Helius API key | ✅ via Photon RPC bundled in Helius |
 | Solana Actions / Blinks (Phantom-in-X) | ✅ once domain registered with Dialect | ✅ |
 
 Full table at [`docs/PRODUCT_SPEC.md` §8](docs/PRODUCT_SPEC.md#8-devnet-vs-mainnet--honest-table).

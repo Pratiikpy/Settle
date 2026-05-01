@@ -148,14 +148,17 @@ const WHAT_YOU_CAN_DO = [
   },
 ];
 
-// What's actually wired in v0.2 (devnet). Items still pending real wiring (Jupiter swap UI,
-// Solana Mobile MWA adapter, Privy hooks, MPL-Bubblegum V2 migration) deliberately omitted —
-// no marketing claims for code that isn't there yet.
+// What's actually wired in v0.3 (devnet). Items still pending real wiring (Solana Mobile MWA
+// adapter, Privy hooks, MPL-Bubblegum V2 migration) deliberately omitted — no marketing
+// claims for code that isn't there yet.
 const SOLANA_PRIMITIVES = [
   "Anchor 0.31",
   "SPL Token (TransferChecked)",
   "Solana Pay (reference)",
   "Bubblegum V1 cNFTs",
+  "MPL Core (soulbound badges)",
+  "Light Protocol (ZK Compression)",
+  "Photon RPC",
   "Squads V4 detection",
   "Pyth Hermes",
   "Helius RPC + Sender",
