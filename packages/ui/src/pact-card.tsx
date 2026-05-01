@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CountdownRing } from "./countdown-ring.js";
+import { CountdownRing } from "./countdown-ring";
 
 /**
  * Single-task Pact card visual.

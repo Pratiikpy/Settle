@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { DenyBadge, type DenyDecision } from "./deny-badge.js";
+import { DenyBadge, type DenyDecision } from "./deny-badge";
 
 export interface ActivityRowProps {
   card: string;            // "@pratiik/research"

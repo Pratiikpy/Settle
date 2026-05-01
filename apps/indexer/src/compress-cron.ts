@@ -82,6 +82,13 @@ interface PendingReceipt {
   card_pubkey: string;
 }
 
+// In-memory orphan guard: if a mint succeeds on-chain but the DB update
+// fails, we'd otherwise re-pick this row every tick (compressed_sig still
+// NULL) and burn another mint forever. This Set tracks request_ids we've
+// already tried, scoped to this process lifetime — restart clears it,
+// which is the right semantics for "operator notices and intervenes."
+const orphanedThisRun = new Set<string>();
+
 async function findPending(client: SupabaseClient): Promise<PendingReceipt[]> {
   const { data, error } = await client
     .from("receipts")
@@ -89,12 +96,14 @@ async function findPending(client: SupabaseClient): Promise<PendingReceipt[]> {
     .is("compressed_sig", null)
     .eq("decision", "ALLOW")
     .order("created_at", { ascending: true })
-    .limit(BATCH_SIZE);
+    .limit(BATCH_SIZE * 4); // overfetch so orphans don't starve fresh rows
   if (error) {
     console.warn("[compress-cron] supabase query failed:", error.message);
     return [];
   }
-  return (data ?? []) as PendingReceipt[];
+  // Filter out rows we already know failed-DB-update this run
+  const fresh = (data ?? []).filter((r) => !orphanedThisRun.has(r.request_id));
+  return fresh.slice(0, BATCH_SIZE) as PendingReceipt[];
 }
 
 async function resolveBuyerAuthority(
@@ -148,10 +157,16 @@ async function processOne(
     .eq("request_id", receipt.request_id);
 
   if (updErr) {
-    // The token IS minted on-chain at this point — the only way to recover
-    // accounting is to manually backfill compressed_sig. We log loudly.
+    // The token IS minted on-chain at this point. Without intervention we'd
+    // re-pick this row every tick (compressed_sig still NULL) and burn
+    // another ~$0.001 + a duplicate compressed token to the recipient. Mark
+    // the row in our in-process orphan set so subsequent ticks skip it.
+    // Recovery: operator manually fills compressed_sig from on-chain history.
+    orphanedThisRun.add(receipt.request_id);
     console.error(
-      `[compress-cron] DB update failed AFTER on-chain mint (${result.signature.slice(0, 12)}…) for ${receipt.request_id}: ${updErr.message}`,
+      `[compress-cron] CRITICAL: DB update failed AFTER on-chain mint (sig=${result.signature.slice(0, 12)}… mint=${result.mintAddress.slice(0, 6)}…) for request=${receipt.request_id}. ` +
+        `Recipient=${buyerAuth.slice(0, 6)}… already received the compressed token. ` +
+        `Skipping in this process; manual backfill required: UPDATE receipts SET compressed_sig='${result.signature}', compressed_addr='${result.mintAddress}' WHERE request_id='${receipt.request_id}';`,
     );
     return;
   }

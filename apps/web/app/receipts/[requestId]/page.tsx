@@ -197,11 +197,33 @@ export default function ReceiptDetailPage() {
               filter: `request_id=eq.${params.requestId}`,
             },
             (payload) => {
+              // Realtime delivers raw bytea columns as `\x...` hex strings — the
+              // initial GET strips this server-side, but a naive spread here
+              // re-pollutes capability_hash, *_hash, etc. on every UPDATE
+              // (e.g., when compress-cron writes compressed_sig). Whitelist
+              // only the fields that legitimately change post-insert.
+              const liveFields: Array<keyof ReceiptResponse["receipt"]> = [
+                "decision",
+                "deny_code",
+                "public_feed",
+                "sig_solscan",
+                "decision_slot",
+                "compressed_sig",
+                "compressed_addr",
+              ];
+              const safeUpdate: Partial<ReceiptResponse["receipt"]> = {};
+              const incoming = payload.new as Record<string, unknown>;
+              for (const k of liveFields) {
+                if (k in incoming) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (safeUpdate as any)[k] = incoming[k];
+                }
+              }
               setData((prev) =>
                 prev
                   ? {
                       ...prev,
-                      receipt: { ...prev.receipt, ...(payload.new as ReceiptResponse["receipt"]) },
+                      receipt: { ...prev.receipt, ...safeUpdate },
                     }
                   : prev,
               );

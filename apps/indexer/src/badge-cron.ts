@@ -282,12 +282,22 @@ async function findUnmintedCandidates(): Promise<UserCandidate[]> {
     const eligibleAuths = await findCandidatesByKind(supabase, kind);
     if (eligibleAuths.length === 0) continue;
 
-    // Filter out users who already have THIS badge kind.
-    const { data: existing } = await supabase
+    // Filter out users who already have THIS badge kind. Critical: if this
+    // query silently fails we'd re-mint every badge for every eligible user
+    // every tick — burning real SOL on duplicate MPL Core assets (the
+    // unique constraint catches it on insert, but the on-chain mint cost
+    // is already spent). Hard-fail this tick on query error.
+    const { data: existing, error: existingErr } = await supabase
       .from("reputation_badges")
       .select("user_pubkey")
       .eq("badge_kind", kind)
       .in("user_pubkey", eligibleAuths);
+    if (existingErr) {
+      console.error(
+        `[badge-cron] CRITICAL: failed to query already-minted badges for kind=${kind}: ${existingErr.message}. Aborting tick.`,
+      );
+      throw new Error(`badge-cron existing-query failed: ${existingErr.message}`);
+    }
     const have = new Set((existing ?? []).map((r) => r.user_pubkey as string));
 
     for (const auth of eligibleAuths) {
