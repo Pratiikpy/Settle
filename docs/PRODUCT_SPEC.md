@@ -18,7 +18,7 @@ Three kinds of users move money through one product:
 
 Every payment writes a four-hash commitment chain (BLAKE3) on-chain, so receipts are independently verifiable. Refunds, disputes, streaming agent salaries, and atomic split payments are all real on-chain primitives, not UI tricks.
 
-This v0.3 ships **22 user-visible features** and **2 truly new on-chain primitives** (Streaming Pact, Delivery-Escrow Pact) on top of the v0.2 program (AgentCard + OneShot Pact + Vault).
+This v0.3 ships **25 user-visible features** and **2 truly new on-chain primitives** (Streaming Pact, Delivery-Escrow Pact) on top of the v0.2 program (AgentCard + OneShot Pact + Vault). v0.3 also lights up three "next-level" surfaces that depend on existing on-chain state but live entirely off the program: a real-time capability heatmap, soulbound MPL Core reputation badges, and Light Protocol ZK-compressed receipt mirrors.
 
 ---
 
@@ -46,7 +46,7 @@ This v0.3 ships **22 user-visible features** and **2 truly new on-chain primitiv
 
 ---
 
-## 3. Feature Catalog (F1–F22)
+## 3. Feature Catalog (F1–F25)
 
 For each feature: precise scope, UX surface, Solana primitives used, DevNet behavior, files to look at.
 
@@ -440,7 +440,66 @@ Atomicity is guaranteed by being a single Solana tx — both creators are paid o
 
 ---
 
-## 4. Architectural Primitives (P1–P10)
+### F23. Capability heatmap (live market view)  → **merchant + consumer**
+
+**IS:** A real-time grid on `/leaderboard` showing the last 60 seconds of public_feed ALLOW receipts, grouped by `capability_hash`. Each cell pulses (Framer Motion scale + opacity) on every new matching receipt. Cells decay out as their receipts slide past the rolling window. The browser tab title shows the live count (`(N) Settle`) so the page advertises activity even when backgrounded. Above the all-time leaderboard, the heatmap acts as a "live now" surface — judges and buyers see ongoing activity without waiting.
+
+**IS NOT:** Not server-side aggregation (no Postgres view, no pre-computed bucket). Not a per-merchant view (use `/at/[handle]` for that). Not a historical chart — strictly the rolling 60 s window. Not gated by auth — the data is public_feed-only by definition.
+
+**UX surface:** `<CapabilityHeatmap>` mounted on `/leaderboard` directly above the all-time top list. Append `?simulate=1` to the URL to inject synthetic receipts every ~700 ms — judges and demo videos see the heatmap pulse on a fresh devnet without needing real traffic. Each cell shows a truncated capability hash (first 8 chars) and the count; clicking it deep-links to `/leaderboard/[capabilityHash]`.
+
+**Solana primitives:** Reads only — no on-chain side. Subscribes via Supabase Realtime to the `receipts` table filtered to `decision='ALLOW' AND public_feed=true`. Sliding-window aggregation runs entirely in the browser: a `Map<capabilityHash, { count, lastSeen }>` purged every animation frame.
+
+**DevNet vs mainnet:** Identical. On a fresh devnet without traffic, use `?simulate=1` for demos.
+
+**Files:** `apps/web/components/capability-heatmap.tsx` (340 LOC, fully self-contained), `apps/web/app/leaderboard/page.tsx`.
+
+---
+
+### F24. Soulbound reputation badges (MPL Core)  → **consumer + agent**
+
+**IS:** Six on-chain achievements automatically minted to a user's wallet when they cross a threshold of real on-chain activity. Each badge is an MPL Core asset created with the `PermanentFreezeDelegate` plugin (`frozen: true` at create time) — non-transferable, non-burnable, true SBT semantics enforced by the MPL Core program. Badges:
+
+| Kind | Threshold |
+|---|---|
+| 🏁 First Payer | First ALLOW receipt to any merchant |
+| 🧠 Polymath | Paid 5+ distinct capability hashes |
+| ⚡ High-Frequency Operator | 100+ ALLOW receipts lifetime |
+| 🌊 Long Streamer | Active streaming pact for 30+ days |
+| ⚖ Honest Disputer | First successful `dispute_delivery_escrow` within window |
+| 📡 Public Spender | First `public_feed=true` receipt |
+
+A worker cron polls Postgres every 5 minutes for `(user_pubkey, badge_kind)` pairs not yet in `reputation_badges`, mints, and inserts. Idempotent via a unique `(user_pubkey, badge_kind)` constraint — duplicate-mint impossible.
+
+**IS NOT:** Not a fungible loyalty point. Not a level system. Not editable post-mint (the catalogue can grow, but the asset metadata of an issued badge is fixed). Not a competition between users — every user can earn every badge. Not a profile-page-only artifact: the asset shows up in the user's Phantom wallet and on Solscan because the recipient *is* the asset's owner; the freeze plugin only blocks transfer, not ownership.
+
+**UX surface:** `<ReputationBadges>` card on `/at/[handle]` between the profile header and Public Activity. The card hides itself entirely when the user has zero badges (no "no achievements yet" empty state — too noisy on fresh profiles). Each badge tile shows the emoji on a radial-gradient swatch, the spec name, threshold sentence, "Earned X ago", and a Solscan link to the asset address so judges can verify the `PermanentFreezeDelegate` plugin is real. Push notification fan-out fires on unlock via the cron → `/api/internal/push` (Bearer auth) → web app's existing VAPID delivery — same path follower-fanout uses.
+
+**Solana primitives:** **MPL Core** (`@metaplex-foundation/mpl-core` v1) `create()` ix with `PermanentFreezeDelegate` plugin in V2 plugin-args shape (`{ type: "PermanentFreezeDelegate", frozen: true }` — args spread, not nested under `data`). No collection — each badge is a standalone asset, slightly higher rent in exchange for zero collection-management overhead. Metadata is a `data:application/json;base64,...` URI with inline SVG (radial-gradient + emoji + name) so the badge renders in 5 years even if every off-chain CDN is dead.
+
+**DevNet vs mainnet:** Identical mechanism. Devnet requires the operator to run `pnpm badge:keygen`, fund the printed pubkey with ~1 SOL, and start `pnpm --filter @settle/indexer dev:badge-cron`.
+
+**Files:** Catalogue (shared by web UI + cron, no MPL Core dep): `packages/types/src/badges.ts`. Mint helper (server-only): `apps/indexer/src/badges-mint.ts`. Cron: `apps/indexer/src/badge-cron.ts`. Web API: `apps/web/app/api/handles/[handle]/badges/route.ts`. UI: `apps/web/components/reputation-badges.tsx`, wired into `apps/web/app/at/[handle]/page.tsx`. Push fan-out endpoint: `apps/web/app/api/internal/push/route.ts`. Keygen: `scripts/badge-keygen.ts`. Migration: `0017_reputation_badges.sql`.
+
+---
+
+### F25. ZK-compressed receipt mirror (Light Protocol)  → **consumer + agent**
+
+**IS:** Every ALLOW receipt earns a secondary on-chain mirror — a 1-unit transfer of the `SETTLE_RECEIPT` compressed-token mint to the buyer's wallet authority. Cost per mirror: ~$0.001/account vs ~$0.00204 for a regular Solana account (~5,000× cheaper at scale on mainnet). Indexed by Photon RPC (bundled in the Helius endpoint) so any Light Protocol-aware explorer can query a buyer's full receipt history via `getCompressedTokenAccountsByOwner` without ever talking to Settle's database. The on-chain 4-hash commit chain on the original `sig_solscan` remains the canonical proof; the compressed-token mirror is a cheaper, queryable secondary record.
+
+**IS NOT:** Not the canonical receipt — that's the BLAKE3 4-hash chain on the `PolicyDecisionEvent`. Not a transferable token in any meaningful sense (it's 1 unit of decimals=0; transferring it doesn't transfer money or rights). Not synchronous — the buyer's payment never blocks on Light Protocol RPC. Not retroactive past the migration — receipts created before the cron started running stay `compressed_sig=NULL` forever (a future backfill could fill them; intentionally out of scope).
+
+**UX surface:** A violet "ZK Compressed receipt" card on `/receipts/[requestId]` (beneath the submission_method badge, above the back-link footer). Renders only when `compressed_sig` is set. Shows the compressed mint pubkey and a Solscan link to the mintTo tx. Tagline: "Light Protocol · ~$0.001". The receipts page Realtime subscription means the card materializes live as compress-cron processes the row — judges who pay during the demo see the card appear on their open page within ~30 s.
+
+**Solana primitives:** **Light Protocol compressed-token program** (`@lightprotocol/compressed-token` v1 legacy API, the same one the official `light` CLI uses). `mintTo(rpc, payer, mint, recipient, authority, 1)` with the buyer's wallet authority as recipient. **Photon RPC** (Light Protocol's compressed-account indexer) bundled in the Helius `https://devnet.helius-rpc.com/?api-key=...` URL — passed as both the JSON-RPC and compression endpoint to `createRpc()` from `@lightprotocol/stateless.js`.
+
+**DevNet vs mainnet:** Identical mechanism. Devnet requires: `pnpm zk:keygen`, airdrop ~1 SOL, `pnpm zk:mint-setup` (one-time createMint), `pnpm --filter @settle/indexer dev:compress-cron`. A Helius API key is required because Photon RPC is bundled into Helius — `clusterApiUrl()` does not serve compressed-account queries.
+
+**Files:** Helper module: `apps/indexer/src/zk-compression.ts` (loadZkReceiptConfig, buildLightRpc, mintCompressedReceipt). Cron: `apps/indexer/src/compress-cron.ts`. Setup scripts: `scripts/zk-receipt-keygen.ts`, `scripts/zk-receipt-mint-setup.ts`. API surface: existing `apps/web/app/api/receipts/[requestId]/route.ts` returns `compressed_sig` + `compressed_addr` columns. UI: violet card section in `apps/web/app/receipts/[requestId]/page.tsx`. Migration: `0018_compressed_receipts.sql` (adds `compressed_sig`, `compressed_addr` + partial index on pending rows).
+
+---
+
+## 4. Architectural Primitives (P1–P13)
 
 Concrete behind-the-scenes mechanisms that multiple features lean on.
 
@@ -487,6 +546,26 @@ Concrete behind-the-scenes mechanisms that multiple features lean on.
 ### P10. Server-clock request-timing columns (off-chain)
 - `request_initiated_at`, `upstream_called_at`, `upstream_returned_at` on receipts. Populated by proxy in same process — clock-drift-safe subtraction.
 - Powers F17 honest latency metric.
+
+### P11. Client-side rolling-window heatmap (off-chain)
+- Browser-only sliding 60 s aggregation over `receipts` Supabase Realtime payloads.
+- No server view, no Postgres aggregation — judges can verify the heatmap by reading 1 component file.
+- `?simulate=1` query param injects synthetic events for empty-cluster demos.
+- Powers F23.
+
+### P12. Soulbound MPL Core mint (off-chain → on-chain)
+- Six-kind catalogue lives in `@settle/types` so both web UI and indexer cron import a single source of truth without dragging MPL Core into the SDK / browser bundle.
+- Mint helper (`apps/indexer/src/badges-mint.ts`) is server-only, scoped to the indexer rootDir; uses `@metaplex-foundation/mpl-core` `create()` with the V2 plugin-args shape `{ type: "PermanentFreezeDelegate", frozen: true }` (frozen-at-create — true SBT, no later freeze toggle).
+- Threshold detection: a 5-min cron polls Postgres for `(user_pubkey, badge_kind)` pairs not yet in `reputation_badges`. Idempotent via unique `(user_pubkey, badge_kind)` constraint.
+- Push fan-out: `/api/internal/push` (Bearer-authed via `SETTLE_INTERNAL_API_KEY`, constant-time compare) keeps VAPID + RFC 8291 crypto in the web app, single source of truth.
+- Powers F24.
+
+### P13. Light Protocol compressed-token mirror (off-chain → on-chain)
+- Decoupled from the user-facing payment path on purpose: x402 proxy never blocks on Light Protocol RPC. Receipts persist immediately; the mirror fills async via `compress-cron` polling `compressed_sig IS NULL`.
+- Idempotent: once the column is filled, never retried. Cron crash mid-mint just re-tries on the next tick.
+- One mint per cluster, created once via `pnpm zk:mint-setup` (legacy `createMint` from `@lightprotocol/compressed-token`). All receipts share the same `SETTLE_RECEIPT` mint.
+- Photon RPC dependency: bundled in Helius URL — `createRpc(url, url, url)` uses the same endpoint for JSON-RPC + compression queries + prover.
+- Powers F25.
 
 ---
 
@@ -567,7 +646,7 @@ Every `PolicyDecisionEvent` commits 3 BLAKE3 hashes on-chain: `receipt_hash`, `r
 | App | Purpose |
 |---|---|
 | `apps/web` | Next.js 15 App Router. All UI + the x402 proxy (the agent payment endpoint) + every API endpoint. |
-| `apps/indexer` | Helius `onLogs` WebSocket subscriber. Decodes program events by 8-byte sighash discriminator and writes mirrored rows to Postgres. Also runs the webhook delivery worker + the F22 escrow-release cron. |
+| `apps/indexer` | Helius `onLogs` WebSocket subscriber. Decodes program events by 8-byte sighash discriminator and writes mirrored rows to Postgres. Also runs the webhook delivery worker, the F22 escrow-release cron, the F24 badge-mint cron, and the F25 ZK-compressed-receipt cron. |
 | `apps/demo-merchants` | Sample merchant servers (arxiv-fetch, translate) for end-to-end agent demos. |
 | `apps/demo-agent` | Sample autonomous agent that spends via x402 proxy to the demo merchants. |
 
@@ -575,7 +654,7 @@ Every `PolicyDecisionEvent` commits 3 BLAKE3 hashes on-chain: `receipt_hash`, `r
 | Package | Purpose |
 |---|---|
 | `packages/sdk` | Canonical hash builders, capability-hash, sealed-box, handles, IDL constant. 83 unit tests. |
-| `packages/types` | Cross-package types: `DenyCode` enum, ix arg types. |
+| `packages/types` | Cross-package types: `DenyCode` enum, ix arg types, F24 badge catalogue (`BADGE_CATALOGUE`, `BadgeKind`, `BadgeSpec`). |
 | `packages/ui` | Shared UI: `<TrustGesture>`, `<SettleCard>`, `<HandleBadge>`, `<ReceiptCard>`. |
 
 ### Database (Supabase Postgres)
@@ -632,6 +711,9 @@ The agent-payment endpoint. Validates dual-sig (wallet sig over canonical reques
 | **Solana Pay reference pubkeys** | Embedded in every built tx for tx-correlation. |
 | **Solana Actions / Blinks** | F7 universal router + `/.well-known/actions.json` wildcards. |
 | **Compressed NFTs (Bubblegum V1)** | Receipt cNFT mints via `@metaplex-foundation/mpl-bubblegum`. |
+| **MPL Core (`PermanentFreezeDelegate`)** | F24 soulbound badges. `frozen: true` at create-time enforces SBT semantics — non-transferable, non-burnable. |
+| **Light Protocol compressed-token (`@lightprotocol/compressed-token`)** | F25 ZK-compressed receipt mirrors. ~$0.001/account vs ~$0.00204 for a regular Solana account. |
+| **Photon RPC** | Light Protocol's compressed-account indexer. Bundled in Helius URL, queried via `@lightprotocol/stateless.js::createRpc`. |
 | **Address Lookup Tables (ALT)** | Used via Jupiter's response in F12 swap path. |
 | **Versioned transactions (v0)** | F12 Jupiter swap path. Other paths use legacy Transaction. |
 | **Helius RPC + WebSocket** | Indexer `onLogs` subscription. |
@@ -652,7 +734,6 @@ The agent-payment endpoint. Validates dual-sig (wallet sig over canonical reques
 | **Token-2022 confidential transfers** | Overkill for a consumer payment app. Available for future regulated-flow features. |
 | **Token-2022 permanent delegate** | Interesting refund primitive (Settle treasury could be permanent delegate on merchant balance, revocable). V0.4. |
 | **Bubblegum V2** | We use V1 — fine for v0.3 receipt scale (thousands). V2 has nicer collection ergonomics; cost-equivalent. |
-| **ZK Compression (Light Protocol)** | Would scale receipts to millions cheaply. v0.3 doesn't need it. |
 | **Squads spend-flow integration** | We detect Squads-managed cards but the spend flow doesn't generate Squads proposal txs. UI surfaces "team-managed card · X-of-Y signers"; full proposal flow is V2. |
 | **Switchboard randomness** | Not needed by any v0.3 feature. |
 | **Solana Mobile / MWA** | No mobile-wallet-adapter beyond Phantom. Web-first product. |
@@ -678,6 +759,9 @@ The agent-payment endpoint. Validates dual-sig (wallet sig over canonical reques
 | **F20 Collab payment** | Works. | Same. |
 | **F21 Split bill** | Works. | Same. |
 | **F22 Delivery escrow + permissionless cron** | Works fully on devnet. | Same. |
+| **F23 Capability heatmap (live market view)** | Works. Use `?simulate=1` for empty-cluster demos. | Same; far more cells active at mainnet volume. |
+| **F24 Soulbound MPL Core badges** | Works once `pnpm badge:keygen` + airdrop + cron started. Renders in Phantom + Solscan. | Same. |
+| **F25 ZK-compressed receipt mirror (Light Protocol)** | Works once `pnpm zk:keygen` + `pnpm zk:mint-setup` + cron started. **Requires Helius API key** for Photon RPC; `clusterApiUrl()` fallback does not serve compressed-account queries. | Same; queryable in any Light Protocol-aware explorer. |
 | **Receipt cNFT mints (Bubblegum V1)** | Works on devnet. | Same; visible in Tensor/Magic Eden on mainnet. |
 | **Solana Pay transaction-request URLs** | Works (Phantom resolves devnet endpoints via cluster query). | Same. |
 | **Solana Actions / Blinks (Phantom-in-X)** | Works once domain is registered with Dialect Actions Registry. | Same. |
