@@ -135,7 +135,7 @@ connection.onLogs(
       } else if (disc.equals(DISC_ESCROW_DISPUTED)) {
         handleEscrowDisputed(data, logs.signature);
       } else if (disc.equals(DISC_CARD_CREATED)) {
-        console.log(`[indexer] CardCreated ${logs.signature.slice(0, 8)}…`);
+        await handleCardCreated(data, logs.signature);
       } else if (disc.equals(DISC_CARD_REVOKED)) {
         handleCardRevoked(data, logs.signature);
       } else {
@@ -295,6 +295,74 @@ function handlePactSpend(data: Buffer, signature: string) {
  * killchain animation (every Pact under the card freezes when revoked
  * transitions false → true).
  */
+/**
+ * CardCreatedEvent layout (Borsh, little-endian):
+ *   card(32) authority(32) agent_pubkey(32) usdc_mint(32)
+ *   daily_cap(u64) per_call_max(u64) allowlist_count(u8)
+ *   expiry_slot(u64) policy_version(u32)
+ * total: 32*4 + 8*2 + 1 + 8 + 4 = 157 bytes
+ *
+ * Without this handler the agent_cards table never sees newly-created cards —
+ * compress-cron can't resolve buyer authority, /api/cards/list returns empty
+ * for fresh wallets, and the entire F4 reputation flow is starved. Critical.
+ */
+async function handleCardCreated(data: Buffer, signature: string) {
+  if (data.length < 157) {
+    console.warn(`[indexer] CardCreatedEvent: short data (${data.length}b, need 157)`);
+    return;
+  }
+  let off = 0;
+  const card = bs58.encode(data.subarray(off, off + 32));
+  off += 32;
+  const authority = bs58.encode(data.subarray(off, off + 32));
+  off += 32;
+  const agentPubkey = bs58.encode(data.subarray(off, off + 32));
+  off += 32;
+  const usdcMint = bs58.encode(data.subarray(off, off + 32));
+  off += 32;
+  const dailyCap = data.readBigUInt64LE(off);
+  off += 8;
+  const perCallMax = data.readBigUInt64LE(off);
+  off += 8;
+  const allowlistCount = data.readUInt8(off);
+  off += 1;
+  const expirySlot = data.readBigUInt64LE(off);
+  off += 8;
+  const policyVersion = data.readUInt32LE(off);
+
+  console.log(
+    `[indexer] CardCreated card=${card.slice(0, 6)}… authority=${authority.slice(0, 6)}… cap=${dailyCap} expiry=${expirySlot} sig=${signature.slice(0, 8)}…`,
+  );
+
+  // Note: agent_cards has no `allowlist_count` column; the count is implicit
+  // in the `agent_card_allowlist` rows. We log the count here and write it to
+  // the join table separately if/when the program emits per-merchant rows.
+  void allowlistCount;
+  const { error } = await supabase.from("agent_cards").upsert(
+    {
+      card_pubkey: card,
+      authority_pubkey: authority,
+      agent_pubkey: agentPubkey,
+      daily_cap_lamports: dailyCap.toString(),
+      per_call_max_lamports: perCallMax.toString(),
+      expiry_slot: expirySlot.toString(),
+      policy_version: policyVersion,
+      revoked: false,
+      label: "",
+      label_hash: "\\x" + "00".repeat(32),
+      used_today: 0,
+      last_reset_slot: 0,
+    },
+    { onConflict: "card_pubkey", ignoreDuplicates: true },
+  );
+
+  if (error) {
+    console.error(
+      `[indexer] CRITICAL: agent_cards upsert failed for ${card.slice(0, 8)}…: ${error.message}. /api/cards/list will not show this card; compress-cron will skip its receipts.`,
+    );
+  }
+}
+
 function handleCardRevoked(data: Buffer, signature: string) {
   if (data.length < 76) return;
   const card = bs58.encode(data.subarray(0, 32));
