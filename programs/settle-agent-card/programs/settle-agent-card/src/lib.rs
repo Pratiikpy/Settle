@@ -30,7 +30,7 @@ pub use errors::*;
 pub use events::*;
 pub use instructions::*;
 
-declare_id!("SettLe1111111111111111111111111111111111111");
+declare_id!("HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD");
 
 #[program]
 pub mod settle_agent_card {

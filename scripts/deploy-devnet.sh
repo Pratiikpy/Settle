@@ -39,7 +39,9 @@ ok "Devnet"
 step "Checking deployer balance…"
 BAL=$(solana balance --url devnet | awk '{print $1}')
 echo "  Balance: ${BAL} SOL"
-if (( $(echo "${BAL} < 4" | bc -l) )); then
+# awk-based comparison so we don't depend on `bc` (not bundled with Git Bash on Windows).
+LOW=$(awk -v b="${BAL}" 'BEGIN{print (b<4)?"1":"0"}')
+if [ "${LOW}" = "1" ]; then
   echo "  Topping up via airdrop…"
   solana airdrop 2 --url devnet || true
 fi

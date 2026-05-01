@@ -7,10 +7,10 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-settle_agent_card = "SettLe1111111111111111111111111111111111111"
+settle_agent_card = "HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD"
 
 [programs.localnet]
-settle_agent_card = "SettLe1111111111111111111111111111111111111"
+settle_agent_card = "HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD"
 
 [registry]
 url = "https://api.apr.dev"
