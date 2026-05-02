@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { W6AppShell } from "../../components/w6-app-shell";
 
 interface Insights {
   total_usdc: string;
@@ -12,11 +13,45 @@ interface Insights {
   top_merchant: { name: string; amount_usdc: string } | null;
 }
 
+interface ForecastAlert {
+  rule: string;
+  severity: "info" | "warn" | "critical";
+  message: string;
+}
+interface ForecastSummary {
+  total30d_lamports: string;
+  avg_per_day_lamports: string;
+  avg7d_lamports: string;
+  projected_next7d_lamports: string;
+  total_daily_cap_lamports: string;
+}
+interface ForecastResponse {
+  ok: boolean;
+  summary?: ForecastSummary | null;
+  alerts?: ForecastAlert[];
+}
+
+interface FraudFlag {
+  rule: string;
+  score: number;
+  context: Record<string, unknown>;
+}
+
+function lamportsToUsdc(s: string): string {
+  return (Number(s) / 1e6).toFixed(2);
+}
+
 export default function SpendingPage() {
   const { connected, publicKey } = useWallet();
   const [insights, setInsights] = useState<Insights | null>(null);
   const [loading, setLoading] = useState(false);
   const [days, setDays] = useState(30);
+
+  // F33.3 — burn-rate forecast surfaced inline.
+  const [forecast, setForecast] = useState<ForecastResponse | null>(null);
+  // F29.4 — fraud flags from a fresh scan.
+  const [fraudFlags, setFraudFlags] = useState<FraudFlag[]>([]);
+  const [fraudLoading, setFraudLoading] = useState(false);
 
   useEffect(() => {
     if (!connected || !publicKey) return;
@@ -29,16 +64,45 @@ export default function SpendingPage() {
       .finally(() => setLoading(false));
   }, [connected, publicKey, days]);
 
+  // Lazy-fetch forecast (independent of the spending insights query so a
+  // slow forecast doesn't block the existing dashboard).
+  useEffect(() => {
+    if (!connected || !publicKey) return;
+    void fetch(`/api/spend/forecast?pubkey=${publicKey.toBase58()}`)
+      .then((r) => r.json())
+      .then((j: ForecastResponse) => setForecast(j))
+      .catch(() => setForecast(null));
+  }, [connected, publicKey]);
+
+  async function runFraudScan() {
+    if (!connected || !publicKey) return;
+    setFraudLoading(true);
+    try {
+      const r = await fetch("/api/fraud/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pubkey: publicKey.toBase58() }),
+      });
+      const j = await r.json();
+      setFraudFlags(j.flags ?? []);
+    } catch {
+      setFraudFlags([]);
+    } finally {
+      setFraudLoading(false);
+    }
+  }
+
   const maxDailyAmount = insights
     ? Math.max(...insights.daily_series.map((d) => parseFloat(d.amount_usdc)), 0.01)
     : 0;
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
+    <W6AppShell>
+    <div className="mx-auto max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Spending</h1>
-          <p className="mt-2 text-sm text-foreground/60">
+          <h1 className="w6-heading" style={{ fontSize: 32, lineHeight: 1.1, margin: 0 }}>Spending</h1>
+          <p className="w6-muted" style={{ marginTop: 8, fontSize: 14 }}>
             Where your AI agents and you have been spending.
           </p>
         </div>
@@ -69,6 +133,105 @@ export default function SpendingPage() {
         </div>
       ) : (
         <div className="mt-8 space-y-8">
+          {/* F33.3 — Burn-rate forecast + alerts. Renders only when the
+              forecast endpoint returned a summary AND there's something
+              meaningful to show (skip on brand-new wallets). */}
+          {forecast?.ok && forecast.summary && Number(forecast.summary.total30d_lamports) > 0 && (
+            <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+              <h2 className="text-sm font-medium uppercase tracking-wider text-foreground/50">
+                Burn-rate forecast
+              </h2>
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <Stat
+                  label="Avg / day"
+                  value={`$${lamportsToUsdc(forecast.summary.avg_per_day_lamports)}`}
+                />
+                <Stat
+                  label="Last 7 avg"
+                  value={`$${lamportsToUsdc(forecast.summary.avg7d_lamports)}`}
+                />
+                <Stat
+                  label="Next 7 (proj)"
+                  value={`$${lamportsToUsdc(forecast.summary.projected_next7d_lamports)}`}
+                />
+                <Stat
+                  label="Daily cap (sum)"
+                  value={
+                    Number(forecast.summary.total_daily_cap_lamports) > 0
+                      ? `$${lamportsToUsdc(forecast.summary.total_daily_cap_lamports)}`
+                      : "—"
+                  }
+                />
+              </div>
+              {forecast.alerts && forecast.alerts.length > 0 && (
+                <ul className="mt-5 space-y-2 text-xs">
+                  {forecast.alerts.map((a) => (
+                    <li
+                      key={a.rule}
+                      className={
+                        a.severity === "critical"
+                          ? "rounded-xl border border-red-500/30 bg-red-500/[0.05] p-3 text-red-300"
+                          : a.severity === "warn"
+                            ? "rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-3 text-amber-300"
+                            : "rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3 text-foreground/70"
+                      }
+                    >
+                      <span className="font-mono text-[10px] uppercase tracking-wide opacity-70">
+                        {a.rule}
+                      </span>
+                      <span className="ml-2">{a.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {/* F29.4 — Run-on-demand fraud scan. */}
+          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-sm font-medium uppercase tracking-wider text-foreground/50">
+                Anomaly scan
+              </h2>
+              <button
+                type="button"
+                onClick={() => void runFraudScan()}
+                disabled={fraudLoading}
+                className="rounded-full bg-foreground/10 px-4 py-1 text-xs font-medium hover:bg-foreground/20 disabled:opacity-50"
+              >
+                {fraudLoading ? "scanning…" : "Run scan"}
+              </button>
+            </div>
+            {fraudFlags.length === 0 && !fraudLoading && (
+              <p className="mt-3 text-xs text-foreground/50">
+                Click "Run scan" to check the last 30 days for spend spikes,
+                novel merchants, deny clusters, and off-hours bursts.
+              </p>
+            )}
+            {fraudFlags.length > 0 && (
+              <ul className="mt-4 space-y-2 text-xs">
+                {fraudFlags.map((f, i) => (
+                  <li
+                    key={`${f.rule}-${i}`}
+                    className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3"
+                  >
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-mono text-[10px] uppercase tracking-wide text-amber-300">
+                        {f.rule}
+                      </span>
+                      <span className="text-foreground/55">
+                        score {(f.score * 100).toFixed(0)}/100
+                      </span>
+                    </div>
+                    <pre className="mt-2 overflow-x-auto text-[10px] text-foreground/55">
+                      {JSON.stringify(f.context, null, 2)}
+                    </pre>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           {/* Total */}
           <div className="rounded-2xl border border-foreground/10 bg-card-gradient p-8 card-surface">
             <div className="text-xs font-medium uppercase tracking-wider text-foreground/50">
@@ -154,10 +317,22 @@ export default function SpendingPage() {
         </div>
       )}
 
-      <p className="mt-12 text-xs text-foreground/40">
+      <p className="w6-muted" style={{ marginTop: 48, fontSize: 12 }}>
         Categorization heuristic-based on merchant name in V1. V2 wires LLM categorization
         over receipt purpose text.
       </p>
-    </main>
+    </div>
+    </W6AppShell>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wide text-foreground/45">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-semibold tracking-tight">{value}</p>
+    </div>
   );
 }

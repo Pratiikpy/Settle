@@ -1,0 +1,117 @@
+{
+  "host": "http://localhost:3000",
+  "card": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+  "pact": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+  "merchant": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+  "schedule_id": "787aea8c-98e9-4245-9afb-5f35cef94a66",
+  "execution": {
+    "execution_id": "2f46111b-a617-4f21-ac96-173372f18b44",
+    "intent_kind": "scheduled_send",
+    "intent_id": "787aea8c-98e9-4245-9afb-5f35cef94a66",
+    "mode": "live",
+    "status": "failed",
+    "signature": null,
+    "plan_json": {
+      "why": "scheduled DAILY",
+      "ix_kind": "spend_via_pact",
+      "intent_id": "787aea8c-98e9-4245-9afb-5f35cef94a66",
+      "pact_ready": true,
+      "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+      "intent_kind": "scheduled_send",
+      "pact_pubkey": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+      "kernel_hashes": null,
+      "source_pubkey": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+      "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+      "amount_lamports": 100000,
+      "card_delegation_validated": false
+    },
+    "error_message": "source card 6vFisJyJ… not found or revoked",
+    "created_at": "2026-05-01T19:19:55.26945+00:00",
+    "confirmed_at": null,
+    "fire_window_ms": 493795
+  },
+  "log": [
+    {
+      "step": "pre_state",
+      "ok": true,
+      "detail": "vault=0.5 USDC, merchant=1 USDC"
+    },
+    {
+      "step": "signer_probe",
+      "ok": true,
+      "detail": "mode=live relayer=C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY"
+    },
+    {
+      "step": "insert_schedule",
+      "ok": true,
+      "detail": "schedule_id=787aea8c-98e9-4245-9afb-5f35cef94a66 amount=100000 next_fire_at=2026-05-01T19:18:51.430Z"
+    },
+    {
+      "step": "tick",
+      "ok": true,
+      "detail": "schedules_due=1 refills_due=0",
+      "data": {
+        "ok": true,
+        "at": "2026-05-01T19:19:51.680Z",
+        "schedules_due": 1,
+        "refills_due": 0,
+        "gifts_expired": 0,
+        "gifts_to_send": 0,
+        "errors": []
+      }
+    },
+    {
+      "step": "signer",
+      "ok": true,
+      "detail": "mode=live picked=1 executions_logged=1 errors=0",
+      "data": {
+        "ok": true,
+        "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+        "relayer_warning": null,
+        "mode": "live",
+        "scheduled_picked": 1,
+        "refills_picked": 0,
+        "gift_claims_picked": 0,
+        "gift_refunds_picked": 0,
+        "executions_logged": 1,
+        "errors": []
+      }
+    },
+    {
+      "step": "poll_executions",
+      "ok": true,
+      "detail": "result=undefined mode=live tx_sig=(none) ",
+      "data": {
+        "execution_id": "2f46111b-a617-4f21-ac96-173372f18b44",
+        "intent_kind": "scheduled_send",
+        "intent_id": "787aea8c-98e9-4245-9afb-5f35cef94a66",
+        "mode": "live",
+        "status": "failed",
+        "signature": null,
+        "plan_json": {
+          "why": "scheduled DAILY",
+          "ix_kind": "spend_via_pact",
+          "intent_id": "787aea8c-98e9-4245-9afb-5f35cef94a66",
+          "pact_ready": true,
+          "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+          "intent_kind": "scheduled_send",
+          "pact_pubkey": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+          "kernel_hashes": null,
+          "source_pubkey": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+          "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+          "amount_lamports": 100000,
+          "card_delegation_validated": false
+        },
+        "error_message": "source card 6vFisJyJ… not found or revoked",
+        "created_at": "2026-05-01T19:19:55.26945+00:00",
+        "confirmed_at": null,
+        "fire_window_ms": 493795
+      }
+    },
+    {
+      "step": "onchain_delta",
+      "ok": false,
+      "detail": "vault: 0.5 → 0.5 (Δ 0); merchant: 1 → 1 (Δ 0)"
+    }
+  ]
+}

@@ -65,7 +65,9 @@ const MANIFEST = {
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Content-Encoding, Accept-Encoding, Authorization",
+  "X-Action-Version": "2.4",
+  "X-Blockchain-Ids": "solana:devnet",
 };
 
 export function GET() {

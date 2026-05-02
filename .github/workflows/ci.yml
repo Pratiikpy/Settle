@@ -1,5 +1,10 @@
 name: CI
 
+# CI policy: every push to main or the active dev branch (and every PR into main)
+# must run all four jobs to green. The anchor-test job exercises every program
+# instruction once on a real solana-test-validator — without it, the indexer
+# event handlers and the @settle/sdk verifier could silently fall out of sync
+# with the on-chain program. (See docs/TESTING.md for the test coverage map.)
 on:
   push:
     branches: [main, codemachine/dev]
@@ -8,7 +13,7 @@ on:
 
 jobs:
   ts:
-    name: typescript (lint + typecheck + build)
+    name: typescript (typecheck + lint + indexer-handler audit)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +25,8 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # turbo-orchestrated typecheck across every workspace package: web, indexer,
+      # sdk, ui, and (post-Bucket A) the anchor-tests package itself.
       - run: pnpm typecheck
       - run: pnpm lint
       # Codama-equivalent IDL drift detector: compares the committed Anchor-generated
@@ -27,15 +34,36 @@ jobs:
       # if Rust struct edits aren't reflected in TS, or vice-versa.
       - name: Verify IDL hasn't drifted (Codama-equivalent)
         run: pnpm verify:idl
+      # Indexer event-handler regression check — every byte parse in apps/indexer/
+      # src/index.ts must match the IDL event struct. Catches the silent-failure
+      # class that hid the original handleCardCreated bug.
+      - name: Indexer event-handler audit
+        run: pnpm audit:indexer
 
-  anchor:
-    name: anchor build
+  sdk-tests:
+    name: sdk unit tests (vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Solana
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run @settle/sdk unit tests
+        run: pnpm --filter @settle/sdk test
+
+  anchor-build:
+    name: anchor build + IDL guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Solana CLI
         run: |
-          sh -c "$(curl -sSfL https://release.solana.com/v2.0.21/install)"
+          sh -c "$(curl -sSfL https://release.anza.xyz/v2.2.16/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
       - name: Install Anchor (avm)
         run: |
@@ -55,8 +83,68 @@ jobs:
             git --no-pager diff programs/settle-agent-card/target/idl/settle_agent_card.json | head -100
             exit 1
           fi
-      - name: Upload IDL
+      # F9.1 verifiable build — record the freshly-built .so hash so verifiers
+      # can compare against the on-chain ProgramData hash. The committed
+      # build-info.json must match what CI just produced; if it doesn't, the
+      # dev forgot to run `pnpm build:hash` after their last build.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Compute fresh build hash
+        run: pnpm build:hash
+      - name: Verify committed build-info.json matches fresh build
+        run: |
+          if ! git diff --quiet programs/settle-agent-card/target/deploy/build-info.json; then
+            echo "::error::Committed build-info.json differs from fresh build."
+            echo "::error::Run 'pnpm build:hash' locally after 'cargo build-sbf' and commit the result."
+            git --no-pager diff programs/settle-agent-card/target/deploy/build-info.json | head -50
+            exit 1
+          fi
+      - name: Upload built artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: idl
-          path: programs/settle-agent-card/target/idl/settle_agent_card.json
+          name: anchor-build-artifacts
+          path: |
+            programs/settle-agent-card/target/idl/settle_agent_card.json
+            programs/settle-agent-card/target/deploy/settle_agent_card.so
+          if-no-files-found: error
+
+  anchor-test:
+    name: anchor mocha tests (24 tests, all 14 ix)
+    runs-on: ubuntu-latest
+    needs: anchor-build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v2.2.16/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Install Anchor (avm)
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install 0.31.1
+          avm use 0.31.1
+      - name: Download built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: anchor-build-artifacts
+          path: programs/settle-agent-card/target
+      - run: pnpm install --frozen-lockfile
+      # `anchor test` spins up solana-test-validator, deploys the program, and runs
+      # all 24 mocha tests. Linux runners have SeCreateSymbolicLinkPrivilege
+      # equivalent (no special config needed); on Windows local dev, see TESTING.md.
+      - name: Run anchor test (24 tests)
+        working-directory: programs/settle-agent-card
+        run: anchor test --skip-build

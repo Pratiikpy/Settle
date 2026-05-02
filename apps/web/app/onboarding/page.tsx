@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletButton } from "../../components/wallet-button-client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { SettleCard, TrustGesture } from "@settle/ui";
+import { W6AppShell } from "../../components/w6-app-shell";
 import { fireSettlementConfetti, trustGesture } from "../../lib/confetti";
 import { getSolscanUrl } from "../../lib/solana";
 
@@ -33,6 +34,10 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<Step>(1);
   const [funded, setFunded] = useState(false);
   const [funding, setFunding] = useState(false);
+  // F1.4 — when the sandbox airdrop fails (rate-limited / faucet dry),
+  // we show the manual fallback. The error surfaces inline; no toast-and-
+  // forget that leaves the user stranded.
+  const [fundError, setFundError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [createdCard, setCreatedCard] = useState<{
     cardPubkey: string;
@@ -66,7 +71,13 @@ export default function OnboardingPage() {
       toast.success("0.5 SOL + test-USDC airdropped");
       setStep(3);
     } catch (e) {
-      toast.error(`Airdrop failed: ${(e as Error).message}`);
+      // F1.4 — devnet airdrop is rate-limited per IP and can be down for
+      // hours at a time. Surface the manual-faucet path instead of a
+      // generic toast that leaves the user stuck.
+      setFundError((e as Error).message);
+      toast.error(
+        `Airdrop unavailable. We'll show you the manual faucet — same outcome, 60 seconds.`,
+      );
     } finally {
       setFunding(false);
     }
@@ -158,56 +169,94 @@ export default function OnboardingPage() {
   const stepLabels = ["Connect", "Get devnet funds", "Create card", "Done"];
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-12">
-      <div className="mb-10">
-        <h1 className="text-3xl font-semibold tracking-tight">Get started in 60 seconds</h1>
-        <p className="mt-2 text-sm text-foreground/60">
+    <W6AppShell>
+    <div style={{ maxWidth: 560, margin: "0 auto" }}>
+      <div style={{ marginBottom: 28, textAlign: "center" }}>
+        <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+          Welcome
+        </div>
+        <h1
+          className="w6-heading"
+          style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+        >
+          Get started in 60 seconds.
+        </h1>
+        <p
+          className="w6-muted"
+          style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5 }}
+        >
           Four quick steps. Real Solana devnet — no mocks.
         </p>
       </div>
 
-      {/* Progress bar */}
-      <div className="mb-10">
-        <div className="flex items-center justify-between text-xs">
-          {stepLabels.map((label, i) => {
-            const stepNum = (i + 1) as Step;
-            const isActive = stepNum === step;
-            const isDone = stepNum < step;
-            return (
-              <div key={label} className="flex flex-1 items-center">
-                <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-semibold ${
-                    isDone
-                      ? "bg-accent text-background"
-                      : isActive
-                        ? "border-2 border-accent text-accent"
-                        : "border border-foreground/20 text-foreground/40"
-                  }`}
-                >
-                  {isDone ? "✓" : stepNum}
-                </div>
-                <span
-                  className={`ml-2 mr-2 text-xs ${
-                    isActive
-                      ? "font-medium text-foreground"
-                      : isDone
-                        ? "text-accent"
-                        : "text-foreground/40"
-                  }`}
-                >
-                  {label}
-                </span>
-                {i < stepLabels.length - 1 && (
-                  <div
-                    className={`mx-1 h-px flex-1 ${
-                      isDone ? "bg-accent" : "bg-foreground/10"
-                    }`}
-                  />
-                )}
+      {/* Step indicator — matches prototype's circle + line pattern */}
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          marginBottom: 28,
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        {stepLabels.map((label, i) => {
+          const stepNum = (i + 1) as Step;
+          const isActive = stepNum === step;
+          const isDone = stepNum < step;
+          return (
+            <div
+              key={label}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                opacity: stepNum <= step ? 1 : 0.5,
+              }}
+            >
+              <div
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: "50%",
+                  background: isDone ? "var(--w6-ink)" : "#fff",
+                  color: isDone ? "#fff" : "var(--w6-ink)",
+                  border: isActive
+                    ? "1.5px solid var(--w6-ink)"
+                    : "1px solid var(--w6-rule)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                {isDone ? "✓" : stepNum}
               </div>
-            );
-          })}
-        </div>
+              <span
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive
+                    ? "var(--w6-ink)"
+                    : isDone
+                      ? "var(--w6-ink-2)"
+                      : "var(--w6-ink-4)",
+                }}
+              >
+                {label}
+              </span>
+              {i < stepLabels.length - 1 && (
+                <div
+                  style={{
+                    width: 22,
+                    height: 1,
+                    background: isDone ? "var(--w6-ink)" : "var(--w6-rule)",
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <AnimatePresence mode="wait">
@@ -226,7 +275,7 @@ export default function OnboardingPage() {
               your private keys.
             </p>
             <div className="mt-6">
-              <WalletMultiButton />
+              <WalletButton />
             </div>
           </motion.section>
         )}
@@ -255,6 +304,63 @@ export default function OnboardingPage() {
             <p className="mt-3 text-xs text-foreground/40">
               Devnet only · One airdrop per wallet per 24h
             </p>
+
+            {/* F1.4 — manual fallback when the sandbox airdrop fails. The
+                Solana faucet is rate-limited per IP; the Circle faucet is
+                gated by reCAPTCHA. Either way the user can finish in <60s
+                with a copy-paste of their address. */}
+            {fundError && publicKey && (
+              <div className="mt-6 rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-4 text-left">
+                <p className="text-sm font-medium text-amber-300">
+                  Airdrop is offline right now.
+                </p>
+                <p className="mt-1 text-xs text-amber-200/70">
+                  Devnet faucets are rate-limited per IP. Use either of these
+                  manual paths and you&apos;ll be ready in under a minute.
+                </p>
+                <div className="mt-3 grid gap-2 text-[11px]">
+                  <div className="flex items-baseline justify-between gap-3 rounded-lg bg-foreground/[0.04] p-2 font-mono">
+                    <span className="break-all">{publicKey.toBase58()}</span>
+                    <button
+                      onClick={() => {
+                        void navigator.clipboard
+                          .writeText(publicKey.toBase58())
+                          .then(() => toast.success("Address copied"));
+                      }}
+                      className="shrink-0 rounded-full border border-foreground/20 px-2 py-0.5 text-[10px] hover:bg-foreground/10"
+                    >
+                      copy
+                    </button>
+                  </div>
+                  <a
+                    href="https://faucet.solana.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-9 items-center justify-center rounded-full border border-foreground/20 px-4 text-xs hover:bg-foreground/5"
+                  >
+                    Step 1 — get devnet SOL on faucet.solana.com →
+                  </a>
+                  <a
+                    href="https://faucet.circle.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-9 items-center justify-center rounded-full border border-foreground/20 px-4 text-xs hover:bg-foreground/5"
+                  >
+                    Step 2 — get devnet USDC on faucet.circle.com →
+                  </a>
+                </div>
+                <button
+                  onClick={() => {
+                    setFundError(null);
+                    setFunded(true);
+                    setStep(3);
+                  }}
+                  className="mt-3 w-full rounded-full border border-amber-400/30 py-2 text-xs text-amber-300 hover:bg-amber-400/10"
+                >
+                  I&apos;ve funded my wallet manually — continue
+                </button>
+              </div>
+            )}
           </motion.section>
         )}
 
@@ -373,6 +479,7 @@ export default function OnboardingPage() {
       </AnimatePresence>
 
       <TrustGesture state={gesture} />
-    </main>
+    </div>
+    </W6AppShell>
   );
 }

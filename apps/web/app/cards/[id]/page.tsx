@@ -6,7 +6,14 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { CnftReceipt, PactCard, ReceiptCard, TrustGesture } from "@settle/ui";
+import {
+  CnftReceipt,
+  PactCard,
+  ReceiptCard,
+  SlideToConfirm,
+  TrustGesture,
+} from "@settle/ui";
+import { W6AppShell } from "../../../components/w6-app-shell";
 import { fireSettlementConfetti, fireReceiptBurst, trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
 import { lamportsToUsdc } from "../../../lib/format";
@@ -53,6 +60,147 @@ export default function CardDetailPage() {
   const [filterDecision, setFilterDecision] = useState<"all" | "ALLOW" | "DENY" | "REVIEW">("all");
   const [filterMerchant, setFilterMerchant] = useState("");
   const [filterDays, setFilterDays] = useState<"all" | "1" | "7" | "30">("all");
+
+  // C57 — pacts under this card.
+  interface CardPact {
+    pact_pubkey: string;
+    scope_label: string;
+    mode: "oneshot" | "streaming";
+    cap_lamports: string | null;
+    spent: string | null;
+    paused: boolean;
+    closed: boolean;
+    expiry_slot: string;
+    created_at: string;
+  }
+  const [pacts, setPacts] = useState<CardPact[]>([]);
+  const [closingPact, setClosingPact] = useState<string | null>(null);
+  const [bulkClosing, setBulkClosing] = useState(false);
+
+  useEffect(() => {
+    if (!params.id) return;
+    void fetch(`/api/cards/${params.id}/pacts`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { pacts?: CardPact[] } | null) => {
+        if (j?.pacts) setPacts(j.pacts);
+      });
+  }, [params.id]);
+
+  async function closePact(pactPubkey: string) {
+    if (!connected || !publicKey || !signTransaction) {
+      return toast.error("Connect wallet to close pact.");
+    }
+    setClosingPact(pactPubkey);
+    try {
+      // Reuse the existing /revoke endpoint — kind='pact' closes the
+      // specific pact (close_pact ix) and refunds vault USDC to authority.
+      // The endpoint resolves the pact from the URL param when kind='pact',
+      // so we hit the per-pact route instead.
+      const buildRes = await fetch(`/api/cards/${pactPubkey}/revoke`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ authority: publicKey.toBase58(), kind: "pact" }),
+      });
+      if (!buildRes.ok) {
+        const err = await buildRes.json();
+        throw new Error(err.error ?? "build_failed");
+      }
+      const { transaction } = (await buildRes.json()) as { transaction: string };
+      const tx = Transaction.from(Buffer.from(transaction, "base64"));
+      const signed = await signTransaction(tx);
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        preflightCommitment: "confirmed",
+      });
+      await connection.confirmTransaction(
+        {
+          signature: sig,
+          blockhash: tx.recentBlockhash!,
+          lastValidBlockHeight: tx.lastValidBlockHeight!,
+        },
+        "confirmed",
+      );
+      // Optimistic flip.
+      setPacts(
+        pacts.map((p) =>
+          p.pact_pubkey === pactPubkey ? { ...p, closed: true } : p,
+        ),
+      );
+      toast.success(`Pact closed. Vault refunded.`, {
+        action: { label: "Solscan ↗", onClick: () => window.open(getSolscanUrl(sig), "_blank") },
+      });
+    } catch (e) {
+      toast.error(`Close failed: ${(e as Error).message}`);
+    } finally {
+      setClosingPact(null);
+    }
+  }
+
+  /**
+   * C58 — close every open pact under this card in one signed tx.
+   * Solana tx size limits us to ~6 pacts per call; we batch in chunks
+   * client-side and surface a "still N to close" toast between batches
+   * so the user knows there's more wallet signing coming.
+   */
+  async function bulkClosePacts() {
+    if (!connected || !publicKey || !signTransaction) {
+      return toast.error("Connect wallet to close pacts.");
+    }
+    const open = pacts.filter((p) => !p.closed).map((p) => p.pact_pubkey);
+    if (open.length === 0) return;
+    setBulkClosing(true);
+    const BATCH = 6;
+    let closedCount = 0;
+    try {
+      for (let i = 0; i < open.length; i += BATCH) {
+        const batch = open.slice(i, i + BATCH);
+        const buildRes = await fetch(`/api/cards/${params.id}/bulk-close`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            authority: publicKey.toBase58(),
+            pact_pubkeys: batch,
+          }),
+        });
+        if (!buildRes.ok) {
+          const err = await buildRes.json();
+          throw new Error(err.error ?? `build_failed_${buildRes.status}`);
+        }
+        const { transaction } = (await buildRes.json()) as { transaction: string };
+        const tx = Transaction.from(Buffer.from(transaction, "base64"));
+        const signed = await signTransaction(tx);
+        const sig = await connection.sendRawTransaction(signed.serialize(), {
+          preflightCommitment: "confirmed",
+        });
+        await connection.confirmTransaction(
+          {
+            signature: sig,
+            blockhash: tx.recentBlockhash!,
+            lastValidBlockHeight: tx.lastValidBlockHeight!,
+          },
+          "confirmed",
+        );
+        // Optimistic flip.
+        setPacts((prev) =>
+          prev.map((p) =>
+            batch.includes(p.pact_pubkey) ? { ...p, closed: true } : p,
+          ),
+        );
+        closedCount += batch.length;
+        if (i + BATCH < open.length) {
+          toast.message(
+            `${closedCount} closed · ${open.length - closedCount} more to sign.`,
+          );
+        }
+      }
+      toast.success(`Closed ${closedCount} pacts. Vault USDC refunded.`);
+    } catch (e) {
+      toast.error(
+        `Bulk close failed after ${closedCount} closures: ${(e as Error).message}`,
+      );
+    } finally {
+      setBulkClosing(false);
+    }
+  }
 
   useEffect(() => {
     if (!params.id) return;
@@ -248,17 +396,40 @@ export default function CardDetailPage() {
   });
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
-      <div className="mb-6 text-xs text-foreground/40">
-        Card · <span className="font-mono">{params.id.slice(0, 8)}…{params.id.slice(-6)}</span>
+    <W6AppShell>
+    <div style={{ maxWidth: 760 }}>
+      <div style={{ marginBottom: 24 }}>
+        <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+          {revoked ? "Card · revoked" : "Card · active"}
+        </div>
+        <h1
+          className="w6-heading"
+          style={{ fontSize: 28, margin: "8px 0 0", lineHeight: 1.05 }}
+        >
+          <code className="w6-mono" style={{ fontSize: 22 }}>
+            {params.id.slice(0, 8)}…{params.id.slice(-6)}
+          </code>
+        </h1>
+        <p
+          className="w6-muted"
+          style={{
+            marginTop: 8,
+            fontSize: 13,
+            lineHeight: 1.5,
+          }}
+        >
+          AgentCard detail. Below: progress + allowlist · pacts opened
+          under this card · recent decisions feed.
+        </p>
         {revokeSig && (
           <a
-            className="ml-3 text-accent hover:underline"
             href={getSolscanUrl(revokeSig)}
             target="_blank"
             rel="noreferrer"
+            className="w6-btn w6-btn-secondary w6-btn-sm"
+            style={{ marginTop: 12 }}
           >
-            Solscan ↗
+            Revoke tx · Solscan ↗
           </a>
         )}
       </div>
@@ -279,6 +450,171 @@ export default function CardDetailPage() {
         revoked={revoked}
         {...(!revoked ? { onRevoke: () => void handleRevoke("pact") } : {})}
       />
+
+      {/* F3.8 Killchain — entire-card revoke gated by slide-to-confirm.
+          Distinct from the pact-level revoke (which closes one task scope);
+          this nukes the whole card and the agent loses every active pact
+          underneath. The slide gesture prevents accidental kills. */}
+      {!revoked && (
+        <section
+          className="w6-card"
+          style={{
+            padding: 20,
+            marginTop: 24,
+            borderColor: "var(--w6-bad)",
+            background: "rgba(179, 38, 30, 0.04)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <h3
+              className="w6-heading"
+              style={{
+                fontSize: 14,
+                margin: 0,
+                color: "var(--w6-bad)",
+              }}
+            >
+              Kill the card
+            </h3>
+            <span
+              className="w6-muted"
+              style={{ fontSize: 11 }}
+            >
+              irreversible
+            </span>
+          </div>
+          <p
+            className="w6-muted"
+            style={{ marginTop: 6, fontSize: 12, lineHeight: 1.55 }}
+          >
+            Slide to revoke. The card stops accepting spends instantly,
+            every pact under it freezes, and any unspent vault USDC stays
+            claimable via close_pact.
+          </p>
+          <div style={{ marginTop: 16 }}>
+            <SlideToConfirm
+              label="Slide to revoke card →"
+              onConfirm={() => void handleRevoke("card")}
+              disabled={revoked}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* C57 + C58 — Pacts under this card. */}
+      {pacts.length > 0 && (
+        <section className="mt-12">
+          <div className="mb-3 flex items-end justify-between gap-4">
+            <h2 className="text-lg font-medium">Pacts</h2>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-foreground/40">
+                {pacts.filter((p) => !p.closed).length} open · {pacts.length} total
+              </span>
+              {/* C58 — bulk close. Only show when ≥2 open pacts so the
+                  single-pact case keeps using the per-row button. */}
+              {pacts.filter((p) => !p.closed).length >= 2 && (
+                <button
+                  onClick={() => bulkClosePacts()}
+                  disabled={bulkClosing}
+                  className="w6-btn w6-btn-secondary w6-btn-sm"
+                  style={{
+                    borderColor: "var(--w6-bad)",
+                    color: "var(--w6-bad)",
+                  }}
+                >
+                  {bulkClosing
+                    ? "Closing all…"
+                    : `Close all ${pacts.filter((p) => !p.closed).length} open`}
+                </button>
+              )}
+            </div>
+          </div>
+          <ul className="grid gap-2">
+            {pacts.map((p) => {
+              const cap = p.cap_lamports ? Number(p.cap_lamports) / 1e6 : null;
+              const spent = p.spent ? Number(p.spent) / 1e6 : null;
+              const fillPct =
+                cap && cap > 0 && spent !== null
+                  ? Math.min(100, (spent / cap) * 100)
+                  : 0;
+              return (
+                <li
+                  key={p.pact_pubkey}
+                  className={`rounded-2xl border p-4 text-xs ${
+                    p.closed
+                      ? "border-foreground/10 bg-foreground/[0.02] opacity-60"
+                      : "border-foreground/15 bg-white/[0.02]"
+                  }`}
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <div>
+                      <div className="font-medium">
+                        {p.scope_label}{" "}
+                        <span className="text-foreground/40">· {p.mode}</span>
+                      </div>
+                      <code className="mt-1 block break-all text-[10px] text-foreground/50">
+                        {p.pact_pubkey}
+                      </code>
+                    </div>
+                    {p.closed ? (
+                      <span className="rounded-full border border-foreground/20 bg-foreground/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-foreground/60">
+                        closed
+                      </span>
+                    ) : p.paused ? (
+                      <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-300">
+                        paused
+                      </span>
+                    ) : (
+                      <span className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-300">
+                        open
+                      </span>
+                    )}
+                  </div>
+
+                  {cap !== null && (
+                    <>
+                      <div className="mt-3 flex items-baseline justify-between text-foreground/70">
+                        <span>
+                          ${spent?.toFixed(2) ?? "0.00"} / ${cap.toFixed(2)}{" "}
+                          USDC
+                        </span>
+                        <span className="text-foreground/40">
+                          {fillPct.toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="mt-1 h-1 overflow-hidden rounded-full bg-foreground/10">
+                        <div
+                          className="h-full bg-accent"
+                          style={{ width: `${fillPct}%` }}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {!p.closed && (
+                    <button
+                      onClick={() => closePact(p.pact_pubkey)}
+                      disabled={closingPact === p.pact_pubkey}
+                      className="mt-3 rounded-full border border-red-400/40 bg-red-400/[0.04] px-3 py-1 text-[11px] text-red-200 hover:bg-red-400/10 disabled:opacity-50"
+                    >
+                      {closingPact === p.pact_pubkey
+                        ? "Closing…"
+                        : "Close · refund vault"}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <div className="mt-12 flex items-end justify-between gap-4">
         <h2 className="text-lg font-medium">Receipts</h2>
@@ -409,6 +745,7 @@ export default function CardDetailPage() {
       />
 
       {verifyingIdx !== null && <TrustGesture state="confirming" message="verifyReceipt()…" />}
-    </main>
+    </div>
+    </W6AppShell>
   );
 }

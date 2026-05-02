@@ -3,6 +3,7 @@
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
+import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-unsafe-burner";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -11,13 +12,24 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL ?? "https://api.devnet.solana.com";
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
+// E2E test mode: include the unsafe burner adapter so Playwright can drive
+// the React layer end-to-end without a real wallet popup. Gate behind an
+// explicit env flag to ensure burner is NEVER active in production.
+const E2E_BURNER_ENABLED =
+  process.env.NEXT_PUBLIC_E2E_BURNER === "1" ||
+  process.env.NEXT_PUBLIC_E2E_BURNER === "true";
 
 /**
  * Phantom is PRIMARY (per FINAL_LOCKS).
  * Privy is the email/passkey ALT for users who don't have Phantom installed.
+ * Burner is E2E-only — gated by NEXT_PUBLIC_E2E_BURNER.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
+  const wallets = useMemo(() => {
+    const list: any[] = [new PhantomWalletAdapter()];
+    if (E2E_BURNER_ENABLED) list.push(new UnsafeBurnerWalletAdapter());
+    return list;
+  }, []);
   const [qc] = useState(() => new QueryClient());
 
   const inner = (

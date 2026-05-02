@@ -1,0 +1,127 @@
+{
+  "host": "http://localhost:3000",
+  "card": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+  "pact": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+  "merchant": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+  "schedule_id": "17aa6a4e-1f19-4a6a-ba54-94c31ca11948",
+  "execution": {
+    "execution_id": "6f4d3d19-1f94-4ddf-8891-fc46ccc2d9cb",
+    "intent_kind": "scheduled_send",
+    "intent_id": "17aa6a4e-1f19-4a6a-ba54-94c31ca11948",
+    "mode": "live",
+    "status": "failed",
+    "signature": null,
+    "plan_json": {
+      "why": "scheduled DAILY",
+      "ix_kind": "spend_via_pact",
+      "intent_id": "17aa6a4e-1f19-4a6a-ba54-94c31ca11948",
+      "pact_ready": true,
+      "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+      "intent_kind": "scheduled_send",
+      "pact_pubkey": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+      "kernel_hashes": null,
+      "source_pubkey": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+      "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+      "amount_lamports": 100000,
+      "card_delegation_validated": true
+    },
+    "error_message": "live spend_via_pact failed: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"number\",\n    \"path\": [\n      \"amount_lamports\"\n    ],\n    \"message\": \"Expected string, received number\"\n  }\n]",
+    "created_at": "2026-05-01T19:21:58.108697+00:00",
+    "confirmed_at": null,
+    "fire_window_ms": 493795
+  },
+  "log": [
+    {
+      "step": "pre_state",
+      "ok": true,
+      "detail": "vault=0.5 USDC, merchant=1 USDC"
+    },
+    {
+      "step": "mirror_card",
+      "ok": true,
+      "detail": "card mirrored to agent_cards"
+    },
+    {
+      "step": "mirror_allowlist",
+      "ok": true,
+      "detail": "allowlist row inserted"
+    },
+    {
+      "step": "signer_probe",
+      "ok": true,
+      "detail": "mode=live relayer=C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY"
+    },
+    {
+      "step": "insert_schedule",
+      "ok": true,
+      "detail": "schedule_id=17aa6a4e-1f19-4a6a-ba54-94c31ca11948 amount=100000 next_fire_at=2026-05-01T19:20:53.755Z"
+    },
+    {
+      "step": "tick",
+      "ok": true,
+      "detail": "schedules_due=1 refills_due=0",
+      "data": {
+        "ok": true,
+        "at": "2026-05-01T19:21:53.915Z",
+        "schedules_due": 1,
+        "refills_due": 0,
+        "gifts_expired": 0,
+        "gifts_to_send": 0,
+        "errors": []
+      }
+    },
+    {
+      "step": "signer",
+      "ok": true,
+      "detail": "mode=live picked=1 executions_logged=1 errors=0",
+      "data": {
+        "ok": true,
+        "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+        "relayer_warning": null,
+        "mode": "live",
+        "scheduled_picked": 1,
+        "refills_picked": 0,
+        "gift_claims_picked": 0,
+        "gift_refunds_picked": 0,
+        "executions_logged": 1,
+        "errors": []
+      }
+    },
+    {
+      "step": "poll_executions",
+      "ok": true,
+      "detail": "result=undefined mode=live tx_sig=(none) ",
+      "data": {
+        "execution_id": "6f4d3d19-1f94-4ddf-8891-fc46ccc2d9cb",
+        "intent_kind": "scheduled_send",
+        "intent_id": "17aa6a4e-1f19-4a6a-ba54-94c31ca11948",
+        "mode": "live",
+        "status": "failed",
+        "signature": null,
+        "plan_json": {
+          "why": "scheduled DAILY",
+          "ix_kind": "spend_via_pact",
+          "intent_id": "17aa6a4e-1f19-4a6a-ba54-94c31ca11948",
+          "pact_ready": true,
+          "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+          "intent_kind": "scheduled_send",
+          "pact_pubkey": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+          "kernel_hashes": null,
+          "source_pubkey": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+          "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+          "amount_lamports": 100000,
+          "card_delegation_validated": true
+        },
+        "error_message": "live spend_via_pact failed: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"number\",\n    \"path\": [\n      \"amount_lamports\"\n    ],\n    \"message\": \"Expected string, received number\"\n  }\n]",
+        "created_at": "2026-05-01T19:21:58.108697+00:00",
+        "confirmed_at": null,
+        "fire_window_ms": 493795
+      }
+    },
+    {
+      "step": "onchain_delta",
+      "ok": false,
+      "detail": "vault: 0.5 → 0.5 (Δ 0); merchant: 1 → 1 (Δ 0)"
+    }
+  ]
+}

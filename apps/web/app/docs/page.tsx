@@ -1,311 +1,637 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Footer } from "../../components/footer";
+import { W6AppShell } from "../../components/w6-app-shell";
 
 export const metadata: Metadata = {
   title: "Docs — Settle",
-  description: "How to integrate Settle: SDK, webhooks, agent credentials, hash-committed receipts.",
+  description:
+    "Settle protocol developer reference: SDK install (TS/Python/Rust), kernel commit, Anchor ix data, webhooks, Phase 5 automation, embed components.",
 };
 
+/**
+ * /docs — comprehensive developer reference.
+ *
+ * Single-page survey of every public surface the protocol exposes.
+ * Designed to fit one workday of reading: a developer hitting this
+ * page can install the SDK, hash a receipt, compose an Anchor ix, and
+ * receive a webhook within an afternoon.
+ *
+ * Sections are top-down by abstraction level — install + verify first
+ * (highest leverage for a first integration), Anchor ix data + Phase 5
+ * automation deeper down (deeper integration territory).
+ *
+ * Markdown-style headings + tables. No JS interactions — pure server
+ * render so search engines + AI scrapers can ingest cleanly.
+ */
 export default function DocsPage() {
-  return (
-    <>
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-3xl font-semibold tracking-tight">Docs</h1>
-        <p className="mt-2 text-sm text-foreground/60">
-          Settle is open-source. The SDK is MIT-licensed. Use the bits you need.
-        </p>
+  const navLinks: Array<{ href: string; label: string }> = [
+    { href: "#install", label: "Quickstart" },
+    { href: "#kernel", label: "Kernel commit" },
+    { href: "#anchor", label: "Anchor ix" },
+    { href: "#webhooks", label: "Webhooks" },
+    { href: "#phase5", label: "Phase 5 automation" },
+    { href: "#embed", label: "Embed components" },
+    { href: "#graphql", label: "GraphQL" },
+    { href: "#federation", label: "Federation" },
+  ];
 
-        <Section title="Install">
-          <pre className="block rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
-            <code>{`pnpm add @settle/sdk`}</code>
-          </pre>
-          <p>
-            Until npm publish, use the monorepo workspace dependency:{" "}
-            <code>&quot;@settle/sdk&quot;: &quot;workspace:*&quot;</code>.
+  return (
+    <W6AppShell forceSurface="developer">
+      <div style={{ maxWidth: 880 }}>
+        {/* Hero */}
+        <header style={{ marginBottom: 32 }}>
+          <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+            Developers · Settle SDK, MCP, embeddables
+          </div>
+          <h1
+            className="w6-heading"
+            style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+          >
+            Verifiable money on Solana.
+          </h1>
+          <p
+            className="w6-muted"
+            style={{
+              fontSize: 14,
+              marginTop: 8,
+              maxWidth: 720,
+              lineHeight: 1.5,
+            }}
+          >
+            Every payment leaves a 4-hash on-chain commit. Anyone can
+            verify it forever, in any of three languages, against on-chain
+            state with no Settle dependency. This page is the protocol
+            reference.
           </p>
+          <nav
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 6,
+              marginTop: 18,
+            }}
+          >
+            {navLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                style={{
+                  height: 30,
+                  padding: "0 12px",
+                  borderRadius: 999,
+                  border: "1px solid var(--w6-rule)",
+                  background: "#fff",
+                  color: "var(--w6-ink-2)",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  textDecoration: "none",
+                }}
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+        </header>
+
+        {/* Install */}
+        <Section id="install" title="Install">
+          <p className="text-sm text-foreground/70">
+            Three SDKs ship the same canonical hashing + ix-data byte
+            output. Pick the one that fits your stack — or use them
+            interleaved (verify in Python, compose in Rust, build the UI
+            in TypeScript).
+          </p>
+          <div className="mt-4 grid gap-3">
+            <Code lang="TypeScript">{`pnpm add @settle/sdk`}</Code>
+            <Code lang="Python">{`pip install settle-sdk`}</Code>
+            <Code lang="Rust">{`# Cargo.toml
+[dependencies]
+settle-sdk = "0.1"`}</Code>
+          </div>
+          <Callout tone="emerald" title="Cross-language parity locked">
+            Every kernel hash and every Anchor ix data byte is asserted
+            against TS-emitted goldens in both Rust + Python test suites.
+            246 tests across the three languages pin the wire format.
+          </Callout>
         </Section>
 
-        <Section title="Verify a receipt">
-          <pre className="block rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
-            <code>{`import { verifyReceipt } from "@settle/sdk";
+        {/* Kernel commit */}
+        <Section id="kernel" title="Kernel commit (F2.0)">
+          <p className="text-sm text-foreground/70">
+            Every Settle receipt commits to four BLAKE3-256 hashes —
+            structured, sorted-keys-canonical-JSON over the receipt /
+            reason / policy snapshot, plus a binding purpose hash. Any
+            Settle SDK produces byte-identical output.
+          </p>
+          <Code lang="TypeScript">{`import { kernelCommit } from "@settle/sdk";
 
-const result = verifyReceipt({
-  receipt: { request_id, card_pubkey, merchant_pubkey, amount_lamports, capability_hash, purpose_text_hash, decision_slot, policy_version },
-  reason: { decision, deny_code, ... },
-  policy_snapshot: { policy_version, daily_cap, ... },
-  http: { method: "POST", path: "/api/translate" },
-  expected: { receipt_hash, reason_hash, policy_snapshot_hash, purpose_hash },
+const out = kernelCommit({
+  kind: "direct_send",
+  request_id: "11111111-2222-3333-4444-555555555555",
+  amount_lamports: "500000",
+  sender: senderPubkey,
+  recipient: recipientPubkey,
+  decision_slot: currentSlot,
+  purpose_text: "coffee with alice",
 });
 
-if (result.ok) console.log("authentic.");`}</code>
-          </pre>
-          <p>
-            Recomputes the four BLAKE3 hashes and compares them against the on-chain commits.
-            If a single byte of the receipt has been altered, <code>result.ok</code> is false.
+// out.hashes.receipt_hash, .reason_hash, .policy_snapshot_hash, .purpose_hash
+// out.context_hash — indexable identity, BLAKE3 over { kind, sender, recipient, amount, request_id }`}</Code>
+
+          <p className="mt-4 text-sm text-foreground/70">
+            Seven receipt kinds, each with its own canonical schema:
           </p>
+          <div className="mt-3 overflow-hidden rounded-xl border border-foreground/10">
+            <table className="w-full text-xs">
+              <thead className="bg-foreground/[0.04]">
+                <tr className="text-left text-foreground/60">
+                  <th className="px-3 py-2">Kind</th>
+                  <th className="px-3 py-2">Use</th>
+                  <th className="px-3 py-2">Card-bound</th>
+                </tr>
+              </thead>
+              <tbody className="text-foreground/70">
+                <KindRow kind="x402_spend" use="Agent task spend via x402-style HTTP" cardBound />
+                <KindRow kind="direct_send" use="User-signed wallet → wallet transfer" cardBound={false} />
+                <KindRow kind="link_send" use="Pre-funded payment link claim" cardBound={false} />
+                <KindRow kind="streaming_claim" use="Agent draws from streaming Pact" cardBound />
+                <KindRow kind="escrow_release" use="Delivery escrow released to merchant" cardBound />
+                <KindRow kind="escrow_dispute" use="Delivery escrow refunded to buyer" cardBound />
+                <KindRow kind="refund" use="Post-receipt refund of any kind" cardBound={false} />
+              </tbody>
+            </table>
+          </div>
         </Section>
 
-        <Section title="Verify a webhook">
-          <pre className="block rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
-            <code>{`import { verifyWebhookSignature } from "@settle/sdk";
+        {/* Capability hash */}
+        <Section id="capability" title="Capability hash">
+          <p className="text-sm text-foreground/70">
+            32-byte BLAKE3 over <code>(domain, method, path, amount_lamports,
+            version)</code>. Pin this in a card&apos;s allowlist to lock the
+            agent to one specific tool spec at one specific price.
+          </p>
+          <Code lang="Python">{`from settle_sdk import compute_capability_hash_hex
 
-const ok = verifyWebhookSignature({
-  bodyBytes: Buffer.from(rawBody),
-  signatureHex: req.header("X-Settle-Signature"),
-  secret: process.env.SETTLE_WEBHOOK_SECRET,
-});`}</code>
-          </pre>
-          <p>HMAC-SHA256, constant-time comparison, version pinned in the SDK.</p>
+cap = compute_capability_hash_hex({
+    "domain": "translate.example.com",
+    "method": "POST",
+    "path": "/v1/translate",
+    "amount_lamports": "20000",
+    "version": 1,
+})
+# = "a6c909df4e32976e67abd01927fea3796ec0170b8c1e0f1c708139da7964105b"`}</Code>
         </Section>
 
-        <Section title="Endpoints">
-          <p className="text-foreground/55">
-            Selected — full list registered at build time. Most build endpoints return an
-            unsigned base64 tx for the caller&apos;s wallet to sign.
+        {/* Anchor ix data */}
+        <Section id="anchor" title="Anchor instruction data builders">
+          <p className="text-sm text-foreground/70">
+            All 13 program instructions have byte-parity builders in TS,
+            Rust, and Python. Builders return raw <code>bytes</code> that
+            you wrap in your preferred Solana client&apos;s
+            <code>Instruction</code> type (solana-sdk, anchor-client,
+            solders, etc).
           </p>
-          <ul>
-            <li><code>POST /api/x402/proxy/[merchant]</code> — payment-required gateway with on-chain spend (dual-sig + live policy check + Helius Sender)</li>
-            <li><code>POST /api/agents/create-card</code> — build an unsigned <code>create_card</code> ix</li>
-            <li><code>POST /api/agents/spawn</code> — build an unsigned <code>open_pact</code> ix</li>
-            <li><code>POST /api/cards/[id]/revoke</code> — build an unsigned <code>revoke</code> or <code>close_pact</code> ix</li>
-            <li><code>POST /api/streaming-pacts/open</code> — build <code>open_streaming_pact</code></li>
-            <li><code>POST /api/streaming-pacts/[id]/{`{claim,pause,resume}`}</code> — claim / pause / resume a streaming pact</li>
-            <li><code>POST /api/escrows/open</code> — build <code>open_delivery_escrow</code></li>
-            <li><code>POST /api/escrows/[id]/{`{release,dispute}`}</code> — release or dispute an escrow</li>
-            <li><code>POST /api/swap/quote-and-build</code> — Pay-with-any-token (USDC direct or Jupiter swap composed in v0 versioned tx)</li>
-            <li><code>POST /api/send/build</code> — Solana Pay USDC transfer with reference</li>
-            <li><code>POST /api/send/link/build</code> — escrow-based &quot;send to anyone&quot; link</li>
-            <li><code>POST /api/payment-links</code>, <code>POST /api/payment-links/[token]</code> — one-time-use links</li>
-            <li><code>GET /api/sp/[merchant]/[slug]</code> — Solana Pay transaction-request endpoint for self-repricing QR</li>
-            <li><code>POST /api/collabs</code>, <code>POST /api/collabs/[id]/pay</code> — atomic 2-creator split tx</li>
-            <li><code>POST /api/split-bills</code>, <code>POST /api/split-bills/[id]/{`{pay,confirm}`}</code> — server-aggregated N-payer bill</li>
-            <li><code>GET /api/feed</code> — public-feed-flagged receipts (decisions only, no purpose)</li>
-            <li><code>GET /api/handles/[handle]/profile</code> — public profile + earnings block (F18)</li>
-            <li><code>GET /api/handles/[handle]/relationship</code> — wallet-aware "you've sent $X" (F15)</li>
-            <li><code>GET /api/handles/[handle]/badges</code> — soulbound MPL Core badges minted to this user</li>
-            <li><code>POST /api/follows/[handle]</code>, <code>GET /api/follows/[handle]/stats</code> — follow graph (F16)</li>
-            <li><code>GET /api/leaderboard</code>, <code>GET /api/leaderboard/[capabilityHash]</code> — capability leaderboard (F17)</li>
-            <li><code>POST /api/receipts/[requestId]/refund</code> — mode-routed refund (close_pact / dispute_delivery_escrow)</li>
-            <li><code>GET/POST /api/actions/router/[handle]/[type]</code> — Universal Blink router (Solana Actions spec)</li>
-          </ul>
+          <div className="mt-3 overflow-hidden rounded-xl border border-foreground/10">
+            <table className="w-full text-xs">
+              <thead className="bg-foreground/[0.04]">
+                <tr className="text-left text-foreground/60">
+                  <th className="px-3 py-2">Instruction</th>
+                  <th className="px-3 py-2">Signer</th>
+                  <th className="px-3 py-2">Body bytes</th>
+                </tr>
+              </thead>
+              <tbody className="font-mono text-[11px] text-foreground/70">
+                <IxRow name="create_card" signer="authority" body="agent + label_hash + caps + allowlist + expiry + version" />
+                <IxRow name="spend" signer="authority" body="amount + 4 hashes" />
+                <IxRow name="spend_via_pact" signer="agent" body="amount + 4 hashes (same shape as spend)" />
+                <IxRow name="open_pact" signer="authority" body="scope_label + cap + allowlist + expiry" />
+                <IxRow name="close_pact" signer="authority" body="(empty)" />
+                <IxRow name="revoke" signer="authority" body="(empty)" />
+                <IxRow name="open_streaming_pact" signer="authority" body="scope + rate + max_total + allowlist + expiry" />
+                <IxRow name="claim_streaming" signer="agent" body="4 hashes" />
+                <IxRow name="pause_streaming" signer="authority" body="(empty)" />
+                <IxRow name="resume_streaming" signer="authority" body="(empty)" />
+                <IxRow name="open_delivery_escrow" signer="authority" body="scope + amount + merchant + capability + 3 deadlines" />
+                <IxRow name="release_delivery_escrow" signer="buyer or anyone post-deadline" body="(empty)" />
+                <IxRow name="dispute_delivery_escrow" signer="buyer" body="(empty)" />
+              </tbody>
+            </table>
+          </div>
+          <Code lang="Rust">{`use settle_sdk::ix_data::{spend_via_pact, SpendArgs};
+
+let data: Vec<u8> = spend_via_pact(&SpendArgs {
+    amount: 500_000,
+    capability_hash: [0; 32],
+    receipt_hash: kernel_out.hashes.receipt_hash_bytes(),
+    reason_hash: kernel_out.hashes.reason_hash_bytes(),
+    policy_snapshot_hash: kernel_out.hashes.policy_snapshot_hash_bytes(),
+});
+// Wrap in solana_sdk::instruction::Instruction with your AccountMeta list`}</Code>
         </Section>
 
-        <Section title="Anchor program">
-          <p>
-            <strong>Program:</strong> <code>settle-agent-card</code> (Anchor 0.31). Two account
-            types: <code>AgentCard</code> + <code>Pact</code>. The <code>Pact.mode</code> field
-            is a tagged enum with three variants: <code>OneShot</code>,{" "}
-            <code>Streaming</code>, <code>DeliveryEscrow</code>.
+        {/* Webhooks */}
+        <Section id="webhooks" title="Webhooks (Stripe-shaped envelope)">
+          <p className="text-sm text-foreground/70">
+            Settle posts a JSON envelope to your registered webhook URL
+            when a receipt is recorded for your merchant pubkey. HMAC-SHA256
+            signed with your secret. Verify before trusting the body.
           </p>
-          <p>
-            <strong>14 instructions:</strong>
+          <Code lang="JSON">{`{
+  "api_version": "settle.v1",
+  "id": "evt_<request_id>",
+  "event_type": "receipt.allowed",
+  "created": 1735689600,
+  "data": {
+    "object": "receipt",
+    "request_id": "11111111-...",
+    "kind": "x402_spend",
+    "card_pubkey": "...",
+    "merchant_pubkey": "...",
+    "amount_lamports": "20000",
+    "decision": "ALLOW",
+    "hashes": {
+      "receipt_hash": "...",
+      "reason_hash": "...",
+      "policy_snapshot_hash": "..."
+    },
+    "sig_solscan": "<tx-signature>",
+    "created_at": "..."
+  }
+}`}</Code>
+          <p className="mt-3 text-sm text-foreground/70">
+            Event types:
+            {" "}<code>receipt.allowed</code>,{" "}
+            <code>receipt.denied</code>,{" "}
+            <code>receipt.refunded</code>,{" "}
+            <code>receipt.imported</code>,{" "}
+            <code>pact.disputed</code>,{" "}
+            <code>federated.imported</code>.
           </p>
-          <ul>
-            <li>
-              <strong>v0.2 core:</strong> <code>create_card</code>, <code>spend</code>,{" "}
-              <code>spend_via_pact</code>, <code>revoke</code>,{" "}
-              <code>record_denial</code>, <code>open_pact</code>, <code>close_pact</code>
-            </li>
-            <li>
-              <strong>v0.3 streaming pact (P1):</strong>{" "}
-              <code>open_streaming_pact</code>, <code>claim_streaming</code>,{" "}
-              <code>pause_streaming</code>, <code>resume_streaming</code>
-            </li>
-            <li>
-              <strong>v0.3 delivery escrow (P9):</strong>{" "}
-              <code>open_delivery_escrow</code>, <code>release_delivery_escrow</code>{" "}
-              (dual-caller: buyer any time / anyone after deadline),{" "}
-              <code>dispute_delivery_escrow</code>
-            </li>
-          </ul>
-          <p>
-            Program ID is patched into env after <code>pnpm deploy:devnet</code>. Until then,{" "}
-            client-side ix builders fail loudly with{" "}
-            <code>SETTLE_AGENT_CARD_PROGRAM_ID is still the placeholder…</code>.
-          </p>
-          <p>
-            Source of truth: <code>programs/settle-agent-card/programs/settle-agent-card/src/</code>.
-            IDL mirror: <code>packages/sdk/src/idl.ts</code>.
-          </p>
+          <Code lang="TypeScript">{`import { verifyWebhookSignature } from "@settle/sdk";
+
+const sig = req.headers["x-settle-signature"];
+if (!verifyWebhookSignature(req.rawBody, sig, mySharedSecret)) {
+  throw new Error("untrusted webhook");
+}`}</Code>
         </Section>
 
-        <Section title="On-chain events">
-          <p>
-            All decoded by{" "}
-            <code>apps/indexer/src/index.ts</code> via 8-byte sighash discriminators
-            (<code>sha256(&quot;event:&lt;Name&gt;&quot;)[..8]</code>) and mirrored to Postgres.
+        {/* Phase 5 */}
+        <Section id="phase5" title="Phase 5 automation">
+          <p className="text-sm text-foreground/70">
+            Phase 5 is the cron-fired automation loop. Six intent kinds
+            share one on-chain ix (<code>spend_via_pact</code>) under a
+            user-delegated card. The relayer signs; the user&apos;s wallet
+            authorizes the cap + allowlist at card-creation time.
           </p>
-          <ul>
-            <li>
-              <code>PolicyDecisionEvent</code> — every spend / claim / record_denial / revoke; carries the 4-hash receipt commitment chain
-            </li>
-            <li>
-              <code>CardCreatedEvent</code>, <code>CardRevokedEvent</code>
-            </li>
-            <li>
-              <code>PactOpenedEvent</code>, <code>PactClosedEvent</code>, <code>PactSpendEvent</code>
-            </li>
-            <li>
-              <code>StreamingPactOpenedEvent</code>, <code>PactStreamClaimEvent</code>, <code>PactStreamPauseEvent</code>
-            </li>
-            <li>
-              <code>DeliveryEscrowOpenedEvent</code>, <code>DeliveryEscrowReleasedEvent</code>{" "}
-              (carries <code>is_buyer_confirmed</code> flag), <code>DeliveryEscrowDisputedEvent</code>
-            </li>
-          </ul>
+          <div className="mt-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+            <PhaseFeature
+              name="scheduled_send"
+              hook="cadence (DAILY/WEEKLY/MONTHLY)"
+              ui="/wishes"
+            />
+            <PhaseFeature
+              name="auto_refill"
+              hook="balance < threshold (RPC poll)"
+              ui="/spending"
+            />
+            <PhaseFeature
+              name="round_up"
+              hook="post-spend indexer event"
+              ui="/wishes"
+            />
+            <PhaseFeature
+              name="gift_claim"
+              hook="recipient signs claim attestation"
+              ui="/wishes (gifts tab)"
+            />
+            <PhaseFeature
+              name="gift_refund"
+              hook="expires_at elapsed"
+              ui="(automatic)"
+            />
+            <PhaseFeature
+              name="group_spend"
+              hook="N-of-M off-chain quorum"
+              ui="/groups"
+            />
+          </div>
+          <Callout tone="amber" title="Live mode is opt-in">
+            Default is <code>SETTLE_RELAYER_LIVE=false</code> (dry-run).
+            Operators inspect <code>phase5_executions</code> audit rows
+            for a few cron cycles, then flip live. Card delegation +
+            Pact presence are validated upstream — misconfigured rules
+            fail loud at the audit row, never silently.
+          </Callout>
         </Section>
 
-        <Section title="Capability heatmap (live market view)">
-          <p>
-            <Link href="/leaderboard" className="text-accent">
-              /leaderboard
+        {/* Embed */}
+        <Section id="embed" title="Embed: Settle Pay button">
+          <p className="text-sm text-foreground/70">
+            Drop one <code>&lt;script&gt;</code> + one
+            <code>&lt;settle-pay&gt;</code> tag into any HTML page. No
+            framework. Custom element handles wallet popup + receipt
+            creation + confirmation.
+          </p>
+          <Code lang="HTML">{`<script src="https://settle.app/pay.js"></script>
+<settle-pay
+  merchant="<base58-pubkey>"
+  amount="0.50"
+  note="Coffee">
+</settle-pay>
+
+<script>
+document.querySelector("settle-pay")
+  .addEventListener("settle:success", (e) => console.log(e.detail));
+</script>`}</Code>
+          <p className="mt-3 text-sm text-foreground/70">
+            Companion <code>&lt;settle-verify request-id=&quot;&quot;&gt;</code>
+            re-derives the 4-hash kernel commit client-side and shows ✓ if
+            it matches the on-chain anchor. See{" "}
+            <Link href="/pay" className="text-accent hover:underline">
+              /pay
             </Link>{" "}
-            renders a realtime grid of the last 60 s of public_feed ALLOW
-            receipts, grouped by capability hash. Each cell pulses on every
-            new receipt (Framer Motion); cells fade out as their receipts
-            slide out of the rolling window. The tab title shows the live
-            count (<code>(N) Settle</code>) so the page advertises activity
-            even when backgrounded.
-          </p>
-          <p>
-            <strong>Implementation:</strong> client-side Supabase Realtime
-            subscription on <code>receipts</code> filtered to{" "}
-            <code>decision=ALLOW AND public_feed=true</code>. A 60-second
-            sliding window aggregates per-capability counts in-memory; no
-            server-side state. Append <code>?simulate=1</code> to the URL to
-            inject synthetic receipts for the demo path so the heatmap is
-            never empty even on a fresh devnet.
-          </p>
-          <p>
-            Source: <code>apps/web/components/capability-heatmap.tsx</code>{" "}
-            (340 LOC, fully self-contained component).
+            for a live demo.
           </p>
         </Section>
 
-        <Section title="ZK Compressed receipts (Light Protocol)">
-          <p>
-            Every ALLOW receipt earns a secondary mirror: a 1-unit compressed-
-            token transfer of the <code>SETTLE_RECEIPT</code> mint to the
-            buyer&apos;s wallet, written via{" "}
-            <code>@lightprotocol/compressed-token</code> at{" "}
-            <strong>~$0.001/account</strong> (vs ~$0.00204 for a regular Solana
-            account). Indexed by Photon RPC; queryable via{" "}
-            <code>getCompressedTokenAccountsByOwner</code> in any Light Protocol-
-            aware explorer.
+        {/* GraphQL */}
+        <Section id="graphql" title="GraphQL read API">
+          <p className="text-sm text-foreground/70">
+            Read-only GraphQL at <code>POST /api/graphql</code> for
+            shape-flexible queries over receipts, cards, handles, and
+            refund requests. Writes stay REST-only (idempotency-keyed).
           </p>
-          <p>
-            <strong>Architecture:</strong> the user-facing payment route never
-            blocks on Light Protocol RPC. Receipts persist immediately to
-            Postgres + the on-chain 4-hash commit chain. The{" "}
-            <code>compress-cron</code> worker (<code>apps/indexer/src/compress-cron.ts</code>)
-            polls every 30 s for ALLOW receipts where{" "}
-            <code>compressed_sig IS NULL</code>, mints, and updates the row.
-            Decoupling means: the canonical proof never depends on Photon
-            availability, and a worker outage just means receipts stay
-            &ldquo;uncompressed&rdquo; in the UI until the next tick.
+          <Code lang="GraphQL">{`query Receipt($id: ID!) {
+  receipt(request_id: $id) {
+    request_id
+    kind
+    amount_lamports
+    sender_pubkey
+    recipient_pubkey
+    decision
+    created_at
+  }
+}`}</Code>
+          <Code lang="TypeScript">{`import { createGraphqlClient } from "@settle/sdk";
+
+const client = createGraphqlClient("https://settle.app/api/graphql");
+const data = await client<{ receipt: Receipt | null }>(query, { id });`}</Code>
+        </Section>
+
+        {/* Federation */}
+        <Section id="federation" title="Federation contract">
+          <p className="text-sm text-foreground/70">
+            Foreign protocols (x402-style, Solana Pay bridges, etc) can
+            mirror their receipts into Settle&apos;s ledger by signing a
+            payload-hash attestation with their registered Ed25519 key.
+            Trusted origins surface in <code>/ledger</code>; untrusted
+            stay hidden until an operator promotes them.
           </p>
-          <p>
-            <strong>Setup (devnet):</strong>
-          </p>
-          <pre className="block rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
-            <code>{`pnpm zk:keygen          # generates SETTLE_ZK_RECEIPT_AUTHORITY_PRIVKEY
-solana airdrop 1 <pubkey> --url devnet
-pnpm zk:mint-setup      # one-time createMint, prints SETTLE_ZK_RECEIPT_MINT
-pnpm --filter @settle/indexer dev:compress-cron`}</code>
-          </pre>
-          <p>
-            <strong>Why a separate cron, not inline in the proxy:</strong> a
-            mintTo round-trip is 1-3 s including state-tree contention waits.
-            Putting it in the user&apos;s payment hot path would inflate p99
-            latency for the paying party. The cron is the same pattern
-            escrow-cron and badge-cron use — fan-out-async with idempotent
-            poll-by-NULL.
+          <Code lang="JSON">{`POST /api/federation/import
+{
+  "origin_id": "x402.example",
+  "remote_request_id": "<their-id>",
+  "payload": { "from": "...", "to": "...", "amount_lamports": "20000" },
+  "attestation_sig_b58": "<ed25519 sig over payload_hash || origin_id || remote_request_id>"
+}`}</Code>
+          <p className="mt-3 text-sm text-foreground/70">
+            Native Settle receipts (4-hash kernel commit) and federated
+            receipts (foreign-attested) NEVER live in the same table —
+            the kernel commit guarantees only apply to the native ones.
+            <code>/ledger</code> shows the trust gradient explicitly.
           </p>
         </Section>
 
-        <Section title="Reputation badges (soulbound)">
-          <p>
-            Six on-chain achievements minted as MPL Core assets with the{" "}
-            <code>PermanentFreezeDelegate</code> plugin (frozen at create time —
-            non-transferable, non-burnable, true SBT semantics). The badge-cron
-            worker (<code>apps/indexer/src/badge-cron.ts</code>) polls Postgres
-            every 5 minutes; when a user crosses a threshold, an asset is created
-            and a row inserted into <code>reputation_badges</code>. The cron is
-            idempotent via a unique <code>(user_pubkey, badge_kind)</code> constraint.
+        {/* Cross-language parity */}
+        <Section id="parity" title="Cross-language parity guarantees">
+          <p className="text-sm text-foreground/70">
+            Every wire-format byte is asserted against TS-emitted goldens
+            in two more languages. Drift between SDKs is impossible to
+            ship — the test breaks first.
           </p>
-          <ul>
-            <li>
-              <strong>🏁 First Payer</strong> — first ALLOW receipt to any merchant.
-            </li>
-            <li>
-              <strong>🧠 Polymath</strong> — paid 5+ distinct capability hashes.
-            </li>
-            <li>
-              <strong>⚡ High-Frequency Operator</strong> — 100+ ALLOW receipts lifetime.
-            </li>
-            <li>
-              <strong>🌊 Long Streamer</strong> — active streaming pact for 30+ days.
-            </li>
-            <li>
-              <strong>⚖ Honest Disputer</strong> — first successful{" "}
-              <code>dispute_delivery_escrow</code> within window.
-            </li>
-            <li>
-              <strong>📡 Public Spender</strong> — first <code>public_feed=true</code> receipt.
-            </li>
-          </ul>
-          <p>
-            Catalogue source: <code>packages/types/src/badges.ts</code> (single
-            source of truth — both UI and cron import from here, so no MPL Core
-            dep in the SDK / browser bundle).
-          </p>
+          <div className="mt-3 overflow-hidden rounded-xl border border-foreground/10">
+            <table className="w-full text-xs">
+              <thead className="bg-foreground/[0.04]">
+                <tr className="text-left text-foreground/60">
+                  <th className="px-3 py-2">Layer</th>
+                  <th className="px-3 py-2">TS</th>
+                  <th className="px-3 py-2">Python</th>
+                  <th className="px-3 py-2">Rust</th>
+                </tr>
+              </thead>
+              <tbody className="text-foreground/70">
+                <ParityRow layer="Canonical JSON + capability hash" />
+                <ParityRow layer="Kernel commit (7 receipt kinds)" />
+                <ParityRow layer="Anchor ix data (13 instructions)" />
+              </tbody>
+            </table>
+          </div>
         </Section>
 
-        <Section title="More">
-          <ul>
-            <li>
-              <Link href="/security" className="text-accent">
-                Security model
-              </Link>
-            </li>
-            <li>
-              <Link href="/public-goods" className="text-accent">
-                Public goods commitment
-              </Link>
-            </li>
-            <li>
-              <Link href="/help" className="text-accent">
-                FAQ
-              </Link>
-            </li>
-            <li>
-              See also{" "}
-              <a
-                href="https://github.com/Pratiikpy/settle-protocol/blob/main/docs/PRODUCT_SPEC.md"
-                target="_blank"
-                rel="noreferrer"
-                className="text-accent"
-              >
-                docs/PRODUCT_SPEC.md
-              </a>{" "}
-              for the canonical IS / IS-NOT spec per feature.
-            </li>
-          </ul>
-        </Section>
-      </main>
-      <Footer />
-    </>
+        {/* Source */}
+        <section className="mt-16 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          <p className="text-sm text-foreground/70">
+            Open source, MIT. Issues + PRs welcome.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a
+              href="https://github.com/settle-protocol/settle"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-foreground/15 px-3 py-1.5 text-[11px] text-foreground/60 hover:bg-foreground/5"
+            >
+              GitHub ↗
+            </a>
+            <Link
+              href="/docs/mcp"
+              className="rounded-full border border-foreground/15 px-3 py-1.5 text-[11px] text-foreground/60 hover:bg-foreground/5"
+            >
+              MCP middleware
+            </Link>
+            <Link
+              href="/stats"
+              className="rounded-full border border-foreground/15 px-3 py-1.5 text-[11px] text-foreground/60 hover:bg-foreground/5"
+            >
+              Network stats
+            </Link>
+          </div>
+        </section>
+      </div>
+    </W6AppShell>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  children,
+}: {
+  id?: string;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="mt-10">
-      <h2 className="text-xl font-medium">{title}</h2>
-      <div className="mt-4 space-y-4 text-sm leading-relaxed text-foreground/75 [&_code]:rounded [&_code]:bg-foreground/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-xs [&_li]:list-disc [&_ul]:ml-6 [&_ul]:space-y-1.5">
+    <section
+      id={id}
+      style={{ marginTop: 64, scrollMarginTop: 64, color: "var(--w6-ink-2)" }}
+    >
+      <h2
+        className="w6-heading"
+        style={{
+          fontSize: 24,
+          margin: 0,
+          color: "var(--w6-ink)",
+        }}
+      >
+        {title}
+      </h2>
+      <div
+        style={{
+          marginTop: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          color: "var(--w6-ink-2)",
+          fontSize: 14,
+          lineHeight: 1.6,
+        }}
+      >
         {children}
       </div>
     </section>
+  );
+}
+
+function Code({ lang, children }: { lang: string; children: string }) {
+  return (
+    <div
+      style={{
+        borderRadius: 12,
+        border: "1px solid var(--w6-rule)",
+        background: "var(--w6-bg-2)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          borderBottom: "1px solid var(--w6-rule)",
+          padding: "6px 12px",
+          fontSize: 10,
+          textTransform: "uppercase",
+          letterSpacing: "0.18em",
+          fontWeight: 700,
+          color: "var(--w6-ink-4)",
+        }}
+      >
+        {lang}
+      </div>
+      <pre
+        style={{
+          overflow: "auto",
+          padding: 12,
+          fontSize: 12,
+          lineHeight: 1.55,
+          margin: 0,
+        }}
+      >
+        <code
+          className="w6-mono"
+          style={{ color: "var(--w6-ink)" }}
+        >
+          {children}
+        </code>
+      </pre>
+    </div>
+  );
+}
+
+function Callout({
+  tone,
+  title,
+  children,
+}: {
+  tone: "emerald" | "amber" | "neutral";
+  title: string;
+  children: React.ReactNode;
+}) {
+  const cls = {
+    emerald: "border-emerald-400/30 bg-emerald-400/[0.04]",
+    amber: "border-amber-400/30 bg-amber-400/[0.04]",
+    neutral: "border-foreground/10 bg-white/[0.02]",
+  }[tone];
+  return (
+    <div className={`mt-4 rounded-xl border ${cls} p-4 text-xs`}>
+      <p className="font-medium text-foreground/85">{title}</p>
+      <p className="mt-1 text-foreground/70">{children}</p>
+    </div>
+  );
+}
+
+function KindRow({
+  kind,
+  use,
+  cardBound,
+}: {
+  kind: string;
+  use: string;
+  cardBound: boolean;
+}) {
+  return (
+    <tr className="border-t border-foreground/10">
+      <td className="px-3 py-2 font-mono">{kind}</td>
+      <td className="px-3 py-2">{use}</td>
+      <td className="px-3 py-2 text-foreground/50">
+        {cardBound ? "✓" : "—"}
+      </td>
+    </tr>
+  );
+}
+
+function IxRow({
+  name,
+  signer,
+  body,
+}: {
+  name: string;
+  signer: string;
+  body: string;
+}) {
+  return (
+    <tr className="border-t border-foreground/10">
+      <td className="px-3 py-2">{name}</td>
+      <td className="px-3 py-2 text-foreground/50">{signer}</td>
+      <td className="px-3 py-2 text-foreground/60">{body}</td>
+    </tr>
+  );
+}
+
+function PhaseFeature({
+  name,
+  hook,
+  ui,
+}: {
+  name: string;
+  hook: string;
+  ui: string;
+}) {
+  return (
+    <div className="rounded-xl border border-foreground/10 bg-white/[0.02] p-3">
+      <p className="font-mono text-[11px] text-foreground/85">{name}</p>
+      <p className="mt-1 text-[10px] text-foreground/50">trigger: {hook}</p>
+      <p className="text-[10px] text-foreground/50">ui: {ui}</p>
+    </div>
+  );
+}
+
+function ParityRow({ layer }: { layer: string }) {
+  return (
+    <tr className="border-t border-foreground/10">
+      <td className="px-3 py-2">{layer}</td>
+      <td className="px-3 py-2 text-emerald-400">✓</td>
+      <td className="px-3 py-2 text-emerald-400">✓</td>
+      <td className="px-3 py-2 text-emerald-400">✓</td>
+    </tr>
   );
 }

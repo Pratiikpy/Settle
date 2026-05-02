@@ -196,4 +196,31 @@ pub mod settle_agent_card {
     pub fn dispute_delivery_escrow(ctx: Context<DisputeDeliveryEscrow>) -> Result<()> {
         instructions::dispute_delivery_escrow::handler(ctx)
     }
+
+    // ───────────── F2.0 Universal Receipt Kernel — Path A ─────────────
+
+    /// Standalone kernel attestation. Emits `ReceiptRecordedEvent` with the
+    /// 4-hash commit chain + kind discriminator + context_hash binding.
+    /// Permissionless — any signer attests; verifier decides whether to
+    /// trust based on the attestor pubkey. See instructions/record_receipt.rs
+    /// for the full design rationale.
+    pub fn record_receipt(
+        ctx: Context<RecordReceipt>,
+        kind: u8,
+        receipt_hash: [u8; 32],
+        reason_hash: [u8; 32],
+        policy_snapshot_hash: [u8; 32],
+        purpose_hash: [u8; 32],
+        context_hash: [u8; 32],
+    ) -> Result<()> {
+        instructions::record_receipt::handler(
+            ctx,
+            kind,
+            receipt_hash,
+            reason_hash,
+            policy_snapshot_hash,
+            purpose_hash,
+            context_hash,
+        )
+    }
 }

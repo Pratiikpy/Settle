@@ -58,12 +58,12 @@ export async function GET(req: NextRequest) {
 
   const cardPubkeys = (cards ?? []).map((c) => c.card_pubkey);
 
+  type PactMode = "oneshot" | "streaming" | "delivery_escrow";
   let pacts: Array<{
     pact_pubkey: string;
     parent_card: string;
     scope_label: string;
-    /** v0.3 — 'oneshot' | 'streaming'. Older rows default to 'oneshot'. */
-    mode: "oneshot" | "streaming";
+    mode: PactMode;
     cap_lamports: string | null;
     spent: string | null;
     rate_lamports_per_slot: string | null;
@@ -72,6 +72,13 @@ export async function GET(req: NextRequest) {
     paused: boolean;
     closed: boolean;
     expiry_slot: string;
+    /** Escrow-only fields (NULL for oneshot/streaming). */
+    escrow_amount: string | null;
+    escrow_merchant_pubkey: string | null;
+    confirm_deadline_slot: string | null;
+    dispute_deadline_slot: string | null;
+    released: boolean;
+    refunded: boolean;
     created_at: string;
   }> = [];
 
@@ -79,7 +86,7 @@ export async function GET(req: NextRequest) {
     const { data, error: pErr } = await supabase
       .from("pacts")
       .select(
-        "pact_pubkey, parent_card, scope_label, mode, cap_lamports, spent, rate_lamports_per_slot, max_total_lamports, claimed, paused, expiry_slot, closed, created_at",
+        "pact_pubkey, parent_card, scope_label, mode, cap_lamports, spent, rate_lamports_per_slot, max_total_lamports, claimed, paused, expiry_slot, closed, escrow_amount, escrow_merchant_pubkey, confirm_deadline_slot, dispute_deadline_slot, released, refunded, created_at",
       )
       .in("parent_card", cardPubkeys)
       .order("created_at", { ascending: false });
@@ -94,7 +101,7 @@ export async function GET(req: NextRequest) {
       pact_pubkey: row.pact_pubkey,
       parent_card: row.parent_card,
       scope_label: row.scope_label,
-      mode: (row.mode ?? "oneshot") as "oneshot" | "streaming",
+      mode: (row.mode ?? "oneshot") as PactMode,
       cap_lamports: row.cap_lamports != null ? String(row.cap_lamports) : null,
       spent: row.spent != null ? String(row.spent) : null,
       rate_lamports_per_slot:
@@ -104,6 +111,14 @@ export async function GET(req: NextRequest) {
       claimed: row.claimed != null ? String(row.claimed) : null,
       paused: Boolean(row.paused),
       closed: Boolean(row.closed),
+      escrow_amount: row.escrow_amount != null ? String(row.escrow_amount) : null,
+      escrow_merchant_pubkey: row.escrow_merchant_pubkey ?? null,
+      confirm_deadline_slot:
+        row.confirm_deadline_slot != null ? String(row.confirm_deadline_slot) : null,
+      dispute_deadline_slot:
+        row.dispute_deadline_slot != null ? String(row.dispute_deadline_slot) : null,
+      released: Boolean(row.released),
+      refunded: Boolean(row.refunded),
       expiry_slot: String(row.expiry_slot),
       created_at: String(row.created_at),
     }));

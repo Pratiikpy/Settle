@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Footer } from "../../../components/footer";
+import { W6AppShell } from "../../../components/w6-app-shell";
 import { lamportsToUsdc } from "../../../lib/format";
 import { getSolscanAccountUrl } from "../../../lib/solana";
 
@@ -63,8 +63,8 @@ export default function CapabilityLeaderboardPage() {
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-4xl px-6 py-12">
+    <W6AppShell forceSurface="public">
+      <div style={{ maxWidth: 880 }}>
         <Link href="/leaderboard" className="text-xs text-foreground/40 hover:text-accent">
           ← All capabilities
         </Link>
@@ -151,8 +151,7 @@ export default function CapabilityLeaderboardPage() {
           Total p50 = full proxy roundtrip (entry → settle). Merch p50 = upstream call
           only. Pre-P10 receipts (no timing data) are excluded honestly — never imputed.
         </p>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

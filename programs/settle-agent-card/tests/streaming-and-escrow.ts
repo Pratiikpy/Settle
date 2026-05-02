@@ -62,7 +62,7 @@ async function advanceSlots(
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("settle-agent-card / P1 streaming-pact", () => {
-  let program: Program<any>;
+  let program: any;
   let provider: anchor.AnchorProvider;
   let authority: Keypair;
   let agent: Keypair;
@@ -429,7 +429,7 @@ describe("settle-agent-card / P1 streaming-pact", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("settle-agent-card / P9 delivery-escrow", () => {
-  let program: Program<any>;
+  let program: any;
   let provider: anchor.AnchorProvider;
   let authority: Keypair; // buyer
   let agent: Keypair;

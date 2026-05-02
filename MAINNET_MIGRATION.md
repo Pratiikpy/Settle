@@ -39,7 +39,7 @@ silent middleware fallbacks.
 
 | # | Area | Devnet | Mainnet | Action |
 |---|------|--------|---------|--------|
-| 14 | Anchor program ID | placeholder `SettLe1111…` until `anchor build` runs | regenerate via `solana-keygen` for prod | run `anchor build` + `anchor deploy --provider.cluster mainnet`; patch `lib.rs declare_id!` AND `Anchor.toml` AND `apps/web/lib/anchor-client.ts` AND `packages/sdk/src/idl.ts` AND `apps/indexer/src/index.ts` env |
+| 14 | Anchor program ID | **deployed devnet:** `HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD` (commit `790be4f`) | regenerate via `solana-keygen` for mainnet — DO NOT reuse the devnet ID | from current devnet baseline: `solana-keygen new -o keys/program-mainnet.json`; `anchor build` + `anchor deploy --provider.cluster mainnet`; patch `lib.rs declare_id!` + `Anchor.toml` + env vars `NEXT_PUBLIC_SETTLE_PROGRAM_ID` + `SETTLE_AGENT_CARD_PROGRAM_ID` + `SETTLE_PROGRAM_ID`. (The dead `PLACEHOLDER_PROGRAM_ID = "SettLe1111…"` constant in `apps/web/lib/anchor-client.ts` is unused at runtime — env-based lookup throws on missing — but should be removed per AU-01-007 cleanup.) |
 | 15 | USDC mint | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` (devnet test USDC) | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | hardcoded in `lib/solana.ts` cluster check |
 | 16 | Bubblegum tree authority | facilitator key | dedicated tree authority keypair | rotate; create new tree on mainnet |
 | 17 | SAS Credential PDA | `SETTLE_SAS_CREDENTIAL_PDA` env | unchanged shape | run `pnpm sas:setup` (script TBD) on mainnet to create new Credential |

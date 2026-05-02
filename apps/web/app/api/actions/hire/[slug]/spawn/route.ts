@@ -27,7 +27,9 @@ export const runtime = "nodejs";
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Content-Encoding, Accept-Encoding, Authorization",
+  "X-Action-Version": "2.4",
+  "X-Blockchain-Ids": "solana:devnet",
 };
 
 interface TemplateRecord {
@@ -65,7 +67,7 @@ const FALLBACK_TEMPLATES: Record<string, TemplateRecord> = {
 async function loadTemplate(slug: string): Promise<TemplateRecord | null> {
   // Try Supabase first; fall back to hardcoded if Supabase isn't configured.
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (url && key) {
     try {
       const supabase = createClient(url, key, { auth: { persistSession: false } });

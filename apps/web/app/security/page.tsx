@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Footer } from "../../components/footer";
+import { W6AppShell } from "../../components/w6-app-shell";
 
 export const metadata: Metadata = {
   title: "Security — Settle",
@@ -9,16 +9,43 @@ export const metadata: Metadata = {
 
 export default function SecurityPage() {
   return (
-    <>
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-3xl font-semibold tracking-tight">Security</h1>
-        <p className="mt-2 text-sm text-foreground/60">
-          Threat model and defenses. We assume the agent runtime, the merchant, and the
-          network are all untrusted. The user&apos;s private key and the Anchor program are the only
-          trust roots.
-        </p>
+    <W6AppShell forceSurface="public">
+      <div style={{ maxWidth: 760 }}>
+        <div style={{ marginBottom: 32 }}>
+          <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+            Security
+          </div>
+          <h1
+            className="w6-heading"
+            style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+          >
+            Threat model and defenses.
+          </h1>
+          <p
+            className="w6-muted"
+            style={{
+              fontSize: 14,
+              marginTop: 8,
+              maxWidth: 640,
+              lineHeight: 1.5,
+            }}
+          >
+            We assume the agent runtime, the merchant, and the network are
+            all untrusted. The user&rsquo;s private key and the Anchor
+            program are the only trust roots.
+          </p>
+        </div>
 
-        <div className="mt-12 space-y-10 text-sm leading-relaxed text-foreground/75">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 32,
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: "var(--w6-ink-2)",
+          }}
+        >
           <Section title="Dual signature">
             Every agent request carries two signatures:{" "}
             <strong>authority_sig</strong> over the canonical credential envelope (proves the user
@@ -128,22 +155,46 @@ export default function SecurityPage() {
           </Section>
         </div>
 
-        <p className="mt-10 text-xs text-foreground/40">
+        <p
+          className="w6-muted"
+          style={{ marginTop: 32, fontSize: 12 }}
+        >
           Found something? Open an issue or DM us. See also{" "}
-          <Link href="/docs" className="text-accent">docs</Link> and{" "}
-          <Link href="/public-goods" className="text-accent">public goods</Link>.
+          <Link href="/docs" style={{ color: "var(--w6-ink)" }}>
+            docs
+          </Link>{" "}
+          and{" "}
+          <Link href="/public-goods" style={{ color: "var(--w6-ink)" }}>
+            public goods
+          </Link>
+          .
         </p>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section>
-      <h2 className="text-base font-medium text-foreground">{title}</h2>
-      <div className="mt-3">{children}</div>
+    <section className="w6-card" style={{ padding: 24 }}>
+      <h2
+        className="w6-heading"
+        style={{
+          fontSize: 16,
+          margin: 0,
+          marginBottom: 12,
+          color: "var(--w6-ink)",
+        }}
+      >
+        {title}
+      </h2>
+      <div style={{ color: "var(--w6-ink-2)" }}>{children}</div>
     </section>
   );
 }

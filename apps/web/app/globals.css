@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  /* F1.7 — Theme tokens. Default is dark. `:root.light` overrides for the
+     light palette; the theme provider toggles the `light` class on <html>.
+     Components stay neutral via rgb(var(--foreground)) so the same JSX
+     works under either theme. */
   :root {
     --background: 10 10 10;
     --foreground: 245 245 245;
@@ -15,6 +19,67 @@
     --solana-purple-rgb: 153 69 255;
     --solana-green-rgb: 20 241 149;
   }
+
+  :root.light {
+    --background: 250 250 250;
+    --foreground: 14 14 16;
+    --muted: 100 100 110;
+    --border: 220 220 224;
+    --accent: 13 168 105;
+    --success: 13 168 105;
+    --warn: 217 119 6;
+    --danger: 220 38 38;
+    --solana-purple-rgb: 121 53 217;
+    --solana-green-rgb: 13 168 105;
+  }
+
+  /* WAVE_6 — prototype design tokens. Layered ON TOP of the existing
+     theme so legacy code keeps rendering until it's reskinned. New
+     components consume these via `var(--w6-*)`. Light by default; dark
+     mode override at :root.dark below. */
+  :root,
+  :root.light {
+    --w6-bg: #FDFDFD;
+    --w6-bg-2: #fafafa;
+    --w6-bg-3: #f4f4f5;
+    --w6-paper: #fbfaf5;
+
+    --w6-ink: #09090b;
+    --w6-ink-2: #27272a;
+    --w6-ink-3: #52525b;
+    --w6-ink-4: #71717a;
+    --w6-ink-5: #a1a1aa;
+
+    --w6-rule: #e4e4e7;
+    --w6-rule-2: #f4f4f5;
+
+    --w6-ok: #16a34a;
+    --w6-ok-soft: rgba(22, 163, 74, 0.12);
+    --w6-bad: #b3261e;
+    --w6-bad-soft: rgba(179, 38, 30, 0.12);
+    --w6-warn-cluster: #f59e0b;
+    --w6-mainnet: #10b981;
+
+    --w6-accent-rgb: 59, 130, 246;
+
+    --w6-r-card: 24px;
+    --w6-r-pill: 999px;
+    --w6-r-strip: 32px;
+    --w6-r-input: 12px;
+
+    --w6-shadow-sm: 0 1px 0 rgba(10, 10, 10, 0.03), 0 1px 2px rgba(10, 10, 10, 0.03);
+    --w6-shadow-md: 0 1px 0 rgba(10, 10, 10, 0.03), 0 4px 14px rgba(10, 10, 10, 0.05);
+    --w6-shadow-lg: 0 1px 0 rgba(10, 10, 10, 0.04), 0 18px 44px rgba(10, 10, 10, 0.08);
+  }
+
+  /* The prototype is light-first by design. We deliberately do NOT
+     override --w6-* vars under :root.dark — that previously produced
+     unreadable white-on-white surfaces (`.w6-card` is hardcoded to a
+     light gradient, so flipping `--w6-ink` to white left text invisible
+     inside cards). The legacy dark theme still applies to legacy
+     routes via `--background / --foreground`; W6-styled routes always
+     render light. If we ever want a dark W6 variant, it has to come
+     with its own dark `.w6-card` background, not a token swap. */
 
   body {
     background: rgb(var(--background));
@@ -46,6 +111,324 @@
 }
 
 @layer utilities {
+  /* WAVE_6 — when a route opts into the new shell via `data-w6` on its
+     root, swap the page background + color to the prototype palette
+     without leaking into legacy routes. Bumped to `html body[data-w6]`
+     for higher specificity than Tailwind's `bg-background` /
+     `text-foreground` utilities (which tied at 0,1,1 and won by source
+     order before this fix). Kept inside @layer utilities so it always
+     comes after Tailwind's generated utilities in the cascade. */
+  html body[data-w6="1"] {
+    background: var(--w6-bg-2);
+    color: var(--w6-ink);
+    font-family: var(--font-w6-sans), -apple-system, system-ui, sans-serif;
+    letter-spacing: -0.005em;
+  }
+  /* Plain links inherit body color, but buttons/pills keep their own
+     palette — `.w6-btn-primary` needs white text on dark bg, etc.
+     Without these exclusions any `<a class="w6-btn-primary">` reads as
+     dark-on-dark (invisible). */
+  html body[data-w6="1"] a:not([class*="w6-btn"]):not([class*="w6-pill"]) {
+    color: inherit;
+  }
+  html body[data-w6="1"] a[class*="w6-btn"] {
+    text-decoration: none;
+  }
+  /* The landing page sits outside W6AppShell (no data-w6 on body) but
+     wraps itself in [data-w6-page]. Bump that to win against the
+     legacy `body.text-foreground` (which is rgb(245,245,245) under
+     html.dark — white on white inside .w6-cards). */
+  html body [data-w6-page] {
+    color: var(--w6-ink);
+    background: var(--w6-bg-2);
+  }
+
+  /* Wave 6 — the prototype is light-first. Many legacy pages still use
+     `bg-white/[0.0X]` (~2% white over a dark body) which is invisible
+     on the light W6 body. Remap those to a faint zinc tint so cards
+     read correctly without rewriting every page. The same goes for
+     `bg-foreground/[0.02]` (transparent ink → invisible on light). */
+  html.light .\[\&_\.bg-white\\\/\\\[0\\\.02\\\]\]\:bg-w6,
+  html.light .bg-white\/\[0\.02\],
+  html.light .bg-white\/\[0\.04\],
+  html.light .bg-white\/\[0\.05\],
+  html.light .bg-white\/5,
+  html.light .bg-foreground\/\[0\.02\],
+  html.light .bg-foreground\/\[0\.04\],
+  html.light .bg-foreground\/5 {
+    background-color: var(--w6-bg-2) !important;
+  }
+  html.light .bg-white\/\[0\.08\],
+  html.light .bg-white\/10,
+  html.light .bg-foreground\/\[0\.08\],
+  html.light .bg-foreground\/10 {
+    background-color: var(--w6-bg-3) !important;
+  }
+  /* Code blocks across `/docs/*` subpages used `bg-black/30` for the
+     pre. On the light W6 body that's a translucent grey-ish black —
+     reads heavy. Map to the W6 dark "strip" surface so the code
+     stands out as a real block, with white text already implicit. */
+  html.light .bg-black\/30,
+  html.light .bg-black\/40,
+  html.light .bg-black\/50,
+  html.light .bg-black\/60 {
+    background-color: var(--w6-ink) !important;
+    color: #fff !important;
+  }
+  html.light .bg-black\/30 *,
+  html.light .bg-black\/40 *,
+  html.light .bg-black\/50 *,
+  html.light .bg-black\/60 * {
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+  html.light .bg-black\/20 {
+    background-color: var(--w6-bg-3) !important;
+  }
+  html.light .bg-black {
+    background-color: var(--w6-ink) !important;
+    color: #fff !important;
+  }
+  /* `bg-background` ↔ legacy body color. Under light theme it would
+     resolve to `rgb(250 250 250)` (light) which is fine — but keep
+     `text-background` (used as button text-on-dark) anchored to
+     #fff so primary buttons keep readable white text. */
+  html.light .text-background {
+    color: #fff !important;
+  }
+  html.light .bg-background {
+    background-color: var(--w6-bg-2) !important;
+  }
+  /* Borders default to the W6 rule color. The opacity in the legacy
+     class gets ignored — we want a consistent crisp 1px line. */
+  html.light .border-foreground\/5,
+  html.light .border-foreground\/10,
+  html.light .border-foreground\/15,
+  html.light .border-foreground\/20 {
+    border-color: var(--w6-rule) !important;
+  }
+  /* Wave 6 — the prototype uses black/white/zinc only. The legacy
+     `bg-accent` (Solana green) reads as a "default brand" green button
+     across the consumer flow which clashes hard with the prototype's
+     mono palette. Remap any `bg-accent` to `--w6-ink` (near-black) on
+     the light theme so primary CTAs match the prototype everywhere
+     without touching 50+ files. Standalone accent text (`text-accent`)
+     stays brand-green for "live"/"ok" signal pills — only the *bg*
+     remap forces the button surface to mono. */
+  html.light .bg-accent {
+    background-color: var(--w6-ink) !important;
+  }
+  html.light .bg-accent\/90,
+  html.light .bg-accent\/80 {
+    background-color: var(--w6-ink-2) !important;
+  }
+  html.light .bg-accent\/20,
+  html.light .bg-accent\/15,
+  html.light .bg-accent\/10,
+  html.light .bg-accent\/5 {
+    background-color: var(--w6-bg-3) !important;
+  }
+  html.light .text-accent {
+    color: var(--w6-ink) !important;
+  }
+  html.light .border-accent\/40,
+  html.light .border-accent\/30,
+  html.light .border-accent\/20,
+  html.light .border-accent\/10 {
+    border-color: var(--w6-rule) !important;
+  }
+  /* Hover state for primary buttons — keep to a soft darken. */
+  html.light .hover\:bg-accent\/90:hover,
+  html.light .hover\:bg-accent:hover {
+    background-color: var(--w6-ink-2) !important;
+  }
+
+  /* `.bg-emerald-500` is the legacy "claim" / "release" CTA color on
+     a couple of agent/streaming buttons. Map to W6 ink so those CTAs
+     don't break the prototype palette. The subtle status backgrounds
+     (`bg-emerald-400/[0.03]` etc) stay as-is — those are pill /
+     callout tints, not buttons. */
+  html.light .bg-emerald-500,
+  html.light .bg-emerald-400 {
+    background-color: var(--w6-ink) !important;
+    color: #fff !important;
+  }
+  html.light .hover\:bg-emerald-400:hover,
+  html.light .hover\:bg-emerald-500:hover {
+    background-color: var(--w6-ink-2) !important;
+  }
+
+  /* `bg-transparent` on legacy inputs reads as invisible against the
+     light body. Pin to white with the W6 rule border so inputs feel
+     like real fields instead of empty boxes. */
+  html.light input.bg-transparent,
+  html.light textarea.bg-transparent,
+  html.light select.bg-transparent {
+    background-color: #fff !important;
+    border: 1px solid var(--w6-rule);
+    color: var(--w6-ink);
+  }
+  html.light input.bg-transparent:focus,
+  html.light textarea.bg-transparent:focus,
+  html.light select.bg-transparent:focus {
+    border-color: var(--w6-ink);
+    outline: none;
+  }
+  html.light input.bg-transparent::placeholder,
+  html.light textarea.bg-transparent::placeholder {
+    color: var(--w6-ink-4);
+  }
+
+  /* Legacy callout backgrounds — emerald/amber/red opacity tints that
+     read as faded grey on the light bg. Map to W6 status tints so
+     callouts pop visibly. */
+  html.light .bg-emerald-400\/\[0\.03\],
+  html.light .bg-emerald-400\/\[0\.04\],
+  html.light .bg-emerald-400\/\[0\.05\],
+  html.light .bg-emerald-400\/5,
+  html.light .bg-emerald-500\/\[0\.04\],
+  html.light .bg-emerald-500\/5 {
+    background-color: rgba(22, 163, 74, 0.08) !important;
+  }
+  html.light .bg-emerald-500\/15,
+  html.light .bg-emerald-500\/25,
+  html.light .bg-emerald-400\/10,
+  html.light .bg-emerald-400\/20 {
+    background-color: rgba(22, 163, 74, 0.14) !important;
+  }
+  html.light .border-emerald-400\/30,
+  html.light .border-emerald-400\/40,
+  html.light .border-emerald-400\/20 {
+    border-color: rgba(22, 163, 74, 0.4) !important;
+  }
+  html.light .text-emerald-100,
+  html.light .text-emerald-200,
+  html.light .text-emerald-300,
+  html.light .text-emerald-400 {
+    color: var(--w6-ok) !important;
+  }
+  html.light .bg-amber-400\/\[0\.03\],
+  html.light .bg-amber-400\/\[0\.04\],
+  html.light .bg-amber-400\/\[0\.05\],
+  html.light .bg-amber-400\/5,
+  html.light .bg-amber-500\/5 {
+    background-color: rgba(245, 158, 11, 0.08) !important;
+  }
+  html.light .bg-amber-400\/10,
+  html.light .bg-amber-500\/10 {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+  }
+  html.light .border-amber-400\/30,
+  html.light .border-amber-400\/40,
+  html.light .border-amber-500\/30 {
+    border-color: rgba(245, 158, 11, 0.4) !important;
+  }
+  html.light .text-amber-200,
+  html.light .text-amber-300,
+  html.light .text-amber-400,
+  html.light .text-amber-100 {
+    color: var(--w6-warn-cluster) !important;
+  }
+  html.light .bg-red-500\/\[0\.04\],
+  html.light .bg-red-500\/5,
+  html.light .bg-red-400\/\[0\.04\],
+  html.light .bg-red-500\/\[0\.08\] {
+    background-color: rgba(179, 38, 30, 0.06) !important;
+  }
+  html.light .border-red-500\/20,
+  html.light .border-red-500\/30,
+  html.light .border-red-500\/40,
+  html.light .border-red-400\/40 {
+    border-color: rgba(179, 38, 30, 0.4) !important;
+  }
+  html.light .text-red-100,
+  html.light .text-red-200,
+  html.light .text-red-300,
+  html.light .text-red-400,
+  html.light .text-red-500 {
+    color: var(--w6-bad) !important;
+  }
+
+  /* Legacy "rounded-full px-N py-M text-xs hover:bg-foreground/5"
+     buttons (secondary action). With borders auto-remapped to
+     `--w6-rule`, the hover color also needs a subtle zinc fade. */
+  html.light .hover\:bg-foreground\/5:hover {
+    background-color: var(--w6-bg-2) !important;
+  }
+  html.light .hover\:border-foreground\/30:hover,
+  html.light .hover\:border-foreground\/40:hover {
+    border-color: var(--w6-ink-3) !important;
+  }
+  html.light .hover\:text-foreground:hover {
+    color: var(--w6-ink) !important;
+  }
+
+  /* Skeleton-pulse blocks: legacy `bg-white/[0.02]` is invisible,
+     `bg-white/[0.04]` is 4% white — both useless for shimmer on
+     light. Map to a faint zinc tint so the skeleton actually shows. */
+  html.light .animate-pulse.bg-white\/\[0\.02\],
+  html.light .animate-pulse.bg-white\/\[0\.04\],
+  html.light .animate-pulse.bg-white\/\[0\.03\] {
+    background-color: var(--w6-bg-3) !important;
+  }
+
+  /* Inline code + pre blocks: legacy used `text-foreground/85` on dark
+     bg. On the light W6 body, the same opacity reads as faint gray on
+     white — invisible. Pin code text to `--w6-ink` so it's always
+     readable inside the prototype palette. */
+  html.light code,
+  html.light pre,
+  html body[data-w6="1"] code,
+  html body[data-w6="1"] pre,
+  html body [data-w6-page] code,
+  html body [data-w6-page] pre {
+    color: var(--w6-ink);
+  }
+  html.light .text-foreground\/85,
+  html.light .text-foreground\/80,
+  html.light .text-foreground\/70 {
+    color: var(--w6-ink-2) !important;
+  }
+  html.light .text-foreground\/60,
+  html.light .text-foreground\/55,
+  html.light .text-foreground\/50,
+  html.light .text-foreground\/45,
+  html.light .text-foreground\/40 {
+    color: var(--w6-ink-3) !important;
+  }
+  html.light .text-foreground\/30,
+  html.light .text-foreground\/20 {
+    color: var(--w6-ink-4) !important;
+  }
+  html.light .text-foreground\/10,
+  html.light .text-foreground\/5 {
+    color: var(--w6-ink-5) !important;
+  }
+  /* Hard-pin button colors so nothing higher in the cascade can flip
+     them invisible. `:where()` keeps specificity at 0,1,0, but the
+     `!important` survives `[data-w6-page] a { color: inherit }`. */
+  :where(.w6-btn-primary) {
+    color: #fff !important;
+    background: var(--w6-ink) !important;
+  }
+  :where(.w6-btn-secondary) {
+    color: var(--w6-ink) !important;
+    background: #fff !important;
+    border: 1px solid var(--w6-rule);
+  }
+  :where(.w6-btn-ghost) {
+    color: var(--w6-ink-2) !important;
+    background: transparent !important;
+  }
+  :where(.w6-btn-onstrip) {
+    color: var(--w6-ink) !important;
+    background: #fff !important;
+  }
+  :where(.w6-btn-onstrip-ghost) {
+    color: rgba(255, 255, 255, 0.85) !important;
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
   .text-gradient {
     background: linear-gradient(135deg, #9945FF 0%, #14F195 100%);
     -webkit-background-clip: text;
@@ -53,23 +436,322 @@
     color: transparent;
   }
 
-  .card-surface {
-    background:
-      radial-gradient(120% 100% at 0% 0%, rgba(153, 69, 255, 0.18) 0%, transparent 50%),
-      radial-gradient(120% 100% at 100% 100%, rgba(20, 241, 149, 0.12) 0%, transparent 50%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%),
-      rgb(20 20 22);
-  }
-
+  /* Wave 6 — these legacy gradient surfaces (used by SettleCard /
+     PactCard / CnftReceipt) flashed dark over the light W6 body. The
+     prototype uses pure light cards. Drop the gradient and redirect to
+     `.w6-card` styling so the cards read as part of the same system. */
+  .card-surface,
   .pact-surface {
     background:
-      radial-gradient(120% 100% at 100% 0%, rgba(20, 241, 149, 0.18) 0%, transparent 50%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%),
-      rgb(18 18 20);
+      linear-gradient(145deg, #ffffff, rgba(244, 244, 245, 0.72)),
+      radial-gradient(circle at 100% 0%, rgba(var(--w6-accent-rgb), 0.06), transparent 18rem) !important;
+    color: var(--w6-ink);
+  }
+  /* Force any text inside the legacy surfaces to read dark on the light
+     gradient — the legacy markup assumed white text on a dark card. */
+  .card-surface *,
+  .pact-surface * {
+    color: var(--w6-ink);
+  }
+  .card-surface .text-foreground\/60,
+  .pact-surface .text-foreground\/60,
+  .card-surface .text-foreground\/50,
+  .pact-surface .text-foreground\/50,
+  .card-surface .text-foreground\/40,
+  .pact-surface .text-foreground\/40 {
+    color: var(--w6-ink-3) !important;
   }
 
   .cnft-surface {
     background:
       conic-gradient(from 180deg at 50% 50%, rgba(153, 69, 255, 0.25), rgba(20, 241, 149, 0.25), rgba(153, 69, 255, 0.25));
+  }
+
+  /* WAVE_6 — typography helpers used by new shell. */
+  .w6-heading {
+    font-family: var(--font-w6-heading), -apple-system, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  .w6-mono {
+    font-family: var(--font-w6-mono), ui-monospace, monospace;
+  }
+  .w6-eyebrow {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--w6-ink-4);
+    text-transform: uppercase;
+  }
+  .w6-kicker {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--w6-ink-4);
+    text-transform: uppercase;
+  }
+  .w6-muted {
+    color: var(--w6-ink-3);
+  }
+  .w6-micro {
+    font-size: 11px;
+    color: var(--w6-ink-4);
+  }
+
+  /* Bento card surface (light gradient + subtle radial accent glow). */
+  .w6-card {
+    background:
+      linear-gradient(145deg, #ffffff, rgba(244, 244, 245, 0.72)),
+      radial-gradient(circle at 100% 0%, rgba(var(--w6-accent-rgb), 0.08), transparent 18rem);
+    border: 1px solid var(--w6-rule);
+    border-radius: var(--w6-r-card);
+    transition: transform 220ms, border-color 220ms;
+  }
+  .w6-card-hover:hover {
+    transform: translateY(-3px);
+    border-color: var(--w6-ink-5);
+  }
+  .w6-card-flat {
+    background: var(--w6-bg);
+    border: 1px solid var(--w6-rule);
+    border-radius: 16px;
+  }
+
+  /* Horizontal rule used inside cards (composer dividers, summary
+     section breaks). Lighter than `var(--w6-rule)` so it reads as a
+     subdivider, not a structural border. */
+  .w6-hr {
+    height: 1px;
+    background: var(--w6-rule);
+    border: 0;
+  }
+
+  /* Dark "strip" surface for For-Builders + balance hero. */
+  .w6-strip {
+    background: var(--w6-ink);
+    color: #fff;
+    border-radius: var(--w6-r-strip);
+    padding: 32px;
+  }
+
+  /* Pills + dots. */
+  .w6-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: var(--w6-r-pill);
+    border: 1px solid var(--w6-rule);
+    background: #fff;
+    color: var(--w6-ink-2);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .w6-pill-ok {
+    border-color: rgba(22, 163, 74, 0.32);
+    background: var(--w6-ok-soft);
+    color: var(--w6-ok);
+  }
+  .w6-pill-bad {
+    border-color: rgba(179, 38, 30, 0.32);
+    background: var(--w6-bad-soft);
+    color: var(--w6-bad);
+  }
+  .w6-pill .dot,
+  .w6-pill-ok .dot,
+  .w6-pill-bad .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* Buttons. */
+  .w6-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: var(--w6-r-pill);
+    font-size: 13px;
+    font-weight: 500;
+    transition: opacity 120ms, transform 80ms, background 140ms;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .w6-btn:active {
+    transform: scale(0.98);
+  }
+  .w6-btn-primary {
+    background: var(--w6-ink);
+    color: #fff;
+  }
+  .w6-btn-primary:hover {
+    opacity: 0.9;
+  }
+  .w6-btn-secondary {
+    background: #fff;
+    border: 1px solid var(--w6-rule);
+    color: var(--w6-ink);
+  }
+  .w6-btn-secondary:hover {
+    background: var(--w6-bg-2);
+  }
+  .w6-btn-ghost {
+    background: transparent;
+    color: var(--w6-ink-3);
+  }
+  .w6-btn-ghost:hover {
+    color: var(--w6-ink);
+  }
+  .w6-btn-onstrip {
+    background: #fff;
+    color: var(--w6-ink);
+  }
+  .w6-btn-onstrip:hover {
+    opacity: 0.92;
+  }
+  .w6-btn-onstrip-ghost {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .w6-btn-onstrip-ghost:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+  .w6-btn-sm {
+    height: 30px;
+    padding: 0 12px;
+    font-size: 12.5px;
+  }
+  .w6-btn-lg {
+    height: 48px;
+    padding: 0 22px;
+    font-size: 14px;
+  }
+  .w6-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Inputs. */
+  .w6-input {
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--w6-rule);
+    border-radius: var(--w6-r-pill);
+    background: #fff;
+    color: var(--w6-ink);
+    font-size: 13px;
+    transition: border-color 140ms;
+    width: 100%;
+  }
+  .w6-input:focus {
+    outline: none;
+    border-color: var(--w6-ink-3);
+  }
+  .w6-input-lg {
+    height: 48px;
+    font-size: 14px;
+    padding: 0 20px;
+  }
+
+  /* Bento grid layout. */
+  .w6-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .w6-bento-grid > .span-2 {
+    grid-column: span 2;
+  }
+  .w6-bento-grid > .row-2 {
+    grid-row: span 2;
+  }
+  @media (max-width: 1024px) {
+    .w6-bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .w6-bento-grid {
+      grid-template-columns: 1fr;
+    }
+    .w6-bento-grid > .span-2,
+    .w6-bento-grid > .row-2 {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+  .w6-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 1024px) {
+    .w6-grid-3 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .w6-grid-3 {
+      grid-template-columns: 1fr;
+    }
+  }
+  .w6-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 1024px) {
+    .w6-grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .w6-grid-4 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Skeleton shimmer. Honors prefers-reduced-motion. */
+  .w6-skel {
+    background: linear-gradient(90deg, var(--w6-rule-2) 0%, var(--w6-rule) 50%, var(--w6-rule-2) 100%);
+    background-size: 200% 100%;
+    animation: w6-shimmer 1.4s linear infinite;
+    border-radius: 8px;
+  }
+  @keyframes w6-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .w6-skel {
+      animation: none;
+    }
+  }
+
+  /* Cluster badge dot pulse (mainnet only). */
+  .w6-cluster-pulse {
+    animation: w6-pulse 2s ease-in-out infinite;
+  }
+  @keyframes w6-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+    }
+    50% {
+      box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.05);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .w6-cluster-pulse {
+      animation: none;
+    }
   }
 }

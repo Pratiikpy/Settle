@@ -1,6 +1,8 @@
 [toolchain]
 anchor_version = "0.31.1"
-solana_version = "2.0.21"
+# solana_version pin removed 2026-05-02 — host has Solana 3.1.14 Agave.
+# Anchor 0.31.1 is compatible with both 2.x and 3.x runtime; re-pin if a
+# future deploy needs a specific 2.x feature gate.
 
 [features]
 resolution = true

@@ -1,0 +1,200 @@
+{
+  "host": "http://localhost:3000",
+  "card": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+  "pact": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+  "merchant": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+  "per_fire_lamports": 50000,
+  "vault_before": "400000",
+  "vault_after": "100000",
+  "signer_response": {
+    "ok": true,
+    "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+    "relayer_warning": null,
+    "mode": "live",
+    "scheduled_picked": 4,
+    "refills_picked": 1,
+    "gift_claims_picked": 1,
+    "gift_refunds_picked": 1,
+    "executions_logged": 7,
+    "errors": []
+  },
+  "intents": [
+    {
+      "intent_kind": "scheduled_send",
+      "intent_id": "3ab98001-4822-4736-b417-101b1ab192a5",
+      "expected_to_land_onchain": true,
+      "status": "confirmed",
+      "signature": "3XRDDTg4kyb2PcEncu25rMM3kcMDxt5uSsXKSWhbe3PxzzoK3Qjzprhh1bEHWbMoKVi28bT4ikRDuNjUoQwQk3hE",
+      "error_message": null,
+      "card_delegation_validated": true,
+      "pact_ready": true
+    },
+    {
+      "intent_kind": "auto_refill",
+      "intent_id": "0d78cd5d-ce91-4909-bef5-d8cf8b1f7cde",
+      "expected_to_land_onchain": true,
+      "status": "confirmed",
+      "signature": "qPnnzrncficj37Q28tRipwYbbRbqzce85HExaLmcaCd5nwJ4hWhas5XGw9a3bqhJRcVXWM1nxLiSZMPignGMxpp",
+      "error_message": null,
+      "card_delegation_validated": true,
+      "pact_ready": true
+    },
+    {
+      "intent_kind": "gift_claim",
+      "intent_id": "6808edf4-611d-4e53-a31f-1cdc545a082a",
+      "expected_to_land_onchain": true,
+      "status": "confirmed",
+      "signature": "3mcfmTUrGAY1V1GQmFXC6zWTQdg2h4qSdvogUo3HF4XFSwM7FGgoC13eSZmpaE3kgq1qYkuS5Fq61kghS3WuFhbh",
+      "error_message": null,
+      "card_delegation_validated": true,
+      "pact_ready": true
+    },
+    {
+      "intent_kind": "gift_refund",
+      "intent_id": "aa0a5931-81dd-43a9-86a4-0c2a4e677ee4",
+      "expected_to_land_onchain": true,
+      "status": "confirmed",
+      "signature": "3hCbJWeruNyRjRBY3pS9cFjgaZKhqPvWiwYBh1cc1s7w3kLbqXs6yXaqgzt5ML96Bd7MNdkMqM3jopaReVxWtSyf",
+      "error_message": null,
+      "card_delegation_validated": true,
+      "pact_ready": true
+    },
+    {
+      "intent_kind": "group_spend",
+      "intent_id": "e58f5404-bccc-457f-993d-71e6073eb62b",
+      "expected_to_land_onchain": true,
+      "status": "confirmed",
+      "signature": "4EdWBbC5ynHmpgDYgzexw2hH9esLLzoqpiZKUCKeN35fAxEAc4mYXGrKrRc9dL7PhkP8dgY29VPSKob39SxMNLn9",
+      "error_message": null,
+      "card_delegation_validated": true,
+      "pact_ready": true
+    },
+    {
+      "intent_kind": "round_up",
+      "intent_id": "84f6b83a-e185-4d69-bd6c-9f1be438be65",
+      "expected_to_land_onchain": true,
+      "status": "confirmed",
+      "signature": "MDT7SVHJQ7EP2H3MXtFMjoe65Z7LRcqMSLjZ5dkUnqtcSYPBjGfpmZDan3hCgbnjHpv6Y4Aa7DqUm6YUvfaBv2x",
+      "error_message": null,
+      "card_delegation_validated": true,
+      "pact_ready": true
+    },
+    {
+      "intent_kind": "streaming_claim",
+      "intent_id": "ecc262d7-04c1-432d-a832-07d938b42191",
+      "expected_to_land_onchain": false,
+      "status": "failed",
+      "signature": null,
+      "error_message": "live claim_streaming failed: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"card_pubkey\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"pact_pubkey\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"capability_hash\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"number\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"policy_version\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"daily_cap_lamports\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"per_call_max_lamports\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"number\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"allowlist_count\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"number\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"expiry_slot\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"boolean\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"revoked\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"cap_remaining_after\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"number\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"billable_slots\"\n    ],\n    \"message\": \"Required\"\n  }\n]",
+      "card_delegation_validated": true,
+      "pact_ready": true
+    }
+  ],
+  "log": [
+    {
+      "step": "pre_state",
+      "ok": true,
+      "detail": "vault=0.4 USDC"
+    },
+    {
+      "step": "mirror_card",
+      "ok": true,
+      "detail": "agent_cards row upserted"
+    },
+    {
+      "step": "mirror_pact",
+      "ok": true,
+      "detail": "pacts row upserted"
+    },
+    {
+      "step": "mirror_allowlist",
+      "ok": true,
+      "detail": "allowlist row upserted"
+    },
+    {
+      "step": "signer_probe",
+      "ok": true,
+      "detail": "mode=live relayer=C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY"
+    },
+    {
+      "step": "provision_scheduled_send",
+      "ok": true,
+      "detail": "schedule_id=3ab98001-4822-4736-b417-101b1ab192a5"
+    },
+    {
+      "step": "provision_auto_refill",
+      "ok": true,
+      "detail": "queue_id=0d78cd5d-ce91-4909-bef5-d8cf8b1f7cde"
+    },
+    {
+      "step": "provision_gift_claim",
+      "ok": true,
+      "detail": "gift_id=6808edf4-611d-4e53-a31f-1cdc545a082a"
+    },
+    {
+      "step": "provision_gift_refund",
+      "ok": true,
+      "detail": "gift_id=aa0a5931-81dd-43a9-86a4-0c2a4e677ee4"
+    },
+    {
+      "step": "provision_group_spend",
+      "ok": true,
+      "detail": "request_id=e58f5404-bccc-457f-993d-71e6073eb62b"
+    },
+    {
+      "step": "provision_round_up",
+      "ok": true,
+      "detail": "queue_id=84f6b83a-e185-4d69-bd6c-9f1be438be65"
+    },
+    {
+      "step": "provision_streaming_claim",
+      "ok": true,
+      "detail": "queue_id=ecc262d7-04c1-432d-a832-07d938b42191"
+    },
+    {
+      "step": "tick",
+      "ok": true,
+      "detail": "status=200 body={\"ok\":true,\"at\":\"2026-05-01T19:29:29.305Z\",\"schedules_due\":1,\"refills_due\":0,\"gifts_expired\":0,\"gifts_to_send\":0,\"errors\":[]}"
+    },
+    {
+      "step": "signer",
+      "ok": true,
+      "detail": "picked=4 refills=1 gift_claims=1 gift_refunds=1 executions_logged=7 errors=0"
+    },
+    {
+      "step": "poll_scheduled_send",
+      "ok": true,
+      "detail": "status=confirmed sig=3XRDDTg4kyb2PcEncu25…"
+    },
+    {
+      "step": "poll_auto_refill",
+      "ok": true,
+      "detail": "status=confirmed sig=qPnnzrncficj37Q28tRi…"
+    },
+    {
+      "step": "poll_gift_claim",
+      "ok": true,
+      "detail": "status=confirmed sig=3mcfmTUrGAY1V1GQmFXC…"
+    },
+    {
+      "step": "poll_gift_refund",
+      "ok": true,
+      "detail": "status=confirmed sig=3hCbJWeruNyRjRBY3pS9…"
+    },
+    {
+      "step": "poll_group_spend",
+      "ok": true,
+      "detail": "status=confirmed sig=4EdWBbC5ynHmpgDYgzex…"
+    },
+    {
+      "step": "poll_round_up",
+      "ok": true,
+      "detail": "status=confirmed sig=MDT7SVHJQ7EP2H3MXtFM…"
+    },
+    {
+      "step": "poll_streaming_claim",
+      "ok": true,
+      "detail": "status=failed sig=(none)… err=live claim_streaming failed: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \""
+    }
+  ]
+}

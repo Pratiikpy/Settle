@@ -4,9 +4,18 @@ import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { TrustGesture } from "@settle/ui";
-import { Footer } from "../../components/footer";
+import { W6AppShell } from "../../components/w6-app-shell";
 import { asAuthHeaders, fetchAuthHeaders } from "../../lib/client-auth";
 import { fireSettlementConfetti, trustGesture } from "../../lib/confetti";
+import { useTheme } from "../../components/theme-provider";
+import { LOCALES, useTranslate, type Locale } from "../../lib/i18n";
+
+const LOCALE_LABELS: Record<Locale, string> = {
+  en: "English",
+  es: "Español",
+  ja: "日本語",
+  "zh-CN": "中文 (简体)",
+};
 
 interface CurrentHandle {
   handle: string;
@@ -24,6 +33,8 @@ export default function SettingsPage() {
     "idle" | "signing" | "confirming" | "success" | "error"
   >("idle");
   const [loading, setLoading] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const { locale, setLocale } = useTranslate();
 
   useEffect(() => {
     if (!connected || !publicKey) return;
@@ -106,12 +117,41 @@ export default function SettingsPage() {
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-2xl px-6 py-12">
-        <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-        <p className="mt-2 text-sm text-foreground/60">
-          Wallet-signed changes only. Settle never sees your private keys.
-        </p>
+    <W6AppShell>
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            gap: 24,
+            marginBottom: 24,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 280 }}>
+            <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+              Settings
+            </div>
+            <h1
+              className="w6-heading"
+              style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.1 }}
+            >
+              Profile, privacy &amp; sessions
+            </h1>
+            <p
+              className="w6-muted"
+              style={{
+                fontSize: 14,
+                marginTop: 8,
+                maxWidth: 640,
+                lineHeight: 1.5,
+              }}
+            >
+              Every change is signed by your wallet. Settle never sees your
+              private keys; we only verify the signature.
+            </p>
+          </div>
+        </div>
 
         {!connected ? (
           <div className="mt-12 rounded-2xl border border-foreground/10 bg-white/[0.02] p-10 text-center text-sm text-foreground/60">
@@ -119,8 +159,31 @@ export default function SettingsPage() {
           </div>
         ) : (
           <>
-            {/* Handle */}
-            <section className="mt-10 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+            {/* F1.3 — 5-section settings layout: Profile · Privacy · Notifications · Sessions · Developer */}
+            <nav className="mt-6 flex flex-wrap gap-2 text-xs">
+              {[
+                { id: "profile", label: "Profile" },
+                { id: "theme", label: "Theme" },
+                { id: "privacy", label: "Privacy" },
+                { id: "notifications", label: "Notifications" },
+                { id: "sessions", label: "Sessions" },
+                { id: "developer", label: "Developer" },
+              ].map((s) => (
+                <a
+                  key={s.id}
+                  href={`#${s.id}`}
+                  className="rounded-full border border-foreground/15 bg-white/[0.02] px-3 py-1 text-foreground/70 hover:border-foreground/40 hover:text-foreground"
+                >
+                  {s.label}
+                </a>
+              ))}
+            </nav>
+
+            {/* Profile */}
+            <section
+              id="profile"
+              className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+            >
               <h2 className="text-lg font-medium">@handle</h2>
               <p className="mt-1 text-xs text-foreground/50">
                 Your public name. People can send you money via @handle. Lowercase only.
@@ -162,30 +225,71 @@ export default function SettingsPage() {
               )}
             </section>
 
-            {/* Wallet info */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
-              <h2 className="text-lg font-medium">Wallet</h2>
-              <div className="mt-3 text-xs">
-                <code className="break-all text-foreground/60">{publicKey?.toBase58()}</code>
+            {/* F1.7 — theme toggle. Lives under Profile because it's a
+                personal preference not a privacy or notification one. */}
+            <section
+              id="theme"
+              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+            >
+              <h2 className="text-lg font-medium">Theme</h2>
+              <p className="mt-1 text-xs text-foreground/50">
+                Auto follows your OS setting. Manual overrides persist across
+                sessions on this browser.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {(["dark", "light", "auto"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTheme(t)}
+                    className={
+                      theme === t
+                        ? "rounded-full bg-accent px-4 py-1.5 text-xs font-medium text-background"
+                        : "rounded-full border border-foreground/20 px-4 py-1.5 text-xs text-foreground/70 hover:bg-foreground/5"
+                    }
+                  >
+                    {t}
+                  </button>
+                ))}
               </div>
             </section>
 
-            {/* Pointers to other settings */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
-              <h2 className="text-lg font-medium">Per-card settings</h2>
+            {/* Privacy */}
+            <section
+              id="privacy"
+              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+            >
+              <h2 className="text-lg font-medium">Privacy</h2>
               <p className="mt-1 text-xs text-foreground/50">
-                Privacy toggles, allowlist edits, and revoke live on each card.
+                Per-card privacy toggles, allowlist edits, and revoke live on each card —
+                where the on-chain state lives. The card page is the source of truth.
               </p>
-              <a
-                href="/cards"
-                className="mt-4 inline-flex h-10 items-center justify-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
-              >
-                Open my cards →
-              </a>
+              <p className="mt-3 text-xs text-foreground/50">
+                Receipts default to private. Flip <code>public_feed</code> on a receipt
+                to make it visible on the public feed (proofs only — amounts + plaintext
+                purpose remain encrypted unless you explicitly publish them).
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a
+                  href="/cards"
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                >
+                  Per-card privacy →
+                </a>
+                <a
+                  href="/feed"
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                >
+                  Public feed
+                </a>
+              </div>
             </section>
 
             {/* Notifications */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+            <section
+              id="notifications"
+              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+            >
               <h2 className="text-lg font-medium">Notifications</h2>
               <p className="mt-1 text-xs text-foreground/50">
                 Get a browser notification when an agent task completes or someone sends you
@@ -278,12 +382,128 @@ export default function SettingsPage() {
                 Enable push
               </button>
             </section>
+
+            {/* Sessions */}
+            <section
+              id="sessions"
+              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+            >
+              <h2 className="text-lg font-medium">Sessions</h2>
+              <p className="mt-1 text-xs text-foreground/50">
+                The wallet you connect IS the session. Settle has no server-side
+                session store — every privileged action is signed by your wallet at
+                the moment you take it. Disconnect Phantom to "log out."
+              </p>
+              <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
+                <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+                  Active wallet
+                </p>
+                <code className="mt-2 block break-all text-xs text-foreground/70">
+                  {publicKey?.toBase58()}
+                </code>
+                <p className="mt-2 text-[11px] text-foreground/40">
+                  Push subscriptions, claimed handles, and saved settings are bound to
+                  this pubkey. Switching wallets shows a fresh state — no migration.
+                </p>
+              </div>
+            </section>
+
+            {/* Language (F8.11) */}
+            <section
+              id="language"
+              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+            >
+              <h2 className="text-lg font-medium">Language</h2>
+              <p className="mt-1 text-xs text-foreground/50">
+                Bundles ship in-app — switching is instant, no reload needed.
+                Untranslated strings fall back to English so the UI never breaks.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {LOCALES.map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => {
+                      setLocale(loc);
+                      toast.success(`Language: ${LOCALE_LABELS[loc]}`);
+                    }}
+                    className={`rounded-full border px-4 py-2 text-xs ${
+                      locale === loc
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-foreground/10 text-foreground/60 hover:border-foreground/30"
+                    }`}
+                  >
+                    {LOCALE_LABELS[loc]}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Developer */}
+            <section
+              id="developer"
+              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+            >
+              <h2 className="text-lg font-medium">Developer</h2>
+              <p className="mt-1 text-xs text-foreground/50">
+                Stuff for integrating Settle into your own app or agent.
+              </p>
+
+              {/* Sealed-box recipient pubkey (B1.5) */}
+              <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
+                <div className="flex items-baseline justify-between">
+                  <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+                    Sealed-box recipient pubkey
+                  </p>
+                  <button
+                    onClick={() => {
+                      if (!publicKey) return;
+                      void navigator.clipboard
+                        .writeText(publicKey.toBase58())
+                        .then(() => toast.success("Copied"));
+                    }}
+                    className="text-[11px] text-foreground/60 hover:text-foreground"
+                  >
+                    copy
+                  </button>
+                </div>
+                <code className="mt-2 block break-all text-xs text-foreground/70">
+                  {publicKey?.toBase58()}
+                </code>
+                <p className="mt-2 text-[11px] text-foreground/40">
+                  Senders use this pubkey to encrypt voice notes + sealed metadata so
+                  only you (the wallet holder) can decrypt. Derived deterministically
+                  from your Ed25519 wallet pubkey via X25519 — no separate keypair.
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-3 text-xs sm:grid-cols-2">
+                <a
+                  href="/docs"
+                  className="rounded-xl border border-foreground/10 p-4 hover:border-foreground/30"
+                >
+                  <p className="font-medium">SDK + API docs</p>
+                  <p className="mt-1 text-foreground/50">
+                    @settle/sdk, ix builders, verifyReceipt
+                  </p>
+                </a>
+                <a
+                  href="https://github.com/anthropics/settle-protocol"
+                  className="rounded-xl border border-foreground/10 p-4 hover:border-foreground/30"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <p className="font-medium">GitHub →</p>
+                  <p className="mt-1 text-foreground/50">
+                    Source, IDL, Anchor program
+                  </p>
+                </a>
+              </div>
+            </section>
           </>
         )}
 
         <TrustGesture state={gesture} />
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

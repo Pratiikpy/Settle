@@ -5,7 +5,7 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
 import { TrustGesture } from "@settle/ui";
-import { Footer } from "../../../components/footer";
+import { W6AppShell } from "../../../components/w6-app-shell";
 import { fireSettlementConfetti, trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
 
@@ -80,12 +80,30 @@ export default function SendViaLinkPage() {
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-md px-6 py-12">
-        <h1 className="text-3xl font-semibold tracking-tight">Send via link</h1>
-        <p className="mt-2 text-sm text-foreground/60">
-          Drop USDC into a one-time claim link. Send by SMS, email, or QR. Recipient claims with
-          their own wallet — they don&apos;t need a Settle account.
+    <W6AppShell>
+      <div style={{ maxWidth: 520 }}>
+        <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+          Compose · link
+        </div>
+        <h1
+          className="w6-heading"
+          style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+        >
+          Send via link.
+        </h1>
+        <p
+          className="w6-muted"
+          style={{
+            fontSize: 14,
+            marginTop: 8,
+            maxWidth: 640,
+            lineHeight: 1.5,
+            marginBottom: 24,
+          }}
+        >
+          Drop USDC into a one-time claim link. Send by SMS, email, or QR.
+          Recipient claims with their own wallet — they don&rsquo;t need a
+          Settle account.
         </p>
 
         {!link ? (
@@ -173,8 +191,7 @@ export default function SendViaLinkPage() {
         )}
 
         <TrustGesture state={gesture} />
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

@@ -96,6 +96,18 @@ export const SETTLE_IDL = {
     },
     { name: "releaseDeliveryEscrow", args: [] },
     { name: "disputeDeliveryEscrow", args: [] },
+    // F2.0 Universal Receipt Kernel — Path A on-chain attestation.
+    {
+      name: "recordReceipt",
+      args: [
+        { name: "kind", type: "u8" },
+        { name: "receiptHash", type: { array: ["u8", 32] } },
+        { name: "reasonHash", type: { array: ["u8", 32] } },
+        { name: "policySnapshotHash", type: { array: ["u8", 32] } },
+        { name: "purposeHash", type: { array: ["u8", 32] } },
+        { name: "contextHash", type: { array: ["u8", 32] } },
+      ],
+    },
   ],
   accounts: [
     {
@@ -387,6 +399,20 @@ export const SETTLE_IDL = {
         { name: "pact", type: "publicKey", index: false },
         { name: "authority", type: "publicKey", index: false },
         { name: "amount", type: "u64", index: false },
+        { name: "slot", type: "u64", index: false },
+      ],
+    },
+    // F2.0 Universal Receipt Kernel — Path A on-chain event.
+    {
+      name: "ReceiptRecordedEvent",
+      fields: [
+        { name: "attestor", type: "publicKey", index: false },
+        { name: "kind", type: "u8", index: false },
+        { name: "receiptHash", type: { array: ["u8", 32] }, index: false },
+        { name: "reasonHash", type: { array: ["u8", 32] }, index: false },
+        { name: "policySnapshotHash", type: { array: ["u8", 32] }, index: false },
+        { name: "purposeHash", type: { array: ["u8", 32] }, index: false },
+        { name: "contextHash", type: { array: ["u8", 32] }, index: false },
         { name: "slot", type: "u64", index: false },
       ],
     },

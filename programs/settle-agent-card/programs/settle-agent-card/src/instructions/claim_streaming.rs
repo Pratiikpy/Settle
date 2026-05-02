@@ -151,8 +151,18 @@ pub fn handler(
     let amount = entitlement.min(remaining_budget);
     require!(amount > 0, SettleError::StreamMaxReached);
 
-    // Per-call max (inherited from card). Streaming claims are still bounded by per_call_max.
-    require!(amount <= card.per_call_max_lamports, SettleError::OverCap);
+    // AU-03-006 fix: removed the `amount <= per_call_max` check that previously
+    // permanently stuck the pact when accrued entitlement exceeded per_call_max
+    // (every claim reverted, last_claim_slot never advanced, entitlement kept
+    // growing — agent had to close pact and forfeit funds).
+    //
+    // Why the check was redundant: claim_streaming computes `amount` from
+    // entitlement (= rate × billable_slots × time-since-last-claim). The agent
+    // cannot pass an arbitrary amount. So `per_call_max` (which exists to
+    // bound user-supplied amounts in spend_via_pact) cannot protect against
+    // anything in the streaming path that the rate doesn't already bound.
+    // Daily cap (`card.used_today` + `card.daily_cap_lamports`) still
+    // enforces total throughput.
 
     // ────────────────────────────────────────────────────────────────────
     // Daily cap window reset + enforcement (same logic as spend_via_pact).

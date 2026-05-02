@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
-import { Footer } from "../../../../components/footer";
+import { W6AppShell } from "../../../../components/w6-app-shell";
 import { asAuthHeaders, fetchAuthHeaders } from "../../../../lib/client-auth";
 
 const SLUG_RE = /^[a-z0-9_-]{2,40}$/;
@@ -86,8 +86,8 @@ export default function NewTemplatePage() {
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-2xl px-6 py-12">
+    <W6AppShell forceSurface="agent">
+      <div style={{ maxWidth: 880 }}>
         <h1 className="text-3xl font-semibold tracking-tight">Publish an agent template</h1>
         <p className="mt-2 text-sm text-foreground/60">
           Open-source recipe. Author signature stays on your wallet — anyone can audit it.
@@ -187,9 +187,8 @@ export default function NewTemplatePage() {
             border-color: rgb(153 69 255);
           }
         `}</style>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }
 

@@ -1,0 +1,124 @@
+{
+  "schedule_id": "b31e2898-9ced-46e3-8968-49946d070929",
+  "round1": {
+    "signer": {
+      "ok": true,
+      "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+      "relayer_warning": null,
+      "mode": "live",
+      "scheduled_picked": 1,
+      "refills_picked": 0,
+      "gift_claims_picked": 0,
+      "gift_refunds_picked": 0,
+      "executions_logged": 1,
+      "errors": []
+    },
+    "exec": {
+      "execution_id": "34d22ce6-36fd-44dc-8e56-8969832aad85",
+      "intent_kind": "scheduled_send",
+      "intent_id": "b31e2898-9ced-46e3-8968-49946d070929",
+      "mode": "live",
+      "status": "confirmed",
+      "signature": "65PSGt6HYhbGdUtyhnqUMsd9L5ihQcMSwGWFm7pihiFqXKYuvpKH7MQ42Y8GFJ6uG1vuX2bdVdWGaUhhvsfHBV8q",
+      "plan_json": {
+        "why": "scheduled DAILY",
+        "ix_kind": "spend_via_pact",
+        "intent_id": "b31e2898-9ced-46e3-8968-49946d070929",
+        "pact_ready": true,
+        "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+        "intent_kind": "scheduled_send",
+        "pact_pubkey": "9euC6XVfcYpjXRoJoCxEGKMepXAB9e4S8GLtjrfBCt9d",
+        "kernel_hashes": {
+          "reason_hash": "c8418d6fc163f5d50ed776b3e6056c7af1112e4c65ba156126326f01e5a48886",
+          "context_hash": "24fee77c24b6a59c71170a52b420796f95b701afd854cca0573db5d22658ede7",
+          "purpose_hash": "03315cedb989c9f0b4edaadc1e561d4144915f53ae0b13b2073fbb5c618d3dbf",
+          "receipt_hash": "dc4d64b2be5c31864e03471a5d66dd8dd13c13873bb30feca0304f3192cc471b",
+          "policy_snapshot_hash": "203bceb4b5d4af2624a79359818439c1a8895bacc9fc4fca70ffd8de59660d71"
+        },
+        "source_pubkey": "8vQtLpM3MqdFhYpRiiAqJCMqvBbS6HvkNjnR4YGDTbBR",
+        "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+        "amount_lamports": "100000",
+        "card_delegation_validated": true
+      },
+      "error_message": null,
+      "created_at": "2026-05-02T00:30:15.502117+00:00",
+      "confirmed_at": "2026-05-02T00:30:15.416+00:00",
+      "fire_window_ms": 493800
+    },
+    "vault_after": "400000"
+  },
+  "round2": {
+    "signer": {
+      "ok": true,
+      "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+      "relayer_warning": null,
+      "mode": "live",
+      "scheduled_picked": 0,
+      "refills_picked": 0,
+      "gift_claims_picked": 0,
+      "gift_refunds_picked": 0,
+      "executions_logged": 0,
+      "errors": []
+    },
+    "exec_count": 1,
+    "vault_after": "400000",
+    "double_spend_lamports": "0"
+  },
+  "log": [
+    {
+      "step": "pre_state",
+      "ok": true,
+      "detail": "vault=0.5 USDC"
+    },
+    {
+      "step": "mirror_state",
+      "ok": true,
+      "detail": "card + pact + allowlist upserted"
+    },
+    {
+      "step": "provision",
+      "ok": true,
+      "detail": "schedule_id=b31e2898-9ced-46e3-8968-49946d070929"
+    },
+    {
+      "step": "tick_round1",
+      "ok": true,
+      "detail": "schedules_due=1"
+    },
+    {
+      "step": "signer_round1",
+      "ok": true,
+      "detail": "picked=1 executions_logged=1"
+    },
+    {
+      "step": "round1_landing",
+      "ok": true,
+      "detail": "confirmed sig=65PSGt6HYhbG…"
+    },
+    {
+      "step": "round1_vault",
+      "ok": true,
+      "detail": "vault dropped 0.1 USDC (expected 0.1)"
+    },
+    {
+      "step": "round1_count",
+      "ok": true,
+      "detail": "phase5_executions rows for this schedule = 1"
+    },
+    {
+      "step": "signer_round2",
+      "ok": true,
+      "detail": "picked=0 executions_logged=0 errors=0"
+    },
+    {
+      "step": "no_duplicate_row",
+      "ok": true,
+      "detail": "still exactly 1 row — dedup held"
+    },
+    {
+      "step": "no_double_spend",
+      "ok": true,
+      "detail": "vault unchanged after replay — no double spend"
+    }
+  ]
+}

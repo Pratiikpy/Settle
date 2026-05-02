@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
-import { Footer } from "../../../components/footer";
+import { W6AppShell } from "../../../components/w6-app-shell";
 import { asAuthHeaders, fetchAuthHeaders } from "../../../lib/client-auth";
 
 /**
@@ -114,8 +114,8 @@ export default function CollabHubPage() {
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-2xl px-6 py-12">
+    <W6AppShell forceSurface="agent">
+      <div style={{ maxWidth: 880 }}>
         <div className="text-xs uppercase tracking-wider text-foreground/55">Collabs</div>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">Two-tap split payment</h1>
         <p className="mt-2 text-sm text-foreground/60">
@@ -211,8 +211,7 @@ export default function CollabHubPage() {
             })}
           </ul>
         )}
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

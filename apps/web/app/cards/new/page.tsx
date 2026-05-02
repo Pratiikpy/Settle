@@ -1,30 +1,55 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
-import { SettleCard, TrustGesture } from "@settle/ui";
+import { TrustGesture } from "@settle/ui";
 import { fireSettlementConfetti, trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
+import { LocaleSwitcher } from "../../../components/locale-switcher";
+import { useTranslate } from "../../../lib/i18n";
+import { W6AppShell } from "../../../components/w6-app-shell";
 
 /**
- * /cards/new — Create your first AgentCard.
+ * /cards/new — Create an AgentCard.
+ *
+ * Two flavors of the same flow, distinguished by the `?agent=` query param:
+ *   - No `agent` param → server generates a fresh agent keypair, returns the
+ *     secret to the user (legacy demo flow).
+ *   - `?agent=<pubkey>` → client-supplied mode. The card's agent_pubkey is
+ *     pinned to the supplied pubkey; the server NEVER sees the agent privkey.
+ *     This is how Phase 5 delegation works: the user clicks "delegate" on
+ *     /settings/relayer, lands here with `?agent=<relayer_pubkey>`, picks a
+ *     daily cap + allowlist, signs once, and now scheduled sends + auto-refill
+ *     can fire from this card without the user being online.
+ *
+ * The label "main" is reserved for the user's primary card. When delegating,
+ * default to "delegated-relayer" so the cards index page reads sensibly.
  *
  * Real flow:
- *   1. POST /api/agents/create-card returns base64 unsigned create_card tx + agent secret
+ *   1. POST /api/agents/create-card → base64 unsigned create_card tx (+ agent secret if mode=server_generated)
  *   2. Phantom signs
  *   3. Submit + confirm on devnet
- *   4. Show user the agent secret + the settle:// envelope to copy into demo-agent .env
+ *   4. Show user the agent secret (server-generated mode only)
  *   5. Redirect to /cards
  */
 export default function NewCardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { connected, publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
+  const { t } = useTranslate();
 
-  const [label, setLabel] = useState("main");
+  // Pre-supplied agent pubkey (e.g. from /settings/relayer "Delegate" button).
+  // When set, we use client-supplied mode: server never sees an agent privkey.
+  const presetAgent = searchParams?.get("agent") ?? null;
+  const isDelegationFlow = Boolean(presetAgent);
+
+  const [label, setLabel] = useState(() =>
+    isDelegationFlow ? "delegated-relayer" : "main",
+  );
   const [dailyCap, setDailyCap] = useState("100.00");
   const [perCallMax, setPerCallMax] = useState("5.00");
   const [expiryDays, setExpiryDays] = useState(30);
@@ -92,6 +117,8 @@ export default function NewCardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           authority: publicKey.toBase58(),
+          // Client-supplied mode when delegating. Server never sees an agent privkey.
+          ...(presetAgent ? { agent_pubkey: presetAgent } : {}),
           label,
           dailyCapUsdc: dailyCap,
           perCallMaxUsdc: perCallMax,
@@ -158,38 +185,117 @@ export default function NewCardPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">Create your first card</h1>
-      <p className="mt-2 text-sm text-foreground/60">
-        Your AgentCard is the parent object that holds caps, allowlist, expiry, and revoke. Each
-        AI-agent task spawns a Pact card scoped under it.
-      </p>
+    <W6AppShell>
+      <div style={{ maxWidth: 760 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 16,
+            marginBottom: 24,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 280 }}>
+            <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+              New Pact · open
+            </div>
+            <h1
+              className="w6-heading"
+              style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+            >
+              {isDelegationFlow
+                ? "Delegate to relayer."
+                : t("cards.new_title")}
+            </h1>
+            <p
+              className="w6-muted"
+              style={{
+                fontSize: 14,
+                marginTop: 8,
+                maxWidth: 640,
+                lineHeight: 1.5,
+              }}
+            >
+              {isDelegationFlow
+                ? "You're creating a NEW AgentCard with the Settle relayer as its agent. Phase 5 automation can spend within the cap + allowlist below — and only that."
+                : t("cards.new_subtitle")}
+            </p>
+          </div>
+          <LocaleSwitcher />
+        </div>
+
+      {isDelegationFlow && presetAgent && (
+        <div
+          className="w6-card"
+          style={{
+            padding: 18,
+            marginBottom: 24,
+            borderColor: "var(--w6-warn-cluster)",
+            background: "rgba(245, 158, 11, 0.06)",
+          }}
+        >
+          <div className="w6-eyebrow" style={{ fontSize: 11 }}>
+            Delegated agent
+          </div>
+          <code
+            className="w6-mono"
+            style={{
+              marginTop: 6,
+              display: "block",
+              wordBreak: "break-all",
+              fontSize: 12,
+              color: "var(--w6-ink)",
+            }}
+          >
+            {presetAgent}
+          </code>
+          <p className="w6-muted" style={{ marginTop: 8, fontSize: 11.5 }}>
+            This is the relayer pubkey. The card you sign for here is bound
+            to it for life — agents are NOT rotatable on-chain. Tighten
+            the daily cap before signing.
+          </p>
+        </div>
+      )}
 
       {!created ? (
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr,360px]">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) 320px",
+            gap: 28,
+            alignItems: "start",
+          }}
+          className="w6-cardnew-grid"
+        >
           <form
-            className="space-y-5"
+            className="w6-card"
+            style={{ padding: 24, display: "flex", flexDirection: "column", gap: 18 }}
             onSubmit={(e) => {
               e.preventDefault();
               void handleCreate();
             }}
           >
             <div>
-              <label className="block text-xs font-medium text-foreground/60">Label</label>
+              <label className="w6-eyebrow" style={{ display: "block", marginBottom: 6 }}>
+                Label
+              </label>
               <input
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="main"
-                className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+                className="w6-input w6-input-lg"
+                style={{ width: "100%" }}
               />
-              <p className="mt-1 text-xs text-foreground/40">
+              <p className="w6-muted" style={{ marginTop: 6, fontSize: 11 }}>
                 Used as PDA seed. One AgentCard per (authority, label).
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <div>
-                <label className="block text-xs font-medium text-foreground/60">
+                <label className="w6-eyebrow" style={{ display: "block", marginBottom: 6 }}>
                   Daily cap (USDC)
                 </label>
                 <input
@@ -197,11 +303,12 @@ export default function NewCardPage() {
                   onChange={(e) => setDailyCap(e.target.value)}
                   placeholder="100.00"
                   inputMode="decimal"
-                  className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+                  className="w6-input w6-input-lg"
+                  style={{ width: "100%" }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-foreground/60">
+                <label className="w6-eyebrow" style={{ display: "block", marginBottom: 6 }}>
                   Per-call max (USDC)
                 </label>
                 <input
@@ -209,13 +316,14 @@ export default function NewCardPage() {
                   onChange={(e) => setPerCallMax(e.target.value)}
                   placeholder="5.00"
                   inputMode="decimal"
-                  className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+                  className="w6-input w6-input-lg"
+                  style={{ width: "100%" }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-foreground/60">
+              <label className="w6-eyebrow" style={{ display: "block", marginBottom: 6 }}>
                 Expiry (days)
               </label>
               <input
@@ -224,35 +332,69 @@ export default function NewCardPage() {
                 type="number"
                 min={1}
                 max={365}
-                className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+                className="w6-input w6-input-lg"
+                style={{ width: "100%" }}
               />
             </div>
 
             <div>
-              <div className="flex items-baseline justify-between">
-                <label className="block text-xs font-medium text-foreground/60">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  justifyContent: "space-between",
+                  marginBottom: 8,
+                }}
+              >
+                <label className="w6-eyebrow">
                   Merchant allowlist ({allowlist.length})
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowCapabilityPins((v) => !v)}
-                  className="text-[11px] text-accent hover:underline"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--w6-ink-2)",
+                    background: "transparent",
+                    border: 0,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
                 >
-                  {showCapabilityPins ? "Hide capability pins" : "Pin capability hashes (optional)"}
+                  {showCapabilityPins
+                    ? "Hide capability pins"
+                    : "Pin capability hashes (optional)"}
                 </button>
               </div>
-              <div className="mt-2 space-y-2">
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {allowlist.map((entry, i) => (
                   <div
                     key={`${entry.merchant}-${i}`}
-                    className="rounded-lg border border-foreground/10 bg-foreground/[0.02] p-2.5"
+                    className="w6-card-flat"
+                    style={{ padding: 12 }}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] text-foreground/60">
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span
+                        className="w6-mono"
+                        style={{ fontSize: 11, color: "var(--w6-ink-2)" }}
+                      >
                         {entry.merchant.slice(0, 6)}…{entry.merchant.slice(-4)}
                       </span>
                       {entry.capabilityHashHex && (
-                        <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-emerald-500">
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            padding: "2px 6px",
+                            borderRadius: 999,
+                            background: "rgba(22, 163, 74, 0.1)",
+                            color: "var(--w6-ok)",
+                            fontSize: 9,
+                            fontWeight: 600,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.12em",
+                          }}
+                        >
                           pinned
                         </span>
                       )}
@@ -266,24 +408,26 @@ export default function NewCardPage() {
                           if (!current) return;
                           const updated: AllowlistEntry = {
                             merchant: current.merchant,
-                            ...(e.target.value ? { capabilityHashHex: e.target.value } : {}),
+                            ...(e.target.value
+                              ? { capabilityHashHex: e.target.value }
+                              : {}),
                           };
                           next[i] = updated;
                           setAllowlist(next);
                         }}
                         placeholder="64-char capability hash (BLAKE3 hex) — leave blank for unpinned"
-                        className="mt-2 w-full rounded border border-foreground/10 bg-transparent px-2 py-1.5 font-mono text-[10px] outline-none focus:border-accent"
+                        className="w6-input w6-mono"
+                        style={{ marginTop: 8, width: "100%", fontSize: 10 }}
                       />
                     )}
                   </div>
                 ))}
               </div>
               {showCapabilityPins && (
-                <p className="mt-2 text-[11px] text-foreground/45">
-                  Pinning a capability hash means the on-chain spend rejects any call whose{" "}
-                  capability hash doesn&apos;t match exactly. Strongest custody control: the
-                  agent can only pay this merchant for that exact pinned spec, even if the
-                  agent is compromised.
+                <p className="w6-muted" style={{ marginTop: 8, fontSize: 11 }}>
+                  Pinning a capability hash means the on-chain spend
+                  rejects any call whose capability hash doesn&apos;t match
+                  exactly. Strongest custody control.
                 </p>
               )}
             </div>
@@ -291,10 +435,11 @@ export default function NewCardPage() {
             <button
               type="submit"
               disabled={!connected || gesture !== "idle"}
-              className="w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
+              className="w6-btn w6-btn-primary w6-btn-lg"
+              style={{ width: "100%", justifyContent: "center" }}
             >
               {!connected
-                ? "Connect Phantom to create"
+                ? "Connect a wallet to create"
                 : gesture === "signing"
                   ? "Signing in Phantom…"
                   : gesture === "confirming"
@@ -302,91 +447,174 @@ export default function NewCardPage() {
                     : "Create AgentCard"}
             </button>
 
-            <p className="text-xs text-foreground/50">
+            <p className="w6-muted" style={{ fontSize: 11 }}>
               Anchor <code>create_card</code> ix · PDA derived from{" "}
-              <code>[&quot;agent-card&quot;, authority, label_hash]</code> · Atomic.
+              <code>[&quot;agent-card&quot;, authority, label_hash]</code> ·
+              Atomic.
             </p>
           </form>
 
-          <div className="space-y-4">
-            <div className="text-xs font-medium uppercase tracking-wider text-foreground/50">
-              Preview
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="w6-eyebrow">Preview</div>
+            <div className="w6-card" style={{ padding: 22 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  marginBottom: 14,
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    background: "var(--w6-ink)",
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 600,
+                  }}
+                >
+                  {(label[0] ?? "C").toUpperCase()}
+                </div>
+                <div>
+                  <div className="w6-heading" style={{ fontSize: 16 }}>
+                    {label || "card"}
+                  </div>
+                  <div className="w6-muted" style={{ fontSize: 11.5 }}>
+                    {publicKey
+                      ? `@${publicKey.toBase58().slice(0, 6)}`
+                      : "@me"}
+                  </div>
+                </div>
+              </div>
+              <div className="w6-eyebrow" style={{ fontSize: 10.5 }}>
+                Daily cap
+              </div>
+              <div
+                className="w6-heading"
+                style={{
+                  fontSize: 28,
+                  marginTop: 4,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                ${parseFloat(dailyCap || "0").toFixed(2)}
+              </div>
+              <div
+                className="w6-muted"
+                style={{ marginTop: 4, fontSize: 11.5 }}
+              >
+                Per-call max ${perCallMax} · {expiryDays}d expiry ·{" "}
+                {allowlist.length} merchants
+              </div>
             </div>
-            <SettleCard
-              handle={publicKey ? `@${publicKey.toBase58().slice(0, 6)}` : "@me"}
-              balance={`$${parseFloat(dailyCap || "0").toFixed(2)}`}
-              symbol={label || "Card"}
-              subline={`Per-call $${perCallMax} · ${expiryDays}d`}
-              variant="main"
-            />
           </div>
         </div>
       ) : (
-        <div className="mt-10 space-y-6">
-          <SettleCard
-            handle={publicKey ? `@${publicKey.toBase58().slice(0, 6)}` : "@me"}
-            balance={`$${parseFloat(dailyCap).toFixed(2)}`}
-            symbol={label}
-            subline="Active"
-            variant="main"
-          />
-
-          <div className="rounded-2xl border border-accent/30 bg-accent/5 p-6">
-            <h2 className="text-lg font-medium text-accent">✓ Card created</h2>
-            <p className="mt-2 text-sm text-foreground/70">
-              Save the agent secret below. It signs requests as the AI agent attached to this
-              card. You&apos;ll need it for{" "}
-              <code className="rounded bg-foreground/10 px-1.5 py-0.5 text-xs">
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div
+            className="w6-card"
+            style={{ padding: 24, borderColor: "var(--w6-ok)" }}
+          >
+            <h2
+              className="w6-heading"
+              style={{ fontSize: 22, margin: 0, color: "var(--w6-ok)" }}
+            >
+              ✓ Card created
+            </h2>
+            <p
+              className="w6-muted"
+              style={{
+                marginTop: 8,
+                fontSize: 14,
+                lineHeight: 1.55,
+              }}
+            >
+              Save the agent secret below. It signs requests as the AI
+              agent attached to this card. You&apos;ll need it for{" "}
+              <code
+                style={{
+                  background: "var(--w6-bg-3)",
+                  padding: "2px 6px",
+                  borderRadius: 4,
+                  fontSize: 11,
+                }}
+              >
                 SETTLE_AGENT_PRIVKEY
               </code>{" "}
               in <code>apps/demo-agent/.env</code>.
             </p>
 
-            <div className="mt-4 space-y-3 text-xs">
+            <div
+              style={{
+                marginTop: 18,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <Field label="Card PDA" value={created.cardPubkey} />
+              <Field label="Agent pubkey" value={created.agentPubkey} />
               <div>
-                <div className="text-foreground/50">Card PDA</div>
-                <code className="mt-1 block break-all font-mono text-foreground/80">
-                  {created.cardPubkey}
-                </code>
-              </div>
-              <div>
-                <div className="text-foreground/50">Agent pubkey</div>
-                <code className="mt-1 block break-all font-mono text-foreground/80">
-                  {created.agentPubkey}
-                </code>
-              </div>
-              <div>
-                <div className="text-foreground/50">Agent secret (sensitive — copy once)</div>
-                <code className="mt-1 block break-all font-mono text-foreground/40">
-                  {created.agentSecret.slice(0, 16)}…{created.agentSecret.slice(-4)}
+                <div className="w6-eyebrow" style={{ fontSize: 11 }}>
+                  Agent secret (sensitive — copy once)
+                </div>
+                <code
+                  className="w6-mono"
+                  style={{
+                    display: "block",
+                    marginTop: 4,
+                    wordBreak: "break-all",
+                    fontSize: 11.5,
+                    color: "var(--w6-ink-4)",
+                  }}
+                >
+                  {created.agentSecret.slice(0, 16)}…
+                  {created.agentSecret.slice(-4)}
                 </code>
                 <button
+                  type="button"
                   onClick={copyAgentSecret}
-                  className="mt-2 rounded-full border border-foreground/20 px-4 py-1.5 text-xs hover:bg-foreground/5"
+                  className="w6-btn w6-btn-secondary w6-btn-sm"
+                  style={{ marginTop: 10 }}
                 >
                   Copy full secret
                 </button>
               </div>
             </div>
 
-            <div className="mt-6 flex gap-3">
+            <div
+              style={{
+                marginTop: 24,
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <a
                 href={getSolscanUrl(created.sig)}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-foreground/20 px-4 py-2 text-xs hover:bg-foreground/5"
+                className="w6-btn w6-btn-secondary w6-btn-sm"
               >
                 Solscan ↗
               </a>
               <button
+                type="button"
                 onClick={() => router.push("/cards")}
-                className="rounded-full bg-accent px-4 py-2 text-xs font-medium text-background"
+                className="w6-btn w6-btn-primary w6-btn-sm"
               >
                 Go to your cards
               </button>
               <button
+                type="button"
                 onClick={() => router.push("/agents")}
-                className="rounded-full border border-foreground/20 px-4 py-2 text-xs hover:bg-foreground/5"
+                className="w6-btn w6-btn-secondary w6-btn-sm"
               >
                 Hire an AI agent →
               </button>
@@ -395,7 +623,36 @@ export default function NewCardPage() {
         </div>
       )}
 
-      <TrustGesture state={gesture} />
-    </main>
+        <TrustGesture state={gesture} />
+
+        <style>{`
+          @media (max-width: 880px) {
+            .w6-cardnew-grid { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
+      </div>
+    </W6AppShell>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="w6-eyebrow" style={{ fontSize: 11 }}>
+        {label}
+      </div>
+      <code
+        className="w6-mono"
+        style={{
+          display: "block",
+          marginTop: 4,
+          wordBreak: "break-all",
+          fontSize: 12,
+          color: "var(--w6-ink)",
+        }}
+      >
+        {value}
+      </code>
+    </div>
   );
 }

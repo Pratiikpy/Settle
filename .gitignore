@@ -57,3 +57,5 @@ packages/sdk/src/generated/
 # supabase local
 infra/supabase/.branches/
 infra/supabase/.temp/
+.test-wallet.json
+.test-merchant.json

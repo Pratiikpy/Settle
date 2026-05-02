@@ -30,7 +30,7 @@ export async function GET(
   const { data, error } = await supabase
     .from("receipts")
     .select(
-      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, capability_hash, purpose_text_hash, purpose_hash, receipt_hash, reason_hash, policy_snapshot_hash, target_method, target_path, sig_solscan, decision_slot, policy_version, public_feed, created_at, request_initiated_at, upstream_called_at, upstream_returned_at, compressed_sig, compressed_addr",
+      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, capability_hash, purpose_text_hash, purpose_hash, receipt_hash, reason_hash, policy_snapshot_hash, target_method, target_path, sig_solscan, decision_slot, policy_version, public_feed, created_at, request_initiated_at, upstream_called_at, upstream_returned_at, compressed_sig, compressed_addr, receipt_kind, context_hash",
     )
     .eq("request_id", requestId)
     .maybeSingle();
@@ -209,6 +209,12 @@ export async function GET(
       // is a secondary, cheaper-to-store record indexed by Photon RPC.
       compressed_sig: (data.compressed_sig as string | null) ?? null,
       compressed_addr: (data.compressed_addr as string | null) ?? null,
+      // F2.0 Universal Receipt Kernel — kind discriminator + context hash.
+      // For pre-kernel rows (created before migration 0019) the kind defaults
+      // to 'x402_spend' via the migration backfill. context_hash is null on
+      // pre-kernel rows; new rows always populate it.
+      receipt_kind: (data.receipt_kind as string | null) ?? "x402_spend",
+      context_hash: strip(data.context_hash),
     },
     pact,
   });

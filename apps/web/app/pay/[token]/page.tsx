@@ -6,7 +6,6 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
 import { TrustGesture } from "@settle/ui";
-import { Footer } from "../../../components/footer";
 import { fireSettlementConfetti, trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
 
@@ -160,7 +159,6 @@ export default function PayLinkPage() {
             View on Solscan ↗
           </a>
         </main>
-        <Footer />
       </>
     );
   }
@@ -220,7 +218,6 @@ export default function PayLinkPage() {
 
         <TrustGesture state={gesture} />
       </main>
-      <Footer />
     </>
   );
 }

@@ -31,7 +31,9 @@ export const runtime = "nodejs";
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Content-Encoding, Accept-Encoding",
+  "Access-Control-Allow-Headers": "Content-Type, Content-Encoding, Accept-Encoding, Authorization",
+  "X-Action-Version": "2.4",
+  "X-Blockchain-Ids": "solana:devnet",
 };
 
 const USDC_MINTS = {
@@ -60,7 +62,7 @@ async function resolveMerchant(slug: string): Promise<PublicKey | null> {
   }
 
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
   try {
     const supabase = createClient(url, key, { auth: { persistSession: false } });

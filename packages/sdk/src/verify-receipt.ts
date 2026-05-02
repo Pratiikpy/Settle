@@ -87,3 +87,53 @@ export function verifyReceipt(input: VerifyReceiptInput): VerifyResult {
 
   return mismatches.length === 0 ? { ok: true } : { ok: false, mismatches };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kernel-aware verifier (F2.0).
+//
+// For non-x402 kinds — direct_send, link_send, streaming_claim, escrow_*,
+// refund — the kernel uses a synthetic HTTP context (`POST /_kernel/<kind>`).
+// This wrapper infers the right http defaults so callers don't have to know
+// the convention; they pass kind + canonical objects + expected hashes.
+//
+// Pass an explicit `http` field when the receipt was committed with real
+// HTTP context (x402_spend), or omit it for synthetic.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ReceiptKindForVerify =
+  | "x402_spend"
+  | "direct_send"
+  | "link_send"
+  | "streaming_claim"
+  | "escrow_release"
+  | "escrow_dispute"
+  | "refund";
+
+export function verifyKernelReceipt(input: {
+  kind: ReceiptKindForVerify;
+  receipt: CanonicalReceipt;
+  reason: CanonicalReason;
+  policy_snapshot: CanonicalPolicySnapshot;
+  expected: VerifyReceiptInput["expected"];
+  /** Override only when the receipt was committed with real HTTP context (x402). */
+  http?: VerifyReceiptInput["http"];
+  plaintext_purpose?: string;
+}): VerifyResult {
+  const http = input.http ?? {
+    method: "POST" as const,
+    path: `/_kernel/${input.kind}`,
+  };
+  // Spread plaintext_purpose only when defined — exactOptionalPropertyTypes
+  // refuses an explicit `undefined` for an optional field.
+  const verifyArgs: VerifyReceiptInput = {
+    receipt: input.receipt,
+    reason: input.reason,
+    policy_snapshot: input.policy_snapshot,
+    http,
+    expected: input.expected,
+    ...(input.plaintext_purpose !== undefined
+      ? { plaintext_purpose: input.plaintext_purpose }
+      : {}),
+  };
+  return verifyReceipt(verifyArgs);
+}

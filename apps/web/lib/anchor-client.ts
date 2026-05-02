@@ -250,7 +250,10 @@ export function spendViaPactIx(params: {
     keys: [
       { pubkey: params.agent, isSigner: true, isWritable: false },
       { pubkey: params.feePayer, isSigner: true, isWritable: true },
-      { pubkey: params.card, isSigner: false, isWritable: false },
+      // card MUST be writable: the program updates `card.used_today` +
+      // `card.last_reset_slot` on every spend so the daily cap stays
+      // enforced across multiple Pacts (see spend_via_pact.rs `#[account(mut)]`).
+      { pubkey: params.card, isSigner: false, isWritable: true },
       { pubkey: params.pact, isSigner: false, isWritable: true },
       { pubkey: params.vault, isSigner: false, isWritable: false },
       { pubkey: params.usdcMint, isSigner: false, isWritable: false },
@@ -704,6 +707,47 @@ export function disputeDeliveryEscrowIx(params: {
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ],
+    data,
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 15. record_receipt — F2.0 Universal Receipt Kernel Path A on-chain attestation.
+//
+// Permissionless: any signer attests. Use this to attach a strong (event-encoded)
+// kernel commit to a tx INSTEAD OF the Memo program ix that Path B uses. The
+// Path B Memo carries the same data but as base64url text; Path A emits a
+// structured ReceiptRecordedEvent which the indexer can consume natively.
+//
+// Kind tags (see @settle/sdk KIND_TAG):
+//   1 x402_spend, 2 direct_send, 3 link_send, 4 streaming_claim,
+//   5 escrow_release, 6 escrow_dispute, 7 refund.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function recordReceiptIx(params: {
+  attestor: PublicKey;
+  args: {
+    kind: number;
+    receiptHash: Uint8Array;
+    reasonHash: Uint8Array;
+    policySnapshotHash: Uint8Array;
+    purposeHash: Uint8Array;
+    contextHash: Uint8Array;
+  };
+}): TransactionInstruction {
+  assertRealProgramId();
+  const data = buildIxData("record_receipt", (w) => {
+    w.u8(params.args.kind);
+    w.fixedBytes(params.args.receiptHash, 32);
+    w.fixedBytes(params.args.reasonHash, 32);
+    w.fixedBytes(params.args.policySnapshotHash, 32);
+    w.fixedBytes(params.args.purposeHash, 32);
+    w.fixedBytes(params.args.contextHash, 32);
+  });
+
+  return new TransactionInstruction({
+    programId: SETTLE_PROGRAM_ID,
+    keys: [{ pubkey: params.attestor, isSigner: true, isWritable: false }],
     data,
   });
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
-import { Footer } from "../../components/footer";
+import { W6AppShell } from "../../components/w6-app-shell";
 import { asAuthHeaders, fetchAuthHeaders } from "../../lib/client-auth";
 
 /**
@@ -69,21 +69,42 @@ export default function SplitBillCreatePage() {
   })();
 
   return (
-    <>
-      <main className="mx-auto max-w-md px-6 py-12">
-        <div className="text-xs uppercase tracking-wider text-foreground/55">Split bill</div>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">Split it N ways</h1>
-        <p className="mt-2 text-sm text-foreground/60">
-          Pick a total and number of payers. Share the link. Bill closes on its own when
-          the last payer settles.
+    <W6AppShell>
+      <div style={{ maxWidth: 560 }}>
+        <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+          Tools · Split bill
+        </div>
+        <h1
+          className="w6-heading"
+          style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.1 }}
+        >
+          Split it N ways
+        </h1>
+        <p
+          className="w6-muted"
+          style={{
+            fontSize: 14,
+            marginTop: 8,
+            maxWidth: 640,
+            lineHeight: 1.5,
+            marginBottom: 24,
+          }}
+        >
+          Pick a total and number of payers. Share the link. Bill closes on
+          its own when the last payer settles.
         </p>
 
         {!connected ? (
-          <div className="mt-10 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6 text-sm text-foreground/60">
-            Connect Phantom to organize a split.
+          <div
+            className="w6-card"
+            style={{ padding: 32, textAlign: "center" }}
+          >
+            <p className="w6-muted" style={{ fontSize: 14 }}>
+              Connect a wallet to organize a split.
+            </p>
           </div>
         ) : (
-          <section className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          <section className="w6-card" style={{ padding: 24 }}>
             <div className="grid gap-3 text-sm">
               <input
                 value={label}
@@ -119,14 +140,14 @@ export default function SplitBillCreatePage() {
               type="button"
               onClick={() => void create()}
               disabled={busy}
-              className="mt-4 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
+              className="w6-btn w6-btn-primary"
+              style={{ width: "100%", marginTop: 16 }}
             >
               {busy ? "Creating…" : "Create bill"}
             </button>
           </section>
         )}
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

@@ -7,8 +7,7 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
-import { ReceiptCard, TrustGesture } from "@settle/ui";
-import { Footer } from "../../../components/footer";
+import { CapabilityBadge, HashChainAnimation, ReceiptCard, TrustGesture, TrustScoreBadge } from "@settle/ui";
 import { supabaseBrowser } from "../../../lib/supabase";
 import { lamportsToUsdc } from "../../../lib/format";
 import { getSolscanUrl } from "../../../lib/solana";
@@ -17,6 +16,8 @@ import { VoiceRecorder, encryptVoiceNote } from "../../../lib/voice-note";
 import { asAuthHeaders, fetchAuthHeaders, withAuthQuery } from "../../../lib/client-auth";
 import { EscrowState } from "../../../components/escrow-state";
 import { ReceiptTimeline } from "../../../components/receipt-timeline";
+import { ReceiptTags } from "../../../components/receipt-tags";
+import { W6AppShell } from "../../../components/w6-app-shell";
 
 interface ReceiptResponse {
   ok: true;
@@ -47,6 +48,15 @@ interface ReceiptResponse {
     submission_method?: "helius_sender_jito" | "rpc_fallback" | "wallet_send";
     compressed_sig?: string | null;
     compressed_addr?: string | null;
+    /**
+     * F2.0 Universal Receipt Kernel — kind discriminator. One of:
+     *   x402_spend, direct_send, link_send, streaming_claim,
+     *   escrow_release, escrow_dispute, refund.
+     * Pre-migration-0019 rows backfill to 'x402_spend'.
+     */
+    receipt_kind?: string;
+    /** BLAKE3({kind, sender, recipient, amount, request_id}). */
+    context_hash?: string | null;
   };
   pact:
     | {
@@ -116,12 +126,42 @@ interface AttachmentRow {
   created_at: string;
 }
 
-const REFUND_REASONS = [
-  "didn't deliver",
-  "wrong item",
-  "scam",
-  "changed my mind",
-  "other",
+/**
+ * F2.8 Refund-by-emoji.
+ *
+ * Each emoji maps to an intent the API records alongside the on-chain refund.
+ * The reason text is what the merchant sees + what the kernel commits as
+ * `purpose_text` on the refund receipt; the emoji is metadata for analytics
+ * + the user's own future ("what was that one I refunded with 😡 last week?").
+ *
+ * Order is intentional — disappointment first because it's the most common
+ * "soft" case (close pact + reclaim unspent), anger last because it triggers
+ * the dispute path on escrow pacts.
+ */
+const REFUND_EMOJIS: Array<{
+  emoji: string;
+  intent: string;
+  hint: string;
+  defaultReason: string;
+}> = [
+  {
+    emoji: "😞",
+    intent: "soft_refund",
+    hint: "Just take my money back",
+    defaultReason: "Asked for a refund — no specific complaint",
+  },
+  {
+    emoji: "🤔",
+    intent: "confused",
+    hint: "I'm not sure what happened",
+    defaultReason: "Unclear what was delivered — please clarify",
+  },
+  {
+    emoji: "😡",
+    intent: "dispute",
+    hint: "This was wrong / scam",
+    defaultReason: "Disputed: not delivered as described",
+  },
 ];
 
 // ~400ms per slot is the Solana mainnet target; devnet is similar enough for UX countdown.
@@ -141,7 +181,10 @@ export default function ReceiptDetailPage() {
   const [verify, setVerify] = useState<VerifyResponse | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
-  const [refundReason, setRefundReason] = useState<string>("");
+  // F2.8 — picked emoji + intent. The emoji is the user's "feeling" tag;
+  // the actual on-chain ix is determined by the pact mode, not the emoji.
+  const [refundEmoji, setRefundEmoji] = useState<string>("");
+  const [refundIntent, setRefundIntent] = useState<string>("");
   const [refundCustom, setRefundCustom] = useState("");
   const [refunding, setRefunding] = useState(false);
   const [gesture, setGesture] = useState<
@@ -163,6 +206,33 @@ export default function ReceiptDetailPage() {
   const [attachments, setAttachments] = useState<AttachmentRow[]>([]);
   const [playingId, setPlayingId] = useState<string | null>(null);
 
+  // F2.3 Receipt-as-story narration. Loaded lazily from /api/receipts/[id]/narrate
+  // which falls back to a deterministic template when no LLM key is configured,
+  // so the UI always renders SOMETHING — never an empty block.
+  const [narration, setNarration] = useState<{
+    text: string;
+    provider: string | null;
+    cached: boolean;
+  } | null>(null);
+  const [narrationLoading, setNarrationLoading] = useState(false);
+
+  // F4.2 polish — resolve merchant_pubkey → @handle if registered.
+  // Falls back to the short pubkey form when no handle is bound.
+  const [merchantHandle, setMerchantHandle] = useState<string | null>(null);
+
+  // C111 — refund linkage. Bidirectional:
+  //   refundOriginal: if THIS is a refund, the original receipt
+  //   refunds:        if THIS receipt has refunds, the list
+  interface LinkedReceipt {
+    request_id: string;
+    amount_lamports: string;
+    receipt_kind: string | null;
+    created_at: string;
+    sig_solscan: string | null;
+  }
+  const [refundOriginal, setRefundOriginal] = useState<LinkedReceipt | null>(null);
+  const [refunds, setRefunds] = useState<LinkedReceipt[]>([]);
+
   // Initial fetch + Realtime subscription on receipts row updates
   useEffect(() => {
     if (!params.requestId) return;
@@ -177,6 +247,28 @@ export default function ReceiptDetailPage() {
         if (cancelled) return;
         if ("ok" in json && json.ok) {
           setData(json);
+          // Resolve merchant pubkey → @handle. Best-effort.
+          void fetch(`/api/handles/by-pubkey?pubkey=${json.receipt.merchant_pubkey}`)
+            .then(async (res) => {
+              if (!res.ok) return;
+              const j = (await res.json()) as { handle?: string };
+              if (!cancelled && j.handle) setMerchantHandle(j.handle);
+            })
+            .catch(() => {});
+          // C111 — load refund linkage. Best-effort: a missing endpoint
+          // (pre-migration deploy) silently leaves refundOriginal/refunds null.
+          void fetch(`/api/receipts/${json.receipt.request_id}/refund-links`)
+            .then(async (res) => {
+              if (!res.ok) return;
+              const j = (await res.json()) as {
+                original: LinkedReceipt | null;
+                refunds: LinkedReceipt[];
+              };
+              if (cancelled) return;
+              setRefundOriginal(j.original);
+              setRefunds(j.refunds ?? []);
+            })
+            .catch(() => {});
         } else {
           setError(("error" in json && json.error) || "fetch_failed");
         }
@@ -215,8 +307,7 @@ export default function ReceiptDetailPage() {
               const incoming = payload.new as Record<string, unknown>;
               for (const k of liveFields) {
                 if (k in incoming) {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (safeUpdate as any)[k] = incoming[k];
+                  Object.assign(safeUpdate, { [k]: incoming[k] });
                 }
               }
               setData((prev) =>
@@ -384,6 +475,39 @@ export default function ReceiptDetailPage() {
         // non-fatal
       } finally {
         if (!cancelled) setVerifying(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [data, params.requestId]);
+
+  // F2.3 — fetch narration in parallel with verify. Endpoint always returns
+  // something (template fallback) so we never show a placeholder forever.
+  useEffect(() => {
+    if (!data) return;
+    let cancelled = false;
+    setNarrationLoading(true);
+    void (async () => {
+      try {
+        const r = await fetch(`/api/receipts/${params.requestId}/narrate`);
+        const j = (await r.json()) as {
+          ok: boolean;
+          narration?: string;
+          provider?: string;
+          cached?: boolean;
+        };
+        if (!cancelled && j.ok && j.narration) {
+          setNarration({
+            text: j.narration,
+            provider: j.provider ?? null,
+            cached: Boolean(j.cached),
+          });
+        }
+      } catch {
+        // non-fatal — receipt page renders without narration
+      } finally {
+        if (!cancelled) setNarrationLoading(false);
       }
     })();
     return () => {
@@ -597,9 +721,17 @@ export default function ReceiptDetailPage() {
       toast.error("Connect Phantom to refund.");
       return;
     }
-    const reason = refundReason === "other" ? refundCustom.trim() : refundReason;
+    if (!refundEmoji) {
+      toast.error("Pick an emoji.");
+      return;
+    }
+    // The custom-text reason wins when provided; otherwise we use the
+    // emoji's defaultReason. This keeps "tap and submit" a single click for
+    // most users while letting power users add detail.
+    const fallback = REFUND_EMOJIS.find((r) => r.emoji === refundEmoji)?.defaultReason ?? "";
+    const reason = refundCustom.trim() || fallback;
     if (!reason) {
-      toast.error("Pick a reason.");
+      toast.error("Add a short reason.");
       return;
     }
 
@@ -610,7 +742,12 @@ export default function ReceiptDetailPage() {
       const buildRes = await fetch(`/api/receipts/${params.requestId}/refund`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ authority: publicKey.toBase58(), reason }),
+        body: JSON.stringify({
+          authority: publicKey.toBase58(),
+          reason,
+          emoji: refundEmoji,
+          intent: refundIntent,
+        }),
       });
       const built = (await buildRes.json()) as RefundBuildResponse;
 
@@ -663,18 +800,22 @@ export default function ReceiptDetailPage() {
 
   if (error) {
     return (
-      <main className="mx-auto max-w-2xl px-6 py-16">
-        <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-6 text-sm text-red-300">
-          Failed to load receipt: {error}
+      <W6AppShell>
+        <div className="mx-auto max-w-2xl">
+          <div className="w6-card" style={{ padding: 24, borderColor: "rgba(179, 38, 30, 0.32)", background: "var(--w6-bad-soft)" }}>
+            Failed to load receipt: {error}
+          </div>
         </div>
-      </main>
+      </W6AppShell>
     );
   }
   if (!data) {
     return (
-      <main className="mx-auto max-w-2xl px-6 py-16">
-        <div className="h-32 animate-pulse rounded-2xl border border-foreground/10 bg-white/[0.02]" />
-      </main>
+      <W6AppShell>
+        <div className="mx-auto max-w-2xl">
+          <div className="w6-skel" style={{ height: 128, borderRadius: 24 }} />
+        </div>
+      </W6AppShell>
     );
   }
 
@@ -699,14 +840,53 @@ export default function ReceiptDetailPage() {
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-2xl px-6 py-12">
-        <div className="text-xs text-foreground/40">
-          Receipt · <span className="font-mono">{r.request_id.slice(0, 8)}…{r.request_id.slice(-6)}</span>
+    <W6AppShell>
+      <div style={{ maxWidth: 760, margin: "0 auto" }}>
+        <div style={{ marginBottom: 24 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 16,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 280 }}>
+              <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+                Receipt
+              </div>
+              <h1
+                className="w6-heading"
+                style={{ fontSize: 28, margin: "8px 0 0", lineHeight: 1.1 }}
+              >
+                <code className="w6-mono" style={{ fontSize: 22 }}>
+                  R-{r.request_id.slice(0, 8).toUpperCase()}
+                </code>
+              </h1>
+              <p
+                className="w6-muted"
+                style={{
+                  marginTop: 8,
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                  maxWidth: 600,
+                }}
+              >
+                Forensic timeline below: 4-hash kernel commit, narration,
+                refund linkage if any, and on-chain anchor.
+              </p>
+            </div>
+            <TrustScoreBadge pubkey={r.merchant_pubkey} variant="full" />
+          </div>
         </div>
 
         <ReceiptCard
-          merchant={`${r.merchant_pubkey.slice(0, 6)}…${r.merchant_pubkey.slice(-4)}`}
+          merchant={
+            merchantHandle
+              ? `@${merchantHandle}`
+              : `${r.merchant_pubkey.slice(0, 6)}…${r.merchant_pubkey.slice(-4)}`
+          }
           amountUsdc={`$${usdc}`}
           note={`${r.target_method} ${r.target_path}`}
           decision={r.decision}
@@ -732,8 +912,117 @@ export default function ReceiptDetailPage() {
           }}
         />
 
+        {/* F2.3 Receipt-as-story narration. Always renders something — the
+            endpoint falls back to a deterministic template when no LLM key
+            is configured. We show a thin loading state on first view so
+            cache-cold pages don't flash empty. */}
+        <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          {narrationLoading && !narration ? (
+            <p className="text-xs text-foreground/40">Generating narration…</p>
+          ) : narration ? (
+            <>
+              <p className="text-sm leading-relaxed text-foreground/85">
+                {narration.text}
+              </p>
+              {narration.provider && (
+                <p className="mt-3 text-[10px] uppercase tracking-wide text-foreground/30">
+                  {narration.provider === "template"
+                    ? "deterministic narrator"
+                    : narration.provider === "nvidia_nim"
+                      ? "narrated by minimax-m2.5"
+                      : narration.provider === "anthropic"
+                        ? "narrated by claude"
+                        : narration.provider}
+                  {narration.cached ? " · cached" : " · just generated"}
+                </p>
+              )}
+            </>
+          ) : null}
+        </section>
+
+        {/* C111 — Refund linkage. Bidirectional surfaces:
+            - "This is a refund of …" link when refundOriginal is set
+            - "Refunds against this receipt" list when refunds[] non-empty */}
+        {(refundOriginal || refunds.length > 0) && (
+          <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            {refundOriginal && (
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+                  This is a refund of
+                </p>
+                <Link
+                  href={`/receipts/${refundOriginal.request_id}`}
+                  className="mt-2 block rounded-lg border border-foreground/10 bg-foreground/[0.02] p-3 text-xs hover:border-foreground/20"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <strong className="text-foreground/85">
+                      ${(Number(refundOriginal.amount_lamports) / 1e6).toFixed(2)} USDC
+                    </strong>
+                    <span className="text-[10px] uppercase tracking-wide text-foreground/40">
+                      {refundOriginal.receipt_kind ?? "x402_spend"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-foreground/50">
+                    {new Date(refundOriginal.created_at).toLocaleString()} ·{" "}
+                    <code className="font-mono">
+                      {refundOriginal.request_id.slice(0, 8)}…
+                    </code>
+                  </p>
+                </Link>
+              </div>
+            )}
+
+            {refunds.length > 0 && (
+              <div className={refundOriginal ? "mt-4" : ""}>
+                <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+                  Refunds against this receipt
+                </p>
+                <ul className="mt-2 space-y-2">
+                  {refunds.map((rf) => (
+                    <li key={rf.request_id}>
+                      <Link
+                        href={`/receipts/${rf.request_id}`}
+                        className="block rounded-lg border border-foreground/10 bg-foreground/[0.02] p-3 text-xs hover:border-foreground/20"
+                      >
+                        <div className="flex items-baseline justify-between gap-3">
+                          <strong className="text-foreground/85">
+                            -${(Number(rf.amount_lamports) / 1e6).toFixed(2)} USDC
+                          </strong>
+                          <span className="text-[10px] uppercase tracking-wide text-emerald-400">
+                            refund
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-foreground/50">
+                          {new Date(rf.created_at).toLocaleString()} ·{" "}
+                          <code className="font-mono">
+                            {rf.request_id.slice(0, 8)}…
+                          </code>
+                        </p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        )}
+
         {/* Forensic timeline — story shape over the same data. ?view=raw hides this. */}
         {showTimeline && <ReceiptTimeline r={r} />}
+
+        {/* C113 — PDF export. Opens the print-styled page; user prints to
+            PDF via the browser. Lowest-tech, works in any browser, no
+            headless Chromium dependency. */}
+        <div className="mt-6 flex gap-2 text-xs">
+          <a
+            href={`/receipts/${params.requestId}/print`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full border border-foreground/20 px-3 py-1.5 text-foreground/60 hover:bg-foreground/5"
+          >
+            Save as PDF →
+          </a>
+        </div>
 
         {/* Live status surface */}
         {liveStatus && (
@@ -764,9 +1053,35 @@ export default function ReceiptDetailPage() {
           </section>
         )}
 
+        {/* F2.7 Hash-chain animation — plays once per receipt-id per session.
+            Sits above the verification block so the visual narrative is:
+            "look, here's the chain → and here's the math that proves it." */}
+        <section className="mt-6">
+          <HashChainAnimation receiptId={r.request_id} />
+        </section>
+
+        {/* F2.11 Receipt tags — private to the connected wallet. */}
+        <section className="mt-6">
+          <ReceiptTags requestId={r.request_id} />
+        </section>
+
         {/* Verification status */}
         <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-          <h2 className="text-sm font-medium">Cryptographic verification</h2>
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-sm font-medium">Cryptographic verification</h2>
+            {/* F2.0 Universal Receipt Kernel — kind badge tells the user which
+                payment shape produced this receipt. The 4-hash commit chain is
+                the same for every kind; the kind affects which canonical
+                objects were used to build it. */}
+            {r.receipt_kind && (
+              <span
+                className="rounded-full border border-foreground/15 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] tracking-wide text-foreground/70"
+                title="Universal Receipt Kernel — payment kind discriminator"
+              >
+                kind: {r.receipt_kind}
+              </span>
+            )}
+          </div>
           {verifying ? (
             <p className="mt-3 text-xs text-foreground/50">Recomputing 4-hash chain…</p>
           ) : verify ? (
@@ -791,6 +1106,11 @@ export default function ReceiptDetailPage() {
                   );
                 })}
               </div>
+              {r.context_hash && (
+                <p className="mt-2 break-all font-mono text-[10px] text-foreground/40">
+                  <span className="text-foreground/60">context_hash:</span> {r.context_hash}
+                </p>
+              )}
             </div>
           ) : null}
         </section>
@@ -1020,61 +1340,93 @@ export default function ReceiptDetailPage() {
           </section>
         )}
 
-        {/* Refund-by-emoji surface — F4 */}
+        {/* F2.8 Refund-by-emoji surface.
+            Three emoji buttons: 😞 soft, 🤔 confused, 😡 dispute. Each
+            pre-fills a default reason; users can override with custom text.
+            The on-chain ix that runs depends on the pact mode (close_pact
+            for OneShot/Streaming; dispute_delivery_escrow for escrow), not
+            the emoji. The emoji is metadata for analytics + the user's own
+            "what was that one I refunded with 😡" memory. */}
         {isAllow && (
           <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
             <h2 className="text-sm font-medium">Refund</h2>
             {!refundOpen ? (
               <div className="mt-3 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRefundOpen(true)}
-                  className="grid h-12 w-12 place-items-center rounded-full border border-foreground/15 text-2xl transition hover:bg-foreground/5"
-                  aria-label="Request refund"
-                >
-                  😞
-                </button>
-                <span className="text-xs text-foreground/50">Tap if something went wrong.</span>
+                <div className="flex gap-2">
+                  {REFUND_EMOJIS.map((r) => (
+                    <button
+                      key={r.emoji}
+                      type="button"
+                      onClick={() => {
+                        setRefundEmoji(r.emoji);
+                        setRefundIntent(r.intent);
+                        setRefundOpen(true);
+                      }}
+                      className="grid h-12 w-12 place-items-center rounded-full border border-foreground/15 text-2xl transition hover:bg-foreground/5"
+                      aria-label={`Refund: ${r.intent}`}
+                      title={r.hint}
+                    >
+                      {r.emoji}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-xs text-foreground/50">
+                  Tap how you feel. Settle handles the rest.
+                </span>
               </div>
             ) : (
               <div className="mt-3 grid gap-3">
                 <div className="flex flex-wrap gap-2">
-                  {REFUND_REASONS.map((reason) => (
+                  {REFUND_EMOJIS.map((r) => (
                     <button
-                      key={reason}
+                      key={r.emoji}
                       type="button"
-                      onClick={() => setRefundReason(reason)}
+                      onClick={() => {
+                        setRefundEmoji(r.emoji);
+                        setRefundIntent(r.intent);
+                      }}
                       className={
-                        refundReason === reason
-                          ? "rounded-full bg-accent px-3 py-1 text-xs text-background"
-                          : "rounded-full border border-foreground/15 px-3 py-1 text-xs text-foreground/70 hover:bg-foreground/5"
+                        refundEmoji === r.emoji
+                          ? "flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs text-background"
+                          : "flex items-center gap-2 rounded-full border border-foreground/15 px-3 py-1.5 text-xs text-foreground/70 hover:bg-foreground/5"
                       }
+                      title={r.hint}
                     >
-                      {reason}
+                      <span className="text-base">{r.emoji}</span>
+                      <span>{r.intent.replace(/_/g, " ")}</span>
                     </button>
                   ))}
                 </div>
-                {refundReason === "other" && (
-                  <input
-                    value={refundCustom}
-                    onChange={(e) => setRefundCustom(e.target.value)}
-                    maxLength={120}
-                    placeholder="What went wrong?"
-                    className="rounded-lg border border-foreground/15 bg-transparent px-3 py-2 text-xs outline-none focus:border-accent"
-                  />
-                )}
+                <input
+                  value={refundCustom}
+                  onChange={(e) => setRefundCustom(e.target.value)}
+                  maxLength={200}
+                  placeholder={
+                    refundEmoji
+                      ? `Optional — defaults to "${
+                          REFUND_EMOJIS.find((r) => r.emoji === refundEmoji)?.defaultReason
+                        }"`
+                      : "Pick an emoji first"
+                  }
+                  className="rounded-lg border border-foreground/15 bg-transparent px-3 py-2 text-xs outline-none focus:border-accent"
+                />
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => void handleRefund()}
-                    disabled={refunding || !refundReason || !connected}
+                    disabled={refunding || !refundEmoji || !connected}
                     className="rounded-full bg-accent px-4 py-2 text-xs font-medium text-background disabled:opacity-50"
                   >
-                    {refunding ? "Refunding…" : "Refund"}
+                    {refunding ? "Refunding…" : `Refund ${refundEmoji}`}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setRefundOpen(false)}
+                    onClick={() => {
+                      setRefundOpen(false);
+                      setRefundEmoji("");
+                      setRefundIntent("");
+                      setRefundCustom("");
+                    }}
                     className="rounded-full border border-foreground/15 px-4 py-2 text-xs hover:bg-foreground/5"
                   >
                     Cancel
@@ -1082,12 +1434,30 @@ export default function ReceiptDetailPage() {
                 </div>
               </div>
             )}
+            {/* Show the latest emoji on already-refunded receipts so the
+                user remembers their intent without scrolling refund_requests. */}
+            {data.receipt && (data.receipt as unknown as { refund_emoji?: string }).refund_emoji && (
+              <p className="mt-3 text-[11px] text-foreground/50">
+                Last refund:{" "}
+                <span className="text-base">
+                  {(data.receipt as unknown as { refund_emoji: string }).refund_emoji}
+                </span>
+              </p>
+            )}
           </section>
         )}
 
         {/* Hash + slot details */}
         <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
           <h2 className="text-sm font-medium">Hashes</h2>
+          {/* F2.7 hash-chain animation already mounted in the section
+              above (line ~1024). No duplicate here. */}
+          {/* F3.4 — capability badge: surface the human alias if registered. */}
+          {r.capability_hash && /^[0-9a-f]{64}$/i.test(r.capability_hash) && (
+            <div className="mt-2">
+              <CapabilityBadge hash={r.capability_hash} />
+            </div>
+          )}
           <div className="mt-3 grid gap-2 text-[11px] font-mono text-foreground/60">
             <Line label="receipt_hash" value={r.receipt_hash} />
             <Line label="reason_hash" value={r.reason_hash} />
@@ -1181,9 +1551,8 @@ export default function ReceiptDetailPage() {
         </p>
 
         <TrustGesture state={gesture} />
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }
 

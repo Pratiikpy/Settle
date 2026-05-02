@@ -8,7 +8,8 @@ import {
 } from "@solana/web3.js";
 import { z } from "zod";
 import bs58 from "bs58";
-import { blake3 } from "@noble/hashes/blake3";
+import { kernelCommit } from "@settle/sdk";
+import { randomUUID } from "node:crypto";
 import { claimStreamingIxWithAtas } from "../../../../../lib/anchor-client";
 import { fetchPact, fetchAgentCard } from "../../../../../lib/account-decoder";
 import { getUsdcMint } from "../../../../../lib/solana";
@@ -46,9 +47,30 @@ function getRpcUrl(): string {
   return clusterApiUrl(cluster === "mainnet" ? "mainnet-beta" : "devnet");
 }
 
-function fastHash(label: string, parts: Array<string | number>): Buffer {
-  const input = `${label}:${parts.join("|")}`;
-  return Buffer.from(blake3(new TextEncoder().encode(input)));
+/**
+ * Predicts the on-chain claim amount the program will compute. Used to
+ * commit the kernel hashes BEFORE submission. If on-chain slot moves
+ * between predict + execute, the actual amount may differ by 1-2 slots.
+ * Path A (program v0.4 record_receipt CPI) makes this exact; Path B
+ * tolerates the drift because the kernel memo is advisory for direct sends
+ * and the on-chain ix's 3 hashes are what's authoritative for streaming.
+ */
+function predictClaimAmount(args: {
+  rate: bigint;
+  maxTotal: bigint;
+  claimed: bigint;
+  lastClaimSlot: bigint;
+  pauseAccumulated: bigint;
+  currentSlot: bigint;
+  paused: boolean;
+}): { amount: bigint; billableSlots: bigint } {
+  if (args.paused) return { amount: 0n, billableSlots: 0n };
+  const billable = args.currentSlot - args.lastClaimSlot - args.pauseAccumulated;
+  if (billable <= 0n) return { amount: 0n, billableSlots: 0n };
+  const accrued = args.rate * billable;
+  const remaining = args.maxTotal - args.claimed;
+  const amount = accrued > remaining ? remaining : accrued;
+  return { amount, billableSlots: billable };
 }
 
 export async function POST(
@@ -125,12 +147,55 @@ export async function POST(
   }
   const capabilityHash = entry.capabilityHash ?? Buffer.alloc(32);
 
-  // Demo-grade hash chain. Replace with full canonical receipt-builder once the
-  // streaming pact is wired through the proxy (Wave 6+).
+  // ─────────────────────────────────────────────────────────────────────
+  // Universal Receipt Kernel — F2.0
+  //
+  // Replaces the demo-grade fastHash chain with canonical kernelCommit
+  // hashes. Same 4-hash commit used by direct_send / x402_spend, just with
+  // kind='streaming_claim' so dashboards can filter and verifiers can
+  // check the canonical objects against the on-chain commit.
+  // ─────────────────────────────────────────────────────────────────────
   const slot = await connection.getSlot("confirmed");
-  const receiptHash = fastHash("claim:receipt", [pactPubkey.toBase58(), merchantPubkey.toBase58(), slot, parsed.data.purpose]);
-  const reasonHash = fastHash("claim:reason", [parsed.data.purpose, slot]);
-  const policySnapshotHash = fastHash("claim:policy", [pactPubkey.toBase58(), card.policyVersion, slot]);
+  if (pact.mode.kind !== "streaming") {
+    return NextResponse.json({ error: "not_streaming_mode" }, { status: 400 });
+  }
+  const predicted = predictClaimAmount({
+    rate: pact.mode.rateLamportsPerSlot,
+    maxTotal: pact.mode.maxTotalLamports,
+    claimed: pact.mode.claimed,
+    lastClaimSlot: pact.mode.lastClaimSlot,
+    pauseAccumulated: pact.mode.pauseAccumulatedSlots,
+    currentSlot: BigInt(slot),
+    paused: pact.mode.paused,
+  });
+
+  const requestId = randomUUID();
+  const kernel = kernelCommit({
+    kind: "streaming_claim",
+    request_id: requestId,
+    amount_lamports: predicted.amount.toString(),
+    sender: card.authority.toBase58(),
+    recipient: merchantPubkey.toBase58(),
+    decision_slot: slot,
+    purpose_text: parsed.data.purpose,
+    card_pubkey: pact.parentCard.toBase58(),
+    pact_pubkey: pactPubkey.toBase58(),
+    capability_hash: capabilityHash.toString("hex"),
+    policy_version: card.policyVersion,
+    daily_cap_lamports: card.dailyCapLamports.toString(),
+    per_call_max_lamports: card.perCallMaxLamports.toString(),
+    allowlist_count: card.allowlist.length,
+    expiry_slot: Number(card.expirySlot),
+    revoked: card.revoked,
+    cap_remaining_after: (
+      card.dailyCapLamports - card.usedToday - predicted.amount
+    ).toString(),
+    billable_slots: Number(predicted.billableSlots),
+  });
+
+  const receiptHash = Buffer.from(kernel.hashes.receipt_hash, "hex");
+  const reasonHash = Buffer.from(kernel.hashes.reason_hash, "hex");
+  const policySnapshotHash = Buffer.from(kernel.hashes.policy_snapshot_hash, "hex");
 
   const ix = claimStreamingIxWithAtas({
     agent: facilitator.publicKey,
@@ -189,5 +254,15 @@ export async function POST(
     claimed_after: claimedAfter,
     max_remaining_after: maxRemainingAfter,
     message: "Streaming claim settled.",
+    receipt: {
+      request_id: requestId,
+      kind: kernel.kind,
+      hashes: kernel.hashes,
+      context_hash: kernel.context_hash,
+      // The on-chain ix committed `predicted.amount`; if the program
+      // computed something different the receipt_hash won't match the
+      // canonical objects on re-verify. Path A makes this exact.
+      predicted_amount_lamports: predicted.amount.toString(),
+    },
   });
 }

@@ -1,3 +1,5 @@
+import { withSentryConfig } from "@sentry/nextjs";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -25,4 +27,19 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with Sentry only if DSN is configured. Skipping the wrapper
+// when no DSN is set keeps dev startup fast and avoids forcing every
+// developer to install/configure Sentry locally.
+const sentryDsn = process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN;
+const config = sentryDsn
+  ? withSentryConfig(nextConfig, {
+      silent: true,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      widenClientFileUpload: true,
+      hideSourceMaps: true,
+      disableLogger: true,
+    })
+  : nextConfig;
+
+export default config;

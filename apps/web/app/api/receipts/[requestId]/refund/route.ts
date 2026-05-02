@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Connection, PublicKey, Transaction, clusterApiUrl } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  clusterApiUrl,
+} from "@solana/web3.js";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
-import { closePactIx, disputeDeliveryEscrowIx } from "../../../../../lib/anchor-client";
+import { kernelCommit, kernelCommitToRecordReceiptArgs } from "@settle/sdk";
+import { randomUUID } from "node:crypto";
+import {
+  closePactIx,
+  disputeDeliveryEscrowIx,
+  recordReceiptIx,
+} from "../../../../../lib/anchor-client";
 import { getUsdcMint } from "../../../../../lib/solana";
+import { withIdempotency } from "../../../../../lib/idempotency";
 
 export const runtime = "nodejs";
 
@@ -32,6 +45,11 @@ export const runtime = "nodejs";
 const Body = z.object({
   authority: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/),
   reason: z.string().min(1).max(280),
+  // F2.8 — emoji metadata. Both fields are optional so old clients keep
+  // working; new clients send both. Validated against a closed set of
+  // intents so analytics dashboards can group reliably.
+  emoji: z.string().min(1).max(8).optional(),
+  intent: z.enum(["soft_refund", "confused", "dispute"]).optional(),
 });
 
 function getRpcUrl(): string {
@@ -48,6 +66,12 @@ export async function POST(
   { params }: { params: Promise<{ requestId: string }> },
 ) {
   const { requestId } = await params;
+  return withIdempotency(req, `/api/receipts/${requestId}/refund`, () =>
+    refundHandler(req, requestId),
+  );
+}
+
+async function refundHandler(req: NextRequest, requestId: string) {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
     return NextResponse.json({ error: "invalid_request_id" }, { status: 400 });
   }
@@ -67,7 +91,7 @@ export async function POST(
   }
 
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
     return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
   }
@@ -76,7 +100,9 @@ export async function POST(
   // 1. Look up the receipt
   const { data: receipt, error: rErr } = await supabase
     .from("receipts")
-    .select("request_id, card_pubkey, pact_pubkey, decision, created_at")
+    .select(
+      "request_id, card_pubkey, pact_pubkey, decision, created_at, amount_lamports, merchant_pubkey",
+    )
     .eq("request_id", requestId)
     .maybeSingle();
   if (rErr) {
@@ -142,16 +168,31 @@ export async function POST(
     );
   }
 
-  // Best-effort log the reason for support / future analytics.
+  // Best-effort log the reason + emoji for support / future analytics.
+  // F2.8 — emoji is captured BOTH on refund_requests (full audit log) and
+  // on receipts.refund_emoji (latest only, for UI). Either write may fail
+  // gracefully on pre-migration-0020 deploys; that's expected during a
+  // rolling deploy and we don't block the refund tx on it.
   try {
     await supabase.from("refund_requests").insert({
       request_id: requestId,
       pact_pubkey: receipt.pact_pubkey,
       authority_pubkey: parse.data.authority,
       reason: parse.data.reason,
+      ...(parse.data.emoji ? { emoji: parse.data.emoji } : {}),
     });
   } catch {
     // table may not exist on older deploys; this is non-fatal
+  }
+  if (parse.data.emoji) {
+    try {
+      await supabase
+        .from("receipts")
+        .update({ refund_emoji: parse.data.emoji })
+        .eq("request_id", requestId);
+    } catch {
+      // pre-0020 column missing — non-fatal
+    }
   }
 
   const authority = new PublicKey(parse.data.authority);
@@ -203,8 +244,38 @@ export async function POST(
     message = "Sign to close pact and refund unspent USDC to your wallet.";
   }
 
+  // ─────────────────────────────────────────────────────────────────────
+  // Universal Receipt Kernel — F2.0
+  //
+  // Refund kernel commit. The refund is its OWN receipt, referencing the
+  // original receipt by request_id. Funds flow merchant → buyer; we
+  // synthesize the canonical objects from the original receipt's row.
+  // ─────────────────────────────────────────────────────────────────────
+  const refundRequestId = randomUUID();
+  const refundDecisionSlot = await connection.getSlot("confirmed");
+  const originalAmount = receipt.amount_lamports?.toString?.() ?? "0";
+  const merchantPubkey = receipt.merchant_pubkey ?? authority.toBase58();
+  const refundKernel = kernelCommit({
+    kind: "refund",
+    request_id: refundRequestId,
+    amount_lamports: originalAmount,
+    sender: merchantPubkey, // funds came from merchant (now refunded)
+    recipient: authority.toBase58(), // refund goes back to buyer
+    decision_slot: refundDecisionSlot,
+    purpose_text: parse.data.reason,
+    refund_of_request_id: requestId,
+    refund_reason: parse.data.reason,
+  });
+
+  // Path A: authority signs both the close/dispute ix and the refund-kernel
+  // attestation. Single-signer flow keeps wallet UX one-tap.
+  const kernelIx = recordReceiptIx({
+    attestor: authority,
+    args: kernelCommitToRecordReceiptArgs(refundKernel),
+  });
+
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
-  const tx = new Transaction().add(ix);
+  const tx = new Transaction().add(ix, kernelIx);
   tx.recentBlockhash = blockhash;
   tx.lastValidBlockHeight = lastValidBlockHeight;
   tx.feePayer = authority;
@@ -220,5 +291,12 @@ export async function POST(
     blockhash,
     last_valid_block_height: lastValidBlockHeight,
     message,
+    receipt: {
+      request_id: refundRequestId,
+      kind: refundKernel.kind,
+      hashes: refundKernel.hashes,
+      context_hash: refundKernel.context_hash,
+      refund_of_request_id: requestId,
+    },
   });
 }

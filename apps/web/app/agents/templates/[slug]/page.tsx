@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Footer } from "../../../../components/footer";
+import { W6AppShell } from "../../../../components/w6-app-shell";
 import { TemplateHireButton } from "./hire-button";
 
 interface Template {
@@ -40,8 +40,8 @@ export default async function TemplateDetailPage({
   if (!t) notFound();
 
   return (
-    <>
-      <main className="mx-auto max-w-3xl px-6 py-12">
+    <W6AppShell forceSurface="agent">
+      <div style={{ maxWidth: 880 }}>
         <Link
           href="/agents/templates"
           className="text-xs text-foreground/50 hover:text-foreground"
@@ -109,9 +109,8 @@ export default async function TemplateDetailPage({
           Hiring builds an <code>open_pact</code> instruction signed by your wallet. Hard caps
           are enforced on-chain.
         </p>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }
 

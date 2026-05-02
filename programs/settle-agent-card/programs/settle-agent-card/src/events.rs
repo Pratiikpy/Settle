@@ -141,3 +141,31 @@ pub struct DeliveryEscrowDisputedEvent {
     pub amount: u64,
     pub slot: u64,
 }
+
+/// F2.0 Universal Receipt Kernel — Path A on-chain attestation.
+///
+/// Emitted by `record_receipt` to record a 4-hash kernel commit on-chain
+/// for any payment kind (including non-Anchor-routed direct sends, link
+/// claims, refunds). Indexer parses these and writes to Postgres alongside
+/// PolicyDecisionEvent rows so dashboards can filter receipts by kind.
+///
+/// Layout (Borsh, little-endian):
+///   attestor(32) kind(u8) receipt_hash(32) reason_hash(32)
+///   policy_snapshot_hash(32) purpose_hash(32) context_hash(32) slot(u64)
+/// Total: 32 + 1 + 32*5 + 8 = 201 bytes
+#[event]
+pub struct ReceiptRecordedEvent {
+    /// The signer that attested. Verifier decides whether to trust based on
+    /// who this is (e.g. only Settle operator's key for merchant dashboards).
+    pub attestor: Pubkey,
+    /// Kind tag — matches @settle/sdk `KIND_TAG`:
+    /// 1=x402_spend, 2=direct_send, 3=link_send, 4=streaming_claim,
+    /// 5=escrow_release, 6=escrow_dispute, 7=refund.
+    pub kind: u8,
+    pub receipt_hash: [u8; 32],
+    pub reason_hash: [u8; 32],
+    pub policy_snapshot_hash: [u8; 32],
+    pub purpose_hash: [u8; 32],
+    pub context_hash: [u8; 32],
+    pub slot: u64,
+}

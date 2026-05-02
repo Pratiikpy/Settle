@@ -5,6 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { fireSettlementConfetti } from "../../lib/confetti";
 import { PythPriceTicker } from "../../components/pyth-price-ticker";
+import { W6AppShell } from "../../components/w6-app-shell";
 
 /**
  * /sandbox — Devnet sandbox. Phantom required (we don't teach skipping the wallet step).
@@ -40,9 +41,10 @@ export default function SandboxPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-12">
+    <W6AppShell>
+    <div className="mx-auto max-w-2xl">
       <div className="flex items-baseline justify-between gap-4">
-        <h1 className="text-3xl font-semibold tracking-tight">Devnet sandbox</h1>
+        <h1 className="w6-heading" style={{ fontSize: 32, lineHeight: 1.1, margin: 0 }}>Devnet sandbox</h1>
         <PythPriceTicker />
       </div>
       <p className="mt-2 text-sm text-foreground/60">
@@ -91,6 +93,7 @@ export default function SandboxPage() {
         SPL test-USDC mint authority on devnet. Mainnet button disabled in sandbox. Rate-limited
         via Upstash Redis (1 airdrop per pubkey per 24h).
       </p>
-    </main>
+    </div>
+    </W6AppShell>
   );
 }

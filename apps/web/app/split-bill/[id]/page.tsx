@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { fireSettlementConfetti, trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
 import { supabaseBrowser } from "../../../lib/supabase";
-import { Footer } from "../../../components/footer";
+import { W6AppShell } from "../../../components/w6-app-shell";
 
 interface Bill {
   id: string;
@@ -170,8 +170,8 @@ export default function SplitBillPage() {
   const totalPaidLamports = payments.reduce((s, p) => s + BigInt(p.amount_lamports), 0n);
 
   return (
-    <>
-      <main className="mx-auto max-w-md px-6 py-12">
+    <W6AppShell forceSurface="consumer">
+      <div style={{ maxWidth: 880 }}>
         <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
           <div className="text-xs uppercase tracking-wider text-foreground/45">Split bill</div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{bill.label}</h1>
@@ -267,8 +267,7 @@ export default function SplitBillPage() {
             </ul>
           </section>
         )}
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

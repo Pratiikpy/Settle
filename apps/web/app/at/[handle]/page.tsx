@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Link from "next/link";
-import { HandleBadge } from "@settle/ui";
-import { Footer } from "../../../components/footer";
+import { HandleBadge, TrustScoreBadge } from "@settle/ui";
+import { W6AppShell } from "../../../components/w6-app-shell";
 import { LivePresence } from "../../../components/live-presence";
 import { HandlePayCta } from "../../../components/handle-pay-cta";
 import { FollowButton } from "../../../components/follow-button";
@@ -148,52 +148,63 @@ export default function HandleProfilePage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-2xl px-6 py-12">
-        <div className="h-32 animate-pulse rounded-2xl border border-foreground/10 bg-white/[0.02]" />
-      </main>
+      <W6AppShell>
+        <div className="mx-auto max-w-2xl">
+          <div className="w6-skel" style={{ height: 128, borderRadius: 24 }} />
+        </div>
+      </W6AppShell>
     );
   }
 
   if (error === "handle_not_found") {
     return (
-      <main className="mx-auto max-w-md px-6 py-24 text-center">
-        <h1 className="text-2xl font-semibold">@{params.handle} not found</h1>
-        <p className="mt-3 text-sm text-foreground/60">
-          This handle hasn&apos;t been claimed on Settle.
-        </p>
-        <Link
-          href="/onboarding"
-          className="mt-8 inline-flex h-11 items-center justify-center rounded-full bg-accent px-6 text-sm font-medium text-background"
-        >
-          Claim a handle
-        </Link>
-      </main>
+      <W6AppShell>
+        <div className="mx-auto max-w-md text-center" style={{ padding: "64px 24px" }}>
+          <h1 className="w6-heading" style={{ fontSize: 28, margin: 0 }}>@{params.handle} not found</h1>
+          <p className="w6-muted" style={{ marginTop: 12, fontSize: 14 }}>
+            This handle hasn&apos;t been claimed on Settle.
+          </p>
+          <Link
+            href="/onboarding"
+            className="w6-btn w6-btn-primary"
+            style={{ marginTop: 32 }}
+          >
+            Claim a handle
+          </Link>
+        </div>
+      </W6AppShell>
     );
   }
 
   if (!profile) {
     return (
-      <main className="mx-auto max-w-md px-6 py-24 text-center">
-        <h1 className="text-2xl font-semibold">Profile unavailable</h1>
-        <p className="mt-3 text-sm text-foreground/60">
-          {error === "supabase_unconfigured"
-            ? "The directory is offline. Try again later."
-            : "Something went wrong loading this profile."}
-        </p>
-      </main>
+      <W6AppShell>
+        <div className="mx-auto max-w-md text-center" style={{ padding: "64px 24px" }}>
+          <h1 className="w6-heading" style={{ fontSize: 28, margin: 0 }}>Profile unavailable</h1>
+          <p className="w6-muted" style={{ marginTop: 12, fontSize: 14 }}>
+            {error === "supabase_unconfigured"
+              ? "The directory is offline. Try again later."
+              : "Something went wrong loading this profile."}
+          </p>
+        </div>
+      </W6AppShell>
     );
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-2xl px-6 py-12">
+    <W6AppShell>
+      <div className="mx-auto max-w-2xl">
         {/* Profile header */}
         <div className="rounded-3xl border border-foreground/10 card-surface p-8">
-          <HandleBadge
-            handle={`@${profile.handle}`}
-            {...(profile.sns_domain ? { domain: profile.sns_domain } : {})}
-            copyable
-          />
+          <div className="flex items-center gap-3">
+            <HandleBadge
+              handle={`@${profile.handle}`}
+              {...(profile.sns_domain ? { domain: profile.sns_domain } : {})}
+              copyable
+            />
+            {/* F3.12 / M6 — trust score next to handle. Hover for breakdown. */}
+            <TrustScoreBadge pubkey={profile.pubkey} variant="full" />
+          </div>
           <LivePresence handle={profile.handle} pubkey={profile.pubkey} />
           {profile.display_name && (
             <h1 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -345,12 +356,11 @@ export default function HandleProfilePage() {
           </div>
         )}
 
-        <p className="mt-12 text-xs text-foreground/40">
+        <p className="w6-muted" style={{ marginTop: 48, fontSize: 12 }}>
           Only receipts marked <code>public_feed=true</code> are visible. Owners control
           privacy per-card.
         </p>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { lamportsToUsdc, timeAgo } from "../../lib/format";
 import { getSolscanUrl } from "../../lib/solana";
+import { W6AppShell } from "../../components/w6-app-shell";
 
 interface FeedEvent {
   id: number;
@@ -47,63 +48,130 @@ export default function FeedPage() {
   }, []);
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">Live</h1>
-      <p className="mt-2 text-sm text-foreground/60">
-        Public agent activity. Toggle privacy on any of your own cards.
-      </p>
+    <W6AppShell forceSurface="public">
+      <div style={{ maxWidth: 720 }}>
+        <div style={{ marginBottom: 24 }}>
+          <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+            Public · live feed
+          </div>
+          <h1
+            className="w6-heading"
+            style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+          >
+            Live agent activity.
+          </h1>
+          <p
+            className="w6-muted"
+            style={{
+              fontSize: 14,
+              marginTop: 8,
+              maxWidth: 640,
+              lineHeight: 1.5,
+            }}
+          >
+            Public spends streamed from the on-chain program. Each row is a
+            real receipt — verifiable without a wallet.
+          </p>
+        </div>
 
-      {loading ? (
-        <div className="mt-8 grid gap-3">
-          <div className="h-16 animate-pulse rounded-xl border border-foreground/10 bg-white/[0.02]" />
-          <div className="h-16 animate-pulse rounded-xl border border-foreground/10 bg-white/[0.02]" />
-          <div className="h-16 animate-pulse rounded-xl border border-foreground/10 bg-white/[0.02]" />
-        </div>
-      ) : error === "supabase_unconfigured" ? (
-        <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-300">
-          Supabase not configured. Apply migrations + run the indexer to start receiving events.
-        </div>
-      ) : events.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6 text-sm text-foreground/60">
-          No public events yet. Agent activity will appear here as it happens.
-        </div>
-      ) : (
-        <div className="mt-8 space-y-3">
-          {events.map((event) => (
-            <div key={event.id} className="rounded-xl border border-foreground/10 p-4">
-              <div className="flex items-start justify-between">
-                <div className="text-sm">
-                  <span className="font-mono text-xs text-foreground/50">
-                    {event.card_pubkey.slice(0, 6)}…
-                  </span>{" "}
-                  <span className="text-foreground/40">→</span>{" "}
-                  <span className="font-mono text-xs">
-                    {(event.merchant_pubkey ?? "").slice(0, 6)}…
-                  </span>
+        {loading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="w6-card animate-pulse"
+                style={{ height: 64 }}
+              />
+            ))}
+          </div>
+        ) : error === "supabase_unconfigured" ? (
+          <div
+            className="w6-card"
+            style={{ padding: 16, borderColor: "var(--w6-warn-cluster)" }}
+          >
+            Supabase not configured. Run the indexer to start receiving
+            events.
+          </div>
+        ) : events.length === 0 ? (
+          <div
+            className="w6-card"
+            style={{ padding: 32, textAlign: "center" }}
+          >
+            <p className="w6-muted" style={{ fontSize: 13 }}>
+              No public events yet. Agent activity will appear here as it
+              happens.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {events.map((event) => (
+              <div
+                key={event.id}
+                className="w6-card-flat"
+                style={{ padding: 16 }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    gap: 12,
+                  }}
+                >
+                  <div style={{ fontSize: 13 }}>
+                    <span
+                      className="w6-mono w6-muted"
+                      style={{ fontSize: 11.5 }}
+                    >
+                      {event.card_pubkey.slice(0, 6)}…
+                    </span>{" "}
+                    <span className="w6-muted">→</span>{" "}
+                    <span className="w6-mono" style={{ fontSize: 11.5 }}>
+                      {(event.merchant_pubkey ?? "").slice(0, 6)}…
+                    </span>
+                  </div>
+                  <div className="w6-muted" style={{ fontSize: 11.5 }}>
+                    {timeAgo(event.created_at)}
+                  </div>
                 </div>
-                <div className="text-xs text-foreground/40">
-                  {timeAgo(event.created_at)}
-                </div>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="font-mono text-accent">
-                  ${lamportsToUsdc(event.amount_lamports)}
-                </span>
-                {event.sig_solscan && (
-                  <a
-                    href={getSolscanUrl(event.sig_solscan)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-foreground/40 hover:text-accent"
+                <div
+                  style={{
+                    marginTop: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: 12,
+                  }}
+                >
+                  <span
+                    className="w6-mono"
+                    style={{
+                      fontWeight: 600,
+                      color:
+                        event.decision === "ALLOW"
+                          ? "var(--w6-ok)"
+                          : "var(--w6-bad)",
+                    }}
                   >
-                    Solscan ↗
-                  </a>
-                )}
+                    ${lamportsToUsdc(event.amount_lamports)}
+                  </span>
+                  {event.sig_solscan && (
+                    <a
+                      href={getSolscanUrl(event.sig_solscan)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w6-muted"
+                      style={{ textDecoration: "none" }}
+                    >
+                      Solscan ↗
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </main>
+            ))}
+          </div>
+        )}
+      </div>
+    </W6AppShell>
   );
 }

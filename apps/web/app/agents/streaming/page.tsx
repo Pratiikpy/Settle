@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
 import { PauseOnBlur } from "../../../components/pause-on-blur";
+import { W6AppShell } from "../../../components/w6-app-shell";
 
 /**
  * F13 / F14 — Streaming Pact full lifecycle UI.
@@ -141,19 +142,42 @@ export default function StreamingDashboard() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
-      <header className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-wider text-foreground/55">
-            Streaming Pacts
+    <W6AppShell forceSurface="agent">
+      <div style={{ maxWidth: 760 }}>
+        <header
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 16,
+            marginBottom: 24,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 280 }}>
+            <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+              Streaming Pacts
+            </div>
+            <h1
+              className="w6-heading"
+              style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+            >
+              Live spend.
+            </h1>
+            <p
+              className="w6-muted"
+              style={{
+                fontSize: 14,
+                marginTop: 8,
+                maxWidth: 640,
+                lineHeight: 1.5,
+              }}
+            >
+              Agent salaries that flow per-slot. Pause anytime. Cancel
+              returns the unspent USDC on-chain.
+            </p>
           </div>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Live spend</h1>
-          <p className="mt-2 text-sm text-foreground/60">
-            Agent salaries that flow per-slot. Pause anytime. Cancel returns the unspent
-            USDC on-chain.
-          </p>
-        </div>
-      </header>
+        </header>
 
       {connected && (
         <OpenStreamForm
@@ -191,7 +215,8 @@ export default function StreamingDashboard() {
           ))}
         </div>
       )}
-    </main>
+      </div>
+    </W6AppShell>
   );
 }
 

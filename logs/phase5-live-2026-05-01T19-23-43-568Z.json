@@ -1,0 +1,139 @@
+{
+  "host": "http://localhost:3000",
+  "card": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+  "pact": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+  "merchant": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+  "schedule_id": "08a319a9-5a68-48e1-9b95-9d179f968423",
+  "execution": {
+    "execution_id": "c6ab75bc-8b1d-4795-8578-85d2a0ef6330",
+    "intent_kind": "scheduled_send",
+    "intent_id": "08a319a9-5a68-48e1-9b95-9d179f968423",
+    "mode": "live",
+    "status": "confirmed",
+    "signature": "291X1bSvAEyA64dVahv1cJAhCDS32ghRHkLZyWatCFjWjC1ybduYgqNcK6ibUnD191zZ5kUN7Mhtdy5RcKtiCWX2",
+    "plan_json": {
+      "why": "scheduled DAILY",
+      "ix_kind": "spend_via_pact",
+      "intent_id": "08a319a9-5a68-48e1-9b95-9d179f968423",
+      "pact_ready": true,
+      "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+      "intent_kind": "scheduled_send",
+      "pact_pubkey": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+      "kernel_hashes": {
+        "reason_hash": "f23757d4910f7f1c1f20f0c3d3249087aa5700508c889db71e1bc785f3ef6b9a",
+        "context_hash": "3d59319f4e2d7e54925f740359b08a6e85142886013db683ca2c319b320e45ba",
+        "purpose_hash": "8af7267216106b85d18280abb1f0ed0c10063c47692912965903b0ac7f1d152f",
+        "receipt_hash": "8454bd94fcf7e8eb1c3dbd5b1349a90333221daef51b170d753f0fbaf6485464",
+        "policy_snapshot_hash": "203bceb4b5d4af2624a79359818439c1a8895bacc9fc4fca70ffd8de59660d71"
+      },
+      "source_pubkey": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+      "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+      "amount_lamports": "100000",
+      "card_delegation_validated": true
+    },
+    "error_message": null,
+    "created_at": "2026-05-01T19:23:37.807284+00:00",
+    "confirmed_at": "2026-05-01T19:23:37.585+00:00",
+    "fire_window_ms": 493795
+  },
+  "log": [
+    {
+      "step": "pre_state",
+      "ok": true,
+      "detail": "vault=0.5 USDC, merchant=1 USDC"
+    },
+    {
+      "step": "mirror_card",
+      "ok": true,
+      "detail": "card mirrored to agent_cards"
+    },
+    {
+      "step": "mirror_allowlist",
+      "ok": true,
+      "detail": "allowlist row inserted"
+    },
+    {
+      "step": "signer_probe",
+      "ok": true,
+      "detail": "mode=live relayer=C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY"
+    },
+    {
+      "step": "insert_schedule",
+      "ok": true,
+      "detail": "schedule_id=08a319a9-5a68-48e1-9b95-9d179f968423 amount=100000 next_fire_at=2026-05-01T19:22:31.145Z"
+    },
+    {
+      "step": "tick",
+      "ok": true,
+      "detail": "schedules_due=1 refills_due=0",
+      "data": {
+        "ok": true,
+        "at": "2026-05-01T19:23:31.620Z",
+        "schedules_due": 1,
+        "refills_due": 0,
+        "gifts_expired": 0,
+        "gifts_to_send": 0,
+        "errors": []
+      }
+    },
+    {
+      "step": "signer",
+      "ok": true,
+      "detail": "mode=live picked=1 executions_logged=1 errors=0",
+      "data": {
+        "ok": true,
+        "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+        "relayer_warning": null,
+        "mode": "live",
+        "scheduled_picked": 1,
+        "refills_picked": 0,
+        "gift_claims_picked": 0,
+        "gift_refunds_picked": 0,
+        "executions_logged": 1,
+        "errors": []
+      }
+    },
+    {
+      "step": "poll_executions",
+      "ok": true,
+      "detail": "result=undefined mode=live tx_sig=(none) ",
+      "data": {
+        "execution_id": "c6ab75bc-8b1d-4795-8578-85d2a0ef6330",
+        "intent_kind": "scheduled_send",
+        "intent_id": "08a319a9-5a68-48e1-9b95-9d179f968423",
+        "mode": "live",
+        "status": "confirmed",
+        "signature": "291X1bSvAEyA64dVahv1cJAhCDS32ghRHkLZyWatCFjWjC1ybduYgqNcK6ibUnD191zZ5kUN7Mhtdy5RcKtiCWX2",
+        "plan_json": {
+          "why": "scheduled DAILY",
+          "ix_kind": "spend_via_pact",
+          "intent_id": "08a319a9-5a68-48e1-9b95-9d179f968423",
+          "pact_ready": true,
+          "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+          "intent_kind": "scheduled_send",
+          "pact_pubkey": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+          "kernel_hashes": {
+            "reason_hash": "f23757d4910f7f1c1f20f0c3d3249087aa5700508c889db71e1bc785f3ef6b9a",
+            "context_hash": "3d59319f4e2d7e54925f740359b08a6e85142886013db683ca2c319b320e45ba",
+            "purpose_hash": "8af7267216106b85d18280abb1f0ed0c10063c47692912965903b0ac7f1d152f",
+            "receipt_hash": "8454bd94fcf7e8eb1c3dbd5b1349a90333221daef51b170d753f0fbaf6485464",
+            "policy_snapshot_hash": "203bceb4b5d4af2624a79359818439c1a8895bacc9fc4fca70ffd8de59660d71"
+          },
+          "source_pubkey": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+          "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+          "amount_lamports": "100000",
+          "card_delegation_validated": true
+        },
+        "error_message": null,
+        "created_at": "2026-05-01T19:23:37.807284+00:00",
+        "confirmed_at": "2026-05-01T19:23:37.585+00:00",
+        "fire_window_ms": 493795
+      }
+    },
+    {
+      "step": "onchain_delta",
+      "ok": true,
+      "detail": "vault: 0.5 → 0.4 (Δ 0.1); merchant: 1 → 1.1 (Δ 0.1)"
+    }
+  ]
+}

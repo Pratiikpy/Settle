@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { Footer } from "../../../../components/footer";
+import { W6AppShell } from "../../../../components/w6-app-shell";
 
 interface Pricelist {
   ok: true;
@@ -84,8 +84,8 @@ export default function QrPage() {
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-md px-6 py-12">
+    <W6AppShell forceSurface="merchant">
+      <div style={{ maxWidth: 880 }}>
         <Link href={`/at/${params.merchant}`} className="text-xs text-foreground/45 hover:text-accent">
           ← Profile
         </Link>
@@ -135,8 +135,7 @@ export default function QrPage() {
           server. The amount lives in the merchant&apos;s pricelist row, not in the QR
           itself — change the price, the same QR updates everywhere.
         </p>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

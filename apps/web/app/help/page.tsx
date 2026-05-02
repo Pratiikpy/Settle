@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Footer } from "../../components/footer";
+import { W6AppShell } from "../../components/w6-app-shell";
 
 export const metadata: Metadata = {
   title: "Help — Settle",
@@ -43,29 +43,72 @@ const FAQ: { q: string; a: string }[] = [
 
 export default function HelpPage() {
   return (
-    <>
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-3xl font-semibold tracking-tight">Help</h1>
-        <p className="mt-2 text-sm text-foreground/60">
-          The most common questions. Need more? Open an issue on GitHub.
-        </p>
+    <W6AppShell forceSurface="public">
+      <div style={{ maxWidth: 760 }}>
+        <div style={{ marginBottom: 32 }}>
+          <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+            Help
+          </div>
+          <h1
+            className="w6-heading"
+            style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+          >
+            The most common questions.
+          </h1>
+          <p
+            className="w6-muted"
+            style={{
+              fontSize: 14,
+              marginTop: 8,
+              maxWidth: 640,
+              lineHeight: 1.5,
+            }}
+          >
+            Need more? Open an issue on GitHub.
+          </p>
+        </div>
 
-        <div className="mt-10 grid gap-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {FAQ.map((item) => (
             <details
               key={item.q}
-              className="group rounded-2xl border border-foreground/10 bg-white/[0.02] p-5 open:border-accent/30"
+              className="w6-card"
+              style={{ padding: 20 }}
             >
-              <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-medium">
+              <summary
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 16,
+                  cursor: "pointer",
+                  fontSize: 15,
+                  fontWeight: 500,
+                  listStyle: "none",
+                }}
+              >
                 {item.q}
-                <span className="text-foreground/40 transition group-open:rotate-45">+</span>
+                <span
+                  className="w6-muted"
+                  style={{ fontSize: 18, transition: "transform 0.2s" }}
+                >
+                  +
+                </span>
               </summary>
-              <p className="mt-3 text-sm text-foreground/70">{item.a}</p>
+              <p
+                className="w6-muted"
+                style={{
+                  marginTop: 12,
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                }}
+              >
+                {item.a}
+              </p>
             </details>
           ))}
         </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

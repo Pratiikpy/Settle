@@ -1,129 +1,1973 @@
 {
-  "version": "0.3.0",
-  "name": "settle_agent_card",
+  "address": "HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD",
+  "metadata": {
+    "name": "settle_agent_card",
+    "version": "0.2.0",
+    "spec": "0.1.0",
+    "description": "Settle — control layer for AI-agent payments on Solana"
+  },
   "instructions": [
     {
-      "name": "createCard",
+      "name": "claim_streaming",
+      "docs": [
+        "Streaming claim — agent draws accrued entitlement up to max_total - claimed,",
+        "minus any time spent paused. Updates parent card.used_today (cross-pact daily",
+        "cap stays enforced)."
+      ],
+      "discriminator": [
+        236,
+        226,
+        144,
+        254,
+        196,
+        221,
+        67,
+        159
+      ],
+      "accounts": [
+        {
+          "name": "agent",
+          "docs": [
+            "Agent signer — must equal card.agent_pubkey. The user does NOT sign per-claim."
+          ],
+          "signer": true
+        },
+        {
+          "name": "fee_payer",
+          "docs": [
+            "Fee payer (typically the agent itself)."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "card",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "card.authority",
+                "account": "AgentCard"
+              },
+              {
+                "kind": "account",
+                "path": "card.label_hash",
+                "account": "AgentCard"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact.parent_card",
+                "account": "Pact"
+              },
+              {
+                "kind": "account",
+                "path": "pact.scope_label_hash",
+                "account": "Pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "vault_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "merchant_usdc",
+          "writable": true
+        },
+        {
+          "name": "merchant_owner"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": [
+        {
+          "name": "capability_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "receipt_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "reason_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "policy_snapshot_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "close_pact",
+      "docs": [
+        "Close a Pact. Refunds unspent vault balance to authority's USDC ATA on-chain",
+        "(no off-band merchant signing required). Mode-agnostic: works for both OneShot",
+        "and Streaming pacts because the refund reads from vault_usdc.amount directly."
+      ],
+      "discriminator": [
+        149,
+        221,
+        21,
+        250,
+        154,
+        14,
+        209,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact.parent_card",
+                "account": "Pact"
+              },
+              {
+                "kind": "account",
+                "path": "pact.scope_label_hash",
+                "account": "Pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "vault_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "authority_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_card",
+      "docs": [
+        "Initialize an AgentCard PDA. Authority signs; agent_pubkey is recorded but does NOT",
+        "sign the create_card ix itself. The agent_pubkey will sign spend_via_pact later."
+      ],
+      "discriminator": [
+        29,
+        242,
+        127,
+        8,
+        241,
+        109,
+        219,
+        100
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "card",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "arg",
+                "path": "params.label_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint",
+          "docs": [
+            "USDC mint pinned at creation; spend rejects any other mint."
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
       "args": [
         {
           "name": "params",
           "type": {
-            "defined": "CreateCardParams"
+            "defined": {
+              "name": "CreateCardParams"
+            }
           }
         }
       ]
     },
     {
-      "name": "spend",
-      "args": [
+      "name": "dispute_delivery_escrow",
+      "docs": [
+        "Buyer-only dispute within the dispute window. Refunds vault → buyer's USDC ATA",
+        "and closes the pact. Distinct from close_pact: timing constraint + dedicated",
+        "event for the unified ledger."
+      ],
+      "discriminator": [
+        167,
+        116,
+        235,
+        164,
+        103,
+        196,
+        13,
+        171
+      ],
+      "accounts": [
         {
-          "name": "amount",
-          "type": "u64"
+          "name": "authority",
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "capabilityHash",
-          "type": {
-            "array": [
-              "u8",
-              32
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact.parent_card",
+                "account": "Pact"
+              },
+              {
+                "kind": "account",
+                "path": "pact.scope_label_hash",
+                "account": "Pact"
+              }
             ]
           }
         },
         {
-          "name": "receiptHash",
-          "type": {
-            "array": [
-              "u8",
-              32
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact"
+              }
             ]
           }
         },
         {
-          "name": "reasonHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
+          "name": "usdc_mint"
+        },
+        {
+          "name": "vault_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
           }
         },
         {
-          "name": "policySnapshotHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
+          "name": "authority_usdc",
+          "docs": [
+            "Buyer's USDC ATA, where the refund lands."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
           }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
-      ]
-    },
-    {
-      "name": "spendViaPact",
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "capabilityHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "receiptHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "reasonHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "policySnapshotHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "revoke",
+      ],
       "args": []
     },
     {
-      "name": "recordDenial",
+      "name": "open_delivery_escrow",
+      "docs": [
+        "Open a DeliveryEscrow Pact + atomically fund vault. Buyer signs. Merchant +",
+        "capability_hash pinned at open. confirm_deadline_slot ≤ dispute_deadline_slot",
+        "enforced. State machine: open → released | refunded."
+      ],
+      "discriminator": [
+        128,
+        166,
+        143,
+        88,
+        118,
+        236,
+        141,
+        46
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "parent_card",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "parent_card.authority",
+                "account": "AgentCard"
+              },
+              {
+                "kind": "account",
+                "path": "parent_card.label_hash",
+                "account": "AgentCard"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "parent_card"
+              },
+              {
+                "kind": "arg",
+                "path": "params.scope_label_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "authority_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
       "args": [
         {
-          "name": "denyCode",
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "OpenDeliveryEscrowParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "open_pact",
+      "docs": [
+        "Open a Pact + atomically fund its Vault PDA's USDC ATA with cap_lamports.",
+        "After this ix, the agent can spend autonomously up to the cap."
+      ],
+      "discriminator": [
+        102,
+        197,
+        208,
+        127,
+        250,
+        127,
+        94,
+        183
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "parent_card",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "parent_card.authority",
+                "account": "AgentCard"
+              },
+              {
+                "kind": "account",
+                "path": "parent_card.label_hash",
+                "account": "AgentCard"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "parent_card"
+              },
+              {
+                "kind": "arg",
+                "path": "params.scope_label_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint",
+          "docs": [
+            "USDC mint, must equal parent_card.usdc_mint."
+          ]
+        },
+        {
+          "name": "authority_usdc",
+          "docs": [
+            "Authority's USDC ATA (source of funding)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault_usdc",
+          "docs": [
+            "Vault's USDC ATA (init if needed; authority pays rent)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "OpenPactParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "open_streaming_pact",
+      "docs": [
+        "Open a Streaming Pact + atomically fund vault with max_total_lamports.",
+        "Entitlement accrues at rate_lamports_per_slot from the open slot forward."
+      ],
+      "discriminator": [
+        12,
+        190,
+        137,
+        49,
+        56,
+        175,
+        85,
+        78
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "parent_card",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "parent_card.authority",
+                "account": "AgentCard"
+              },
+              {
+                "kind": "account",
+                "path": "parent_card.label_hash",
+                "account": "AgentCard"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "parent_card"
+              },
+              {
+                "kind": "arg",
+                "path": "params.scope_label_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint",
+          "docs": [
+            "USDC mint, must equal parent_card.usdc_mint."
+          ]
+        },
+        {
+          "name": "authority_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "OpenStreamingPactParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "pause_streaming",
+      "docs": [
+        "Authority-only pause. While paused, no entitlement accrues. Idempotent."
+      ],
+      "discriminator": [
+        105,
+        147,
+        177,
+        113,
+        25,
+        248,
+        112,
+        85
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact.parent_card",
+                "account": "Pact"
+              },
+              {
+                "kind": "account",
+                "path": "pact.scope_label_hash",
+                "account": "Pact"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "record_denial",
+      "docs": [
+        "Record a denial that was decided off-chain. Authority-signed; produces a",
+        "PolicyDecisionEvent so the on-chain ledger reflects every DENY with merchant +",
+        "pact context for indexer filtering."
+      ],
+      "discriminator": [
+        99,
+        178,
+        54,
+        16,
+        184,
+        230,
+        139,
+        98
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "docs": [
+            "Either the card's authority OR its agent_pubkey may sign a denial.",
+            "- Authority can record DENYs in direct (legacy) mode.",
+            "- Agent can record DENYs in pact mode (where the agent is the only signer",
+            "the proxy holds; without this, pact-mode DENYs would never land on-chain",
+            "and the unified ledger would be incomplete)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "card",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "card.authority",
+                "account": "AgentCard"
+              },
+              {
+                "kind": "account",
+                "path": "card.label_hash",
+                "account": "AgentCard"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "deny_code",
           "type": "u8"
         },
         {
           "name": "merchant",
-          "type": "publicKey"
+          "type": "pubkey"
         },
         {
           "name": "pact",
-          "type": "publicKey"
+          "type": "pubkey"
         },
         {
-          "name": "receiptHash",
+          "name": "receipt_hash",
           "type": {
             "array": [
               "u8",
@@ -132,7 +1976,7 @@
           }
         },
         {
-          "name": "reasonHash",
+          "name": "reason_hash",
           "type": {
             "array": [
               "u8",
@@ -141,7 +1985,7 @@
           }
         },
         {
-          "name": "policySnapshotHash",
+          "name": "policy_snapshot_hash",
           "type": {
             "array": [
               "u8",
@@ -152,36 +1996,43 @@
       ]
     },
     {
-      "name": "openPact",
+      "name": "record_receipt",
+      "docs": [
+        "Standalone kernel attestation. Emits `ReceiptRecordedEvent` with the",
+        "4-hash commit chain + kind discriminator + context_hash binding.",
+        "Permissionless — any signer attests; verifier decides whether to",
+        "trust based on the attestor pubkey. See instructions/record_receipt.rs",
+        "for the full design rationale."
+      ],
+      "discriminator": [
+        123,
+        1,
+        227,
+        189,
+        86,
+        215,
+        19,
+        253
+      ],
+      "accounts": [
+        {
+          "name": "attestor",
+          "docs": [
+            "Anyone can attest. The signer's pubkey is recorded as `attestor` in",
+            "the emitted event so a verifier can decide whether to trust the",
+            "attestation (e.g. \"only attestations from Settle's operator key",
+            "surface in the merchant dashboard\")."
+          ],
+          "signer": true
+        }
+      ],
       "args": [
         {
-          "name": "params",
-          "type": {
-            "defined": "OpenPactParams"
-          }
-        }
-      ]
-    },
-    {
-      "name": "closePact",
-      "args": []
-    },
-    {
-      "name": "openStreamingPact",
-      "args": [
+          "name": "kind",
+          "type": "u8"
+        },
         {
-          "name": "params",
-          "type": {
-            "defined": "OpenStreamingPactParams"
-          }
-        }
-      ]
-    },
-    {
-      "name": "claimStreaming",
-      "args": [
-        {
-          "name": "capabilityHash",
+          "name": "receipt_hash",
           "type": {
             "array": [
               "u8",
@@ -190,7 +2041,7 @@
           }
         },
         {
-          "name": "receiptHash",
+          "name": "reason_hash",
           "type": {
             "array": [
               "u8",
@@ -199,7 +2050,7 @@
           }
         },
         {
-          "name": "reasonHash",
+          "name": "policy_snapshot_hash",
           "type": {
             "array": [
               "u8",
@@ -208,7 +2059,16 @@
           }
         },
         {
-          "name": "policySnapshotHash",
+          "name": "purpose_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "context_hash",
           "type": {
             "array": [
               "u8",
@@ -219,49 +2079,1081 @@
       ]
     },
     {
-      "name": "pauseStreaming",
+      "name": "release_delivery_escrow",
+      "docs": [
+        "Release escrowed funds to the pinned merchant. Two callers: buyer (any time)",
+        "or anyone permissionlessly after confirm_deadline_slot. Merchant pinned at",
+        "open prevents redirection. Closes the pact on success."
+      ],
+      "discriminator": [
+        130,
+        40,
+        230,
+        46,
+        18,
+        75,
+        36,
+        232
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "docs": [
+            "Caller — may be the buyer (card.authority) or any third party. Pays the tx fee."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact.parent_card",
+                "account": "Pact"
+              },
+              {
+                "kind": "account",
+                "path": "pact.scope_label_hash",
+                "account": "Pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "vault_usdc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "merchant_usdc",
+          "docs": [
+            "Merchant's USDC ATA. Validated below: token::authority must equal the merchant",
+            "pubkey pinned at open time inside PactMode::DeliveryEscrow.merchant. Without this",
+            "check, a stranger could call release-after-deadline with their own ATA and steal",
+            "the funds."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
       "args": []
     },
     {
-      "name": "resumeStreaming",
+      "name": "resume_streaming",
+      "docs": [
+        "Authority-only resume. Closes out the in-flight pause window into",
+        "pause_accumulated_slots so the next claim doesn't bill paused time. Idempotent."
+      ],
+      "discriminator": [
+        194,
+        113,
+        135,
+        108,
+        14,
+        150,
+        221,
+        33
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact.parent_card",
+                "account": "Pact"
+              },
+              {
+                "kind": "account",
+                "path": "pact.scope_label_hash",
+                "account": "Pact"
+              }
+            ]
+          }
+        }
+      ],
       "args": []
     },
     {
-      "name": "openDeliveryEscrow",
+      "name": "revoke",
+      "docs": [
+        "Mark card as revoked. Idempotent. Bumps policy_version. Emits both",
+        "PolicyDecisionEvent (decision=2 REVOKE) and CardRevokedEvent."
+      ],
+      "discriminator": [
+        170,
+        23,
+        31,
+        34,
+        133,
+        173,
+        93,
+        242
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "card",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "card.authority",
+                "account": "AgentCard"
+              },
+              {
+                "kind": "account",
+                "path": "card.label_hash",
+                "account": "AgentCard"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "spend",
+      "docs": [
+        "Authority-signed spend (legacy / direct mode).",
+        "For the autonomous-agent flow, prefer `spend_via_pact`."
+      ],
+      "discriminator": [
+        242,
+        205,
+        255,
+        87,
+        101,
+        217,
+        245,
+        57
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "card",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "card.authority",
+                "account": "AgentCard"
+              },
+              {
+                "kind": "account",
+                "path": "card.label_hash",
+                "account": "AgentCard"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint",
+          "docs": [
+            "USDC mint, pinned to card.usdc_mint."
+          ]
+        },
+        {
+          "name": "authority_usdc",
+          "docs": [
+            "Authority's USDC token account (source) — must hold the pinned mint."
+          ],
+          "writable": true
+        },
+        {
+          "name": "merchant_usdc",
+          "docs": [
+            "Merchant's USDC token account (destination) — must be owned by `merchant_owner`",
+            "and hold the pinned mint."
+          ],
+          "writable": true
+        },
+        {
+          "name": "merchant_owner"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
       "args": [
         {
-          "name": "params",
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "capability_hash",
           "type": {
-            "defined": "OpenDeliveryEscrowParams"
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "receipt_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "reason_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "policy_snapshot_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
           }
         }
       ]
     },
     {
-      "name": "releaseDeliveryEscrow",
-      "args": []
-    },
-    {
-      "name": "disputeDeliveryEscrow",
-      "args": []
+      "name": "spend_via_pact",
+      "docs": [
+        "Pact-scoped autonomous spend — agent signs, Vault PDA executes the transfer.",
+        "The user does NOT sign this ix per-spend."
+      ],
+      "discriminator": [
+        9,
+        220,
+        78,
+        166,
+        8,
+        48,
+        87,
+        255
+      ],
+      "accounts": [
+        {
+          "name": "agent",
+          "docs": [
+            "Agent signer — must equal card.agent_pubkey.",
+            "This is the only Signer in the ix; the user does NOT sign per-spend."
+          ],
+          "signer": true
+        },
+        {
+          "name": "fee_payer",
+          "docs": [
+            "Fee payer (typically the same as agent, but doesn't have to be)."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "card",
+          "docs": [
+            "Parent AgentCard — MUTABLE because we update used_today + last_reset_slot.",
+            "This is what enforces the daily cap across multiple Pacts on the same card."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116,
+                  45,
+                  99,
+                  97,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "card.authority",
+                "account": "AgentCard"
+              },
+              {
+                "kind": "account",
+                "path": "card.label_hash",
+                "account": "AgentCard"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pact",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact.parent_card",
+                "account": "Pact"
+              },
+              {
+                "kind": "account",
+                "path": "pact.scope_label_hash",
+                "account": "Pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Vault PDA — owns the USDC ATA. Signed by program via with_signer."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  116,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pact"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint",
+          "docs": [
+            "USDC mint, pinned to pact.usdc_mint."
+          ]
+        },
+        {
+          "name": "vault_usdc",
+          "docs": [
+            "Vault's USDC ATA (source)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "merchant_usdc",
+          "docs": [
+            "Merchant's USDC token account (destination) — must be owned by `merchant_owner`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "merchant_owner"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "capability_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "receipt_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "reason_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "policy_snapshot_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
     }
   ],
   "accounts": [
     {
       "name": "AgentCard",
+      "discriminator": [
+        12,
+        238,
+        227,
+        39,
+        14,
+        107,
+        16,
+        173
+      ]
+    },
+    {
+      "name": "Pact",
+      "discriminator": [
+        34,
+        182,
+        77,
+        169,
+        228,
+        191,
+        31,
+        142
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "CardCreatedEvent",
+      "discriminator": [
+        8,
+        20,
+        169,
+        235,
+        146,
+        185,
+        100,
+        36
+      ]
+    },
+    {
+      "name": "CardRevokedEvent",
+      "discriminator": [
+        61,
+        115,
+        212,
+        64,
+        70,
+        43,
+        220,
+        67
+      ]
+    },
+    {
+      "name": "DeliveryEscrowDisputedEvent",
+      "discriminator": [
+        195,
+        100,
+        147,
+        159,
+        80,
+        91,
+        41,
+        248
+      ]
+    },
+    {
+      "name": "DeliveryEscrowOpenedEvent",
+      "discriminator": [
+        3,
+        10,
+        37,
+        240,
+        120,
+        161,
+        217,
+        118
+      ]
+    },
+    {
+      "name": "DeliveryEscrowReleasedEvent",
+      "discriminator": [
+        156,
+        6,
+        210,
+        228,
+        5,
+        248,
+        103,
+        115
+      ]
+    },
+    {
+      "name": "PactClosedEvent",
+      "discriminator": [
+        241,
+        77,
+        15,
+        211,
+        123,
+        15,
+        56,
+        98
+      ]
+    },
+    {
+      "name": "PactOpenedEvent",
+      "discriminator": [
+        188,
+        24,
+        194,
+        43,
+        5,
+        144,
+        226,
+        245
+      ]
+    },
+    {
+      "name": "PactSpendEvent",
+      "discriminator": [
+        115,
+        116,
+        243,
+        193,
+        82,
+        164,
+        113,
+        137
+      ]
+    },
+    {
+      "name": "PactStreamClaimEvent",
+      "discriminator": [
+        190,
+        38,
+        217,
+        124,
+        68,
+        59,
+        129,
+        196
+      ]
+    },
+    {
+      "name": "PactStreamPauseEvent",
+      "discriminator": [
+        100,
+        199,
+        47,
+        52,
+        33,
+        210,
+        1,
+        223
+      ]
+    },
+    {
+      "name": "PolicyDecisionEvent",
+      "discriminator": [
+        59,
+        102,
+        183,
+        4,
+        13,
+        143,
+        223,
+        28
+      ]
+    },
+    {
+      "name": "ReceiptRecordedEvent",
+      "discriminator": [
+        194,
+        18,
+        57,
+        76,
+        91,
+        154,
+        160,
+        174
+      ]
+    },
+    {
+      "name": "StreamingPactOpenedEvent",
+      "discriminator": [
+        155,
+        236,
+        141,
+        90,
+        77,
+        184,
+        188,
+        63
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "CardRevoked",
+      "msg": "Card is revoked."
+    },
+    {
+      "code": 6001,
+      "name": "CardExpired",
+      "msg": "Card is expired."
+    },
+    {
+      "code": 6002,
+      "name": "OverCap",
+      "msg": "Spend exceeds daily cap or per-call max."
+    },
+    {
+      "code": 6003,
+      "name": "OffAllowlist",
+      "msg": "Merchant is not on the allowlist."
+    },
+    {
+      "code": 6004,
+      "name": "CapabilityNotPinned",
+      "msg": "Capability hash does not match the pinned hash for this merchant."
+    },
+    {
+      "code": 6005,
+      "name": "MerchantNotVerified",
+      "msg": "Merchant is not present in the verified registry."
+    },
+    {
+      "code": 6006,
+      "name": "AllowlistTooLong",
+      "msg": "Allowlist exceeds maximum entries (10)."
+    },
+    {
+      "code": 6007,
+      "name": "PactAllowlistTooLong",
+      "msg": "Pact merchant allowlist exceeds maximum entries (5)."
+    },
+    {
+      "code": 6008,
+      "name": "PactClosed",
+      "msg": "Pact is closed."
+    },
+    {
+      "code": 6009,
+      "name": "PactOverCap",
+      "msg": "Pact spent would exceed cap."
+    },
+    {
+      "code": 6010,
+      "name": "UnauthorizedAuthority",
+      "msg": "Unauthorized authority for this card."
+    },
+    {
+      "code": 6011,
+      "name": "UnauthorizedAgent",
+      "msg": "Unauthorized agent (signer pubkey does not match card.agent_pubkey)."
+    },
+    {
+      "code": 6012,
+      "name": "PactCardMismatch",
+      "msg": "Pact's parent_card does not match the supplied card."
+    },
+    {
+      "code": 6013,
+      "name": "WrongMint",
+      "msg": "USDC mint does not match the mint pinned at card creation."
+    },
+    {
+      "code": 6014,
+      "name": "InvalidDenyCode",
+      "msg": "Invalid deny code."
+    },
+    {
+      "code": 6015,
+      "name": "InvalidHashLength",
+      "msg": "Receipt hash must be 32 bytes (BLAKE3)."
+    },
+    {
+      "code": 6016,
+      "name": "ZeroAmount",
+      "msg": "Amount must be greater than zero."
+    },
+    {
+      "code": 6017,
+      "name": "DestinationOwnerMismatch",
+      "msg": "Pact merchant_owner does not own the supplied destination token account."
+    },
+    {
+      "code": 6018,
+      "name": "NotOneShotMode",
+      "msg": "Operation requires a OneShot pact; this pact is in Streaming mode."
+    },
+    {
+      "code": 6019,
+      "name": "NotStreamingMode",
+      "msg": "Operation requires a Streaming pact; this pact is in OneShot mode."
+    },
+    {
+      "code": 6020,
+      "name": "NothingToClaim",
+      "msg": "No billable slots have accrued since the last claim."
+    },
+    {
+      "code": 6021,
+      "name": "StreamMaxReached",
+      "msg": "Streaming pact has reached its max_total_lamports."
+    },
+    {
+      "code": 6022,
+      "name": "NotDeliveryEscrowMode",
+      "msg": "Operation requires a DeliveryEscrow pact; this pact is in a different mode."
+    },
+    {
+      "code": 6023,
+      "name": "EscrowAlreadyReleased",
+      "msg": "Delivery escrow has already been released to the merchant."
+    },
+    {
+      "code": 6024,
+      "name": "EscrowAlreadyRefunded",
+      "msg": "Delivery escrow has already been refunded to the buyer."
+    },
+    {
+      "code": 6025,
+      "name": "EscrowConfirmDeadlineNotPassed",
+      "msg": "Permissionless release requires the confirm deadline to have passed."
+    },
+    {
+      "code": 6026,
+      "name": "EscrowDisputeWindowClosed",
+      "msg": "Dispute window has closed; the escrow can no longer be refunded by the buyer."
+    },
+    {
+      "code": 6027,
+      "name": "InvalidEscrowDeadlines",
+      "msg": "confirm_deadline_slot must be ≤ dispute_deadline_slot, and both must be in the future."
+    }
+  ],
+  "types": [
+    {
+      "name": "AgentCard",
+      "docs": [
+        "AgentCard PDA. Seeds: [b\"agent-card\", authority.key(), label_hash]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "authority",
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
-            "name": "agentPubkey",
-            "type": "publicKey"
+            "name": "agent_pubkey",
+            "type": "pubkey"
           },
           {
-            "name": "labelHash",
+            "name": "label_hash",
             "type": {
               "array": [
                 "u8",
@@ -270,35 +3162,37 @@
             }
           },
           {
-            "name": "usdcMint",
-            "type": "publicKey"
+            "name": "usdc_mint",
+            "type": "pubkey"
           },
           {
-            "name": "dailyCapLamports",
+            "name": "daily_cap_lamports",
             "type": "u64"
           },
           {
-            "name": "perCallMaxLamports",
+            "name": "per_call_max_lamports",
             "type": "u64"
           },
           {
-            "name": "usedToday",
+            "name": "used_today",
             "type": "u64"
           },
           {
-            "name": "lastResetSlot",
+            "name": "last_reset_slot",
             "type": "u64"
           },
           {
             "name": "allowlist",
             "type": {
               "vec": {
-                "defined": "AllowlistEntry"
+                "defined": {
+                  "name": "AllowlistEntry"
+                }
               }
             }
           },
           {
-            "name": "expirySlot",
+            "name": "expiry_slot",
             "type": "u64"
           },
           {
@@ -306,11 +3200,11 @@
             "type": "bool"
           },
           {
-            "name": "policyVersion",
+            "name": "policy_version",
             "type": "u32"
           },
           {
-            "name": "createdAt",
+            "name": "created_at",
             "type": "i64"
           },
           {
@@ -321,85 +3215,21 @@
       }
     },
     {
-      "name": "Pact",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "parentCard",
-            "type": "publicKey"
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "agentPubkey",
-            "type": "publicKey"
-          },
-          {
-            "name": "scopeLabelHash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "usdcMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "mode",
-            "type": {
-              "defined": "PactMode"
-            }
-          },
-          {
-            "name": "allowlist",
-            "type": {
-              "vec": {
-                "defined": "AllowlistEntry"
-              }
-            }
-          },
-          {
-            "name": "expirySlot",
-            "type": "u64"
-          },
-          {
-            "name": "closed",
-            "type": "bool"
-          },
-          {
-            "name": "createdAt",
-            "type": "i64"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "vaultBump",
-            "type": "u8"
-          }
-        ]
-      }
-    }
-  ],
-  "types": [
-    {
       "name": "AllowlistEntry",
+      "docs": [
+        "Bounded allowlist entry. Capability_hash optional → if Some, spend MUST pin to that hash.",
+        "Used by both AgentCard.allowlist and Pact.allowlist (so a Pact can pin capabilities",
+        "per-merchant just like the parent card)."
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "merchantPubkey",
-            "type": "publicKey"
+            "name": "merchant_pubkey",
+            "type": "pubkey"
           },
           {
-            "name": "capabilityHash",
+            "name": "capability_hash",
             "type": {
               "option": {
                 "array": [
@@ -413,16 +3243,84 @@
       }
     },
     {
+      "name": "CardCreatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "card",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "agent_pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "daily_cap",
+            "type": "u64"
+          },
+          {
+            "name": "per_call_max",
+            "type": "u64"
+          },
+          {
+            "name": "allowlist_count",
+            "type": "u8"
+          },
+          {
+            "name": "expiry_slot",
+            "type": "u64"
+          },
+          {
+            "name": "policy_version",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CardRevokedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "card",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "policy_version",
+            "type": "u32"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "CreateCardParams",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "agentPubkey",
-            "type": "publicKey"
+            "name": "agent_pubkey",
+            "type": "pubkey"
           },
           {
-            "name": "labelHash",
+            "name": "label_hash",
             "type": {
               "array": [
                 "u8",
@@ -431,28 +3329,191 @@
             }
           },
           {
-            "name": "dailyCapLamports",
+            "name": "daily_cap_lamports",
             "type": "u64"
           },
           {
-            "name": "perCallMaxLamports",
+            "name": "per_call_max_lamports",
             "type": "u64"
           },
           {
             "name": "allowlist",
             "type": {
               "vec": {
-                "defined": "AllowlistEntry"
+                "defined": {
+                  "name": "AllowlistEntry"
+                }
               }
             }
           },
           {
-            "name": "expirySlot",
+            "name": "expiry_slot",
             "type": "u64"
           },
           {
-            "name": "policyVersion",
+            "name": "policy_version",
             "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DeliveryEscrowDisputedEvent",
+      "docs": [
+        "P9 — Disputed: refunded to buyer within the dispute window."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pact",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DeliveryEscrowOpenedEvent",
+      "docs": [
+        "P9 — DeliveryEscrow opened: vault funded, merchant + capability + deadlines pinned."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pact",
+            "type": "pubkey"
+          },
+          {
+            "name": "parent_card",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "merchant",
+            "type": "pubkey"
+          },
+          {
+            "name": "capability_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "confirm_deadline_slot",
+            "type": "u64"
+          },
+          {
+            "name": "dispute_deadline_slot",
+            "type": "u64"
+          },
+          {
+            "name": "opened_slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DeliveryEscrowReleasedEvent",
+      "docs": [
+        "P9 — Released to merchant. `is_buyer_confirmed = true` when caller == buyer",
+        "(early confirm); `false` when called permissionlessly post-deadline."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pact",
+            "type": "pubkey"
+          },
+          {
+            "name": "merchant",
+            "type": "pubkey"
+          },
+          {
+            "name": "caller",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_buyer_confirmed",
+            "type": "bool"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OpenDeliveryEscrowParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "scope_label_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "merchant",
+            "type": "pubkey"
+          },
+          {
+            "name": "capability_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "confirm_deadline_slot",
+            "type": "u64"
+          },
+          {
+            "name": "dispute_deadline_slot",
+            "type": "u64"
+          },
+          {
+            "name": "expiry_slot",
+            "type": "u64"
           }
         ]
       }
@@ -463,7 +3524,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "scopeLabelHash",
+            "name": "scope_label_hash",
             "type": {
               "array": [
                 "u8",
@@ -472,19 +3533,21 @@
             }
           },
           {
-            "name": "capLamports",
+            "name": "cap_lamports",
             "type": "u64"
           },
           {
             "name": "allowlist",
             "type": {
               "vec": {
-                "defined": "AllowlistEntry"
+                "defined": {
+                  "name": "AllowlistEntry"
+                }
               }
             }
           },
           {
-            "name": "expirySlot",
+            "name": "expiry_slot",
             "type": "u64"
           }
         ]
@@ -496,7 +3559,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "scopeLabelHash",
+            "name": "scope_label_hash",
             "type": {
               "array": [
                 "u8",
@@ -505,23 +3568,136 @@
             }
           },
           {
-            "name": "rateLamportsPerSlot",
+            "name": "rate_lamports_per_slot",
             "type": "u64"
           },
           {
-            "name": "maxTotalLamports",
+            "name": "max_total_lamports",
             "type": "u64"
           },
           {
             "name": "allowlist",
             "type": {
               "vec": {
-                "defined": "AllowlistEntry"
+                "defined": {
+                  "name": "AllowlistEntry"
+                }
               }
             }
           },
           {
-            "name": "expirySlot",
+            "name": "expiry_slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Pact",
+      "docs": [
+        "Pact PDA: task-scoped child card. Seeds: [b\"pact\", parent_card.key(), scope_label_hash]",
+        "",
+        "Each Pact has a Vault PDA at [b\"pact-vault\", pact.key()] which is the authority of",
+        "the Pact's USDC ATA. The vault PDA is owned by this program and signs CPIs via",
+        "program-derived signing (ctx.bumps.vault_bump). This is what makes truly autonomous",
+        "agent spend possible: the user funds the vault once at open_pact time, then the agent",
+        "can trigger spend_via_pact / claim_streaming without per-spend authority signatures.",
+        "",
+        "The `mode` field is a `PactMode` enum: `OneShot` for the original capped-spend variant,",
+        "`Streaming` for the rate-limited variant introduced in v0.3 (P1)."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "parent_card",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "agent_pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "scope_label_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "usdc_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "mode",
+            "type": {
+              "defined": {
+                "name": "PactMode"
+              }
+            }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "AllowlistEntry"
+                }
+              }
+            }
+          },
+          {
+            "name": "expiry_slot",
+            "type": "u64"
+          },
+          {
+            "name": "closed",
+            "type": "bool"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PactClosedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pact",
+            "type": "pubkey"
+          },
+          {
+            "name": "parent_card",
+            "type": "pubkey"
+          },
+          {
+            "name": "spent",
+            "type": "u64"
+          },
+          {
+            "name": "refund_amount",
+            "type": "u64"
+          },
+          {
+            "name": "slot",
             "type": "u64"
           }
         ]
@@ -529,6 +3705,23 @@
     },
     {
       "name": "PactMode",
+      "docs": [
+        "Pact spend mode. OneShot is the existing capped-budget pact; Streaming is the per-slot",
+        "rate-limited variant introduced in v0.3 (P1).",
+        "",
+        "Slot accounting for Streaming:",
+        "- `last_claim_slot` is the anchor; entitlement accrues from this slot forward at",
+        "`rate_lamports_per_slot` per slot.",
+        "- When `paused == true`, no entitlement accrues. We record `pause_started_slot` and",
+        "count paused slots into `pause_accumulated_slots` *during the current claim period*.",
+        "Both reset on a successful claim.",
+        "- At claim time:",
+        "* if currently paused, finalize the running pause: pause_accumulated +=",
+        "(current - pause_started); pause_started <- current (so a continuing pause is",
+        "not retroactively charged after this claim).",
+        "* billable_slots = (current - last_claim) - pause_accumulated",
+        "* entitlement = billable_slots * rate, capped at (max_total - claimed)."
+      ],
       "type": {
         "kind": "enum",
         "variants": [
@@ -536,7 +3729,7 @@
             "name": "OneShot",
             "fields": [
               {
-                "name": "capLamports",
+                "name": "cap_lamports",
                 "type": "u64"
               },
               {
@@ -549,11 +3742,11 @@
             "name": "Streaming",
             "fields": [
               {
-                "name": "rateLamportsPerSlot",
+                "name": "rate_lamports_per_slot",
                 "type": "u64"
               },
               {
-                "name": "maxTotalLamports",
+                "name": "max_total_lamports",
                 "type": "u64"
               },
               {
@@ -561,7 +3754,7 @@
                 "type": "u64"
               },
               {
-                "name": "lastClaimSlot",
+                "name": "last_claim_slot",
                 "type": "u64"
               },
               {
@@ -569,11 +3762,11 @@
                 "type": "bool"
               },
               {
-                "name": "pauseStartedSlot",
+                "name": "pause_started_slot",
                 "type": "u64"
               },
               {
-                "name": "pauseAccumulatedSlots",
+                "name": "pause_accumulated_slots",
                 "type": "u64"
               }
             ]
@@ -587,10 +3780,10 @@
               },
               {
                 "name": "merchant",
-                "type": "publicKey"
+                "type": "pubkey"
               },
               {
-                "name": "capabilityHash",
+                "name": "capability_hash",
                 "type": {
                   "array": [
                     "u8",
@@ -599,11 +3792,11 @@
                 }
               },
               {
-                "name": "confirmDeadlineSlot",
+                "name": "confirm_deadline_slot",
                 "type": "u64"
               },
               {
-                "name": "disputeDeadlineSlot",
+                "name": "dispute_deadline_slot",
                 "type": "u64"
               },
               {
@@ -620,29 +3813,176 @@
       }
     },
     {
-      "name": "OpenDeliveryEscrowParams",
+      "name": "PactOpenedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "scopeLabelHash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            "name": "pact",
+            "type": "pubkey"
+          },
+          {
+            "name": "parent_card",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "cap",
+            "type": "u64"
+          },
+          {
+            "name": "funded_amount",
+            "type": "u64"
+          },
+          {
+            "name": "expiry_slot",
+            "type": "u64"
+          },
+          {
+            "name": "allowlist_count",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PactSpendEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pact",
+            "type": "pubkey"
+          },
+          {
+            "name": "card",
+            "type": "pubkey"
+          },
+          {
+            "name": "merchant",
+            "type": "pubkey"
           },
           {
             "name": "amount",
             "type": "u64"
           },
           {
-            "name": "merchant",
-            "type": "publicKey"
+            "name": "spent_after",
+            "type": "u64"
           },
           {
-            "name": "capabilityHash",
+            "name": "cap_remaining_after",
+            "type": "u64"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PactStreamClaimEvent",
+      "docs": [
+        "Emitted on every successful claim_streaming."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pact",
+            "type": "pubkey"
+          },
+          {
+            "name": "card",
+            "type": "pubkey"
+          },
+          {
+            "name": "merchant",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "billable_slots",
+            "type": "u64"
+          },
+          {
+            "name": "claimed_after",
+            "type": "u64"
+          },
+          {
+            "name": "max_remaining_after",
+            "type": "u64"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PactStreamPauseEvent",
+      "docs": [
+        "Emitted on pause + resume of a Streaming Pact. `paused = true` for pause,",
+        "`paused = false` for resume."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pact",
+            "type": "pubkey"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PolicyDecisionEvent",
+      "docs": [
+        "Unified ALLOW/DENY/REVOKE on-chain ledger event (N18).",
+        "Indexer (Helius LaserStream / WebSocket) consumes these to populate Postgres",
+        "dual-receipt views. Decision = 0 ALLOW / 1 DENY / 2 REVOKE."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "card",
+            "type": "pubkey"
+          },
+          {
+            "name": "merchant",
+            "type": "pubkey"
+          },
+          {
+            "name": "decision",
+            "type": "u8"
+          },
+          {
+            "name": "deny_code",
+            "type": "u8"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "receipt_hash",
             "type": {
               "array": [
                 "u8",
@@ -651,511 +3991,172 @@
             }
           },
           {
-            "name": "confirmDeadlineSlot",
+            "name": "reason_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "policy_snapshot_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "slot",
             "type": "u64"
           },
           {
-            "name": "disputeDeadlineSlot",
-            "type": "u64"
+            "name": "policy_version",
+            "type": "u32"
           },
           {
-            "name": "expirySlot",
+            "name": "pact",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReceiptRecordedEvent",
+      "docs": [
+        "F2.0 Universal Receipt Kernel — Path A on-chain attestation.",
+        "",
+        "Emitted by `record_receipt` to record a 4-hash kernel commit on-chain",
+        "for any payment kind (including non-Anchor-routed direct sends, link",
+        "claims, refunds). Indexer parses these and writes to Postgres alongside",
+        "PolicyDecisionEvent rows so dashboards can filter receipts by kind.",
+        "",
+        "Layout (Borsh, little-endian):",
+        "attestor(32) kind(u8) receipt_hash(32) reason_hash(32)",
+        "policy_snapshot_hash(32) purpose_hash(32) context_hash(32) slot(u64)",
+        "Total: 32 + 1 + 32*5 + 8 = 201 bytes"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "attestor",
+            "docs": [
+              "The signer that attested. Verifier decides whether to trust based on",
+              "who this is (e.g. only Settle operator's key for merchant dashboards)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "kind",
+            "docs": [
+              "Kind tag — matches @settle/sdk `KIND_TAG`:",
+              "1=x402_spend, 2=direct_send, 3=link_send, 4=streaming_claim,",
+              "5=escrow_release, 6=escrow_dispute, 7=refund."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "receipt_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "reason_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "policy_snapshot_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "purpose_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "context_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "slot",
             "type": "u64"
           }
         ]
       }
-    }
-  ],
-  "events": [
-    {
-      "name": "PolicyDecisionEvent",
-      "fields": [
-        {
-          "name": "card",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "merchant",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "decision",
-          "type": "u8",
-          "index": false
-        },
-        {
-          "name": "denyCode",
-          "type": "u8",
-          "index": false
-        },
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "receiptHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          },
-          "index": false
-        },
-        {
-          "name": "reasonHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          },
-          "index": false
-        },
-        {
-          "name": "policySnapshotHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          },
-          "index": false
-        },
-        {
-          "name": "slot",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "policyVersion",
-          "type": "u32",
-          "index": false
-        },
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "CardCreatedEvent",
-      "fields": [
-        {
-          "name": "card",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "agentPubkey",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "usdcMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "dailyCap",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "perCallMax",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "allowlistCount",
-          "type": "u8",
-          "index": false
-        },
-        {
-          "name": "expirySlot",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "policyVersion",
-          "type": "u32",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "CardRevokedEvent",
-      "fields": [
-        {
-          "name": "card",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "policyVersion",
-          "type": "u32",
-          "index": false
-        },
-        {
-          "name": "slot",
-          "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "PactOpenedEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "parentCard",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "vault",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "cap",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "fundedAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "expirySlot",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "allowlistCount",
-          "type": "u8",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "PactClosedEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "parentCard",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "spent",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "refundAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "slot",
-          "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "PactSpendEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "card",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "merchant",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "spentAfter",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "capRemainingAfter",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "slot",
-          "type": "u64",
-          "index": false
-        }
-      ]
     },
     {
       "name": "StreamingPactOpenedEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "parentCard",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "vault",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rateLamportsPerSlot",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "maxTotalLamports",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "fundedAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "openedSlot",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "expirySlot",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "allowlistCount",
-          "type": "u8",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "PactStreamClaimEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "card",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "merchant",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "billableSlots",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "claimedAfter",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "maxRemainingAfter",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "slot",
-          "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "PactStreamPauseEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "paused",
-          "type": "bool",
-          "index": false
-        },
-        {
-          "name": "slot",
-          "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "DeliveryEscrowOpenedEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "parentCard",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "vault",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "merchant",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "capabilityHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
+      "docs": [
+        "Streaming Pact opened. Mirrors PactOpenedEvent but carries rate + max_total",
+        "instead of a single cap field, so the indexer can populate streaming-specific UI."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pact",
+            "type": "pubkey"
           },
-          "index": false
-        },
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "confirmDeadlineSlot",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "disputeDeadlineSlot",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "openedSlot",
-          "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "DeliveryEscrowReleasedEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "merchant",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "caller",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "isBuyerConfirmed",
-          "type": "bool",
-          "index": false
-        },
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "slot",
-          "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "DeliveryEscrowDisputedEvent",
-      "fields": [
-        {
-          "name": "pact",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "slot",
-          "type": "u64",
-          "index": false
-        }
-      ]
+          {
+            "name": "parent_card",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "rate_lamports_per_slot",
+            "type": "u64"
+          },
+          {
+            "name": "max_total_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "funded_amount",
+            "type": "u64"
+          },
+          {
+            "name": "opened_slot",
+            "type": "u64"
+          },
+          {
+            "name": "expiry_slot",
+            "type": "u64"
+          },
+          {
+            "name": "allowlist_count",
+            "type": "u8"
+          }
+        ]
+      }
     }
   ]
 }

@@ -34,7 +34,9 @@ export async function GET(
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, Content-Encoding, Accept-Encoding, Authorization",
+  "X-Action-Version": "2.4",
+  "X-Blockchain-Ids": "solana:devnet",
     },
   });
 }
@@ -44,7 +46,9 @@ export async function OPTIONS() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, Content-Encoding, Accept-Encoding, Authorization",
+  "X-Action-Version": "2.4",
+  "X-Blockchain-Ids": "solana:devnet",
     },
   });
 }

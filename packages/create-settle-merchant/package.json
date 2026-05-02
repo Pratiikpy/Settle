@@ -1,0 +1,39 @@
+{
+  "name": "create-settle-merchant",
+  "version": "0.1.0",
+  "description": "Scaffold a new Settle merchant: keypair + webhook secret + capability hash + .env template.",
+  "type": "module",
+  "bin": {
+    "create-settle-merchant": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build",
+    "test": "echo 'no tests yet — exercised end-to-end via scripts/audit/cli-create-merchant-smoke.ts'"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.5.0",
+    "@solana/web3.js": "^1.95.4",
+    "bs58": "^6.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^22.7.4"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "keywords": [
+    "settle",
+    "solana",
+    "agent-payments",
+    "merchant",
+    "scaffold"
+  ],
+  "license": "MIT"
+}

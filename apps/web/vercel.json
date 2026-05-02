@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/phase5-tick",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/phase5-signer",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}

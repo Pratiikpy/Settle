@@ -11,7 +11,7 @@ import {
 import { toast } from "sonner";
 import bs58 from "bs58";
 import { TrustGesture } from "@settle/ui";
-import { Footer } from "../../../components/footer";
+import { W6AppShell } from "../../../components/w6-app-shell";
 import { fireSettlementConfetti, trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
 
@@ -162,8 +162,8 @@ export default function ClaimPage() {
   }
 
   return (
-    <>
-      <main className="mx-auto max-w-md px-6 py-16">
+    <W6AppShell forceSurface="consumer">
+      <div style={{ maxWidth: 880 }}>
         <h1 className="text-3xl font-semibold tracking-tight">
           {previewAmount ? `$${previewAmount} is yours` : "Claim USDC"}
         </h1>
@@ -234,8 +234,7 @@ export default function ClaimPage() {
         </p>
 
         <TrustGesture state={gesture} />
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

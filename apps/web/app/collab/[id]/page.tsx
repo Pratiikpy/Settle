@@ -7,7 +7,7 @@ import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
 import { fireSettlementConfetti, trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
-import { Footer } from "../../../components/footer";
+import { W6AppShell } from "../../../components/w6-app-shell";
 
 interface Collab {
   id: string;
@@ -115,8 +115,8 @@ export default function CollabPayPage() {
   const ratioBPct = (10_000 - collab.ratio_bps_a) / 100;
 
   return (
-    <>
-      <main className="mx-auto max-w-md px-6 py-12">
+    <W6AppShell forceSurface="consumer">
+      <div style={{ maxWidth: 880 }}>
         <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
           <div className="text-xs uppercase tracking-wider text-foreground/45">Collab</div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{collab.label}</h1>
@@ -169,8 +169,7 @@ export default function CollabPayPage() {
             View tx on Solscan ↗
           </a>
         )}
-      </main>
-      <Footer />
-    </>
+      </div>
+    </W6AppShell>
   );
 }

@@ -5,6 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import QRCode from "qrcode";
 import { toast } from "sonner";
 import { Keypair, PublicKey } from "@solana/web3.js";
+import { W6AppShell } from "../../components/w6-app-shell";
 
 /**
  * /request — User journey #7: Be a merchant.
@@ -88,11 +89,29 @@ export default function RequestPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-6 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">Request payment</h1>
-      <p className="mt-2 text-sm text-foreground/60">
-        Generate a Solana Pay QR or Blink. Customer scans. Receipt indexed automatically.
-      </p>
+    <W6AppShell forceSurface="merchant">
+      <div style={{ maxWidth: 520 }}>
+        <div className="w6-eyebrow" style={{ fontSize: 12 }}>
+          Merchant · request
+        </div>
+        <h1
+          className="w6-heading"
+          style={{ fontSize: 36, margin: "8px 0 0", lineHeight: 1.05 }}
+        >
+          Request payment.
+        </h1>
+        <p
+          className="w6-muted"
+          style={{
+            fontSize: 14,
+            marginTop: 8,
+            lineHeight: 1.5,
+            marginBottom: 24,
+          }}
+        >
+          Generate a Solana Pay QR or Blink. Customer scans, pays USDC.
+          The receipt is indexed automatically.
+        </p>
 
       <form
         className="mt-8 space-y-4"
@@ -166,10 +185,12 @@ export default function RequestPage() {
         </div>
       )}
 
-      <p className="mt-6 text-xs text-foreground/40">
-        Solana Pay reference pubkey embedded for tracking — locate the eventual tx via
-        <code> getSignaturesForAddress(reference)</code>.
-      </p>
-    </main>
+        <p className="w6-muted" style={{ marginTop: 24, fontSize: 12 }}>
+          Solana Pay reference pubkey embedded for tracking — locate the
+          eventual tx via{" "}
+          <code> getSignaturesForAddress(reference)</code>.
+        </p>
+      </div>
+    </W6AppShell>
   );
 }

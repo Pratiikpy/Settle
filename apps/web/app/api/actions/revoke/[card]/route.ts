@@ -16,7 +16,9 @@ export const runtime = "nodejs";
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Content-Encoding, Accept-Encoding",
+  "Access-Control-Allow-Headers": "Content-Type, Content-Encoding, Accept-Encoding, Authorization",
+  "X-Action-Version": "2.4",
+  "X-Blockchain-Ids": "solana:devnet",
 };
 
 function getRpcUrl(): string {
