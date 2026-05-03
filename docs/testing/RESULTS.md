@@ -248,3 +248,9 @@ After this turn:
 - Phase 5 cron jobs (tick + signer): ✓ both 200 OK
 - Idempotency replay drill: ✓ no duplicate spend on replay
 
+
+| 14.2 · Python SDK fresh-dir install + first call | ✓ pass | `pip install settle-protocol-sdk@0.2.0` from PyPI in fresh venv; `canonical_purpose_hash(...)` returns 0abb61a9...; module name `settle_sdk` | 2026-05-03 07:13 |
+| 14.1 · TS SDK fresh-dir install (npm) | not started | Package `settle-protocol-sdk` does NOT exist on npm yet; only `@settle/sdk` workspace name. Existing published packages: `@settle-web/web-components@0.1.0`, `create-settle-merchant@0.1.0`. PyPI Python is at `settle-protocol-sdk@0.2.0`. **HUMAN ACTION:** decide TS pkg name + publish so fresh-dir install can be tested. Workaround: install from tarball via `npm pack`. | 2026-05-03 07:13 |
+| 14.8 · Webhook receiver HMAC + idempotency | ✓ pass | local :4000 receiver validates `Settle-Signature: t=<ts>,v1=<hmac>` against secret; replays with same idempotency key dedupe (count=1 after 2 sends); bad sig returns signatureValid=false and 200 (logged) | 2026-05-03 07:13 |
+| 50 · DB migrations (re-verify) | ✓ pass | 5/5 (receipts.receipt_kind+context_hash, kernel_receipt_attestations, narration_text+refund_emoji, refund_requests.emoji, agent_trust_scores) | 2026-05-03 07:13 |
+
