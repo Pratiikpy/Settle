@@ -844,3 +844,20 @@ The §23a "honest gap" is now actively shrinking. Pattern proven: SettleE2EBurne
 - TEST_PLAN.md / AUTONOMOUS_RUN_PROMPT.md updated with §21c/§23a/§23b
 - 56 commits this session
 
+
+## 2026-05-03 17:30 — REAL on-chain UI tx via UI click verified
+
+### §23a real on-chain (6 specs, click→tx→confirm→balance moves)
+
+| Test | Result |
+|---|---|
+| 23a.1-real-send · ALICE clicks Pay → BOB +0.001 USDC on Solana | ✓ pass |
+| 21c.1-real · ALICE→BOB +0.005, balance reflects in ≤10s | ✓ pass |
+| 21c.2-multi · ALICE→CAROL +0.005, balance reflects | ✓ pass |
+| 23a.M1 · 3 contexts (ALICE/BOB/CAROL) isolated on /groups | ✓ pass |
+| 23a.ledger-updates · /api/ledger reflects new tx | ✓ pass |
+| 23a.dashboard-updates · /dashboard renders post-send | ✓ pass |
+| Full E2E (workers=4) | ✓ 410/410 in 4.8m |
+
+The §23a "honest gap" is closed for direct send: a real Playwright Pay button click produces a confirmed devnet tx that moves on-chain USDC. Same SettleE2EBurnerAdapter pattern can clone for the remaining ix UI flows (close_pact, revoke, streaming pause/resume/claim, refund, deny code, group quorum, QR scan).
+
