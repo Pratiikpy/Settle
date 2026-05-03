@@ -3,12 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 31 — next polish target. Categories under-touched:
-- Category I: palette (deferred — risky)
-- Category C: code-split (deferred — risky)
-- Category G: CSP (deferred — needs origin allowlist)
-- Category K: scan for hardcoded sentinel values rendered to users
-- Category A: deeper UI/UX functionality audit on lesser-used routes
+Pass 32 = TEST PASS (every 4th). Reconcile passes 29, 30, 31 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +26,8 @@ Pass 31 — next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 29 receipts logs, pass 30 verify CTA prefill).
-- Items pending full-E2E verification: receipts route logs, /verify ?h= prefill flow.
+- Polish passes since last full-E2E: 3 (pass 29 receipts logs, pass 30 verify prefill, pass 31 handles profile logs). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: receipts logs, /verify ?h= prefill, handles/profile 6-query logErr.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +180,35 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 31 — error handling + observability (D + M): unsilence /api/handles/[handle]/profile
+Files changed:
+- `apps/web/app/api/handles/[handle]/profile/route.ts`: 6 silent Supabase queries had `{ data }` destructures with `error` ignored. Added an inline `logErr(tag, err)` helper (matching the pass-27 dashboard pattern) that emits `[handles/:handle/profile] <tag> query failed: <msg>`. Hooked the helper into:
+  1. `cards` (agent_cards by authority_pubkey)
+  2. `publicReceipts` (receipts.in card_pubkeys, ALLOW, public_feed=true)
+  3. `lifetimeEarned` (Promise.all branch — receipts where merchant=handle, ALLOW, public)
+  4. `last30Days` (Promise.all branch — same, last 30 days)
+  5. `topSenders` (Promise.all branch — distinct buyers via card_pubkey)
+  6. `recentInbound` (Promise.all branch — last 10 inbound receipts)
+- The Promise.all destructures now also pull `error` per-branch (`{ data: ..., error: ... }`).
+
+Why this matters:
+- `/api/handles/[handle]/profile` powers the public `/at/[handle]` and `/m/[handle]` profile pages — including F18 (Public earnings transparency). Six silent failure points meant a Supabase outage would render zero earnings/inbound data with no signal.
+- Tag prefix matches the pattern from /api/balance, /api/dashboard/v6, /api/landing/feed, /api/receipts/[id].
+
+Audited but kept (no changes needed):
+- Initial `handles` table query (line 35) already destructured `{ error: hErr }` and returned 502 properly.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /api/handles/test/profile` correctly returns 404 for nonexistent handle (not 500).
+- Targeted Playwright `section-23a-end-to-end-loop`: 24/24 green incl. real on-chain BOB QR-pay 12.289 → 12.291 USDC (+0.002).
+
+Risk: very low (additive logging + Promise.all destructure expansion).
+
+Pending full-E2E (next test pass): nothing rendering changes.
 
 ### Pass 30 — UI/UX functionality (A): receipt poster → /verify CTA actually pre-fills now
 Files changed:

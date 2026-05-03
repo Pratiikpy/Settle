@@ -45,11 +45,18 @@ export async function GET(
     return NextResponse.json({ error: "handle_not_found" }, { status: 404 });
   }
 
+  // Tag-prefixed error logger for the 6 Supabase queries below.
+  // Matches the convention from /api/balance, /api/dashboard/v6, etc.
+  const logErr = (tag: string, err: { message?: string } | null) => {
+    if (err) console.warn(`[handles/:handle/profile] ${tag} query failed:`, err.message);
+  };
+
   // Cards owned by this handle's authority
-  const { data: cards } = await supabase
+  const { data: cards, error: cardsErr } = await supabase
     .from("agent_cards")
     .select("card_pubkey")
     .eq("authority_pubkey", handleRow.pubkey);
+  logErr("cards", cardsErr);
   const cardPubkeys = (cards ?? []).map((c) => c.card_pubkey);
 
   // Public-feed-flagged receipts
@@ -62,7 +69,7 @@ export async function GET(
     created_at: string;
   }> = [];
   if (cardPubkeys.length > 0) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("receipts")
       .select(
         "request_id, merchant_pubkey, amount_lamports, decision_slot, sig_solscan, created_at",
@@ -72,6 +79,7 @@ export async function GET(
       .eq("public_feed", true)
       .order("created_at", { ascending: false })
       .limit(20);
+    logErr("publicReceipts", error);
     publicReceipts = data ?? [];
   }
 
@@ -101,10 +109,10 @@ export async function GET(
   //   top_senders_count    — distinct unique buyers
   const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const [
-    { data: lifetimeEarnedRows },
-    { data: last30DaysRows },
-    { data: topSendersRows },
-    { data: recentInboundRows },
+    { data: lifetimeEarnedRows, error: lifetimeErr },
+    { data: last30DaysRows, error: last30Err },
+    { data: topSendersRows, error: topErr },
+    { data: recentInboundRows, error: recentErr },
   ] = await Promise.all([
     supabase
       .from("receipts")
@@ -134,6 +142,10 @@ export async function GET(
       .order("created_at", { ascending: false })
       .limit(10),
   ]);
+  logErr("lifetimeEarned", lifetimeErr);
+  logErr("last30Days", last30Err);
+  logErr("topSenders", topErr);
+  logErr("recentInbound", recentErr);
 
   const lifetimeEarned = (lifetimeEarnedRows ?? []).reduce(
     (sum, r) => sum + BigInt(r.amount_lamports),
