@@ -47,7 +47,12 @@ async function fetchReceipt(id: string): Promise<ReceiptDto | null> {
     process.env.APP_URL ||
     "http://localhost:3000";
   try {
-    const r = await fetch(`${base}/api/receipts/${id}`, { cache: "no-store" });
+    // Public poster — receipts are effectively immutable, so honor the
+    // upstream Cache-Control (s-maxage=60). Drops repeated DB hits on
+    // shared/viral receipt URLs.
+    const r = await fetch(`${base}/api/receipts/${id}`, {
+      next: { revalidate: 60 },
+    });
     if (!r.ok) return null;
     const body = await r.json();
     // /api/receipts/[id] returns either a flat receipt or { ok, receipt: {...} }

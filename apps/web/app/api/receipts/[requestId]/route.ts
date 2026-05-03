@@ -229,5 +229,13 @@ export async function GET(
       context_hash: strip(data.context_hash),
     },
     pact,
+  }, {
+    // Public receipts are effectively immutable (decision + hashes never
+    // change after on-chain commit). Tags/narration mutate but lag of
+    // ≤60s is fine for the poster surface — authed /receipts/[id]
+    // detail view fetches fresh client-side anyway.
+    headers: {
+      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    },
   });
 }

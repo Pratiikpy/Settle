@@ -29,7 +29,11 @@ async function fetchReceipt(id: string): Promise<ReceiptDto | null> {
     process.env.APP_URL ||
     "http://localhost:3000";
   try {
-    const r = await fetch(`${base}/api/receipts/${id}`, { cache: "no-store" });
+    // Honor upstream cache for OG generation — receipts are immutable
+    // so a cached fetch is fine here too.
+    const r = await fetch(`${base}/api/receipts/${id}`, {
+      next: { revalidate: 60 },
+    });
     if (!r.ok) return null;
     const body = await r.json();
     return (body && typeof body === "object" && "receipt" in body

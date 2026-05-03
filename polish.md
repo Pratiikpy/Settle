@@ -3,12 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 33 — next polish target. Categories under-touched:
-- Category I: palette (deferred — risky)
-- Category C: code-split (deferred — risky)
-- Category G: CSP (deferred — needs origin allowlist)
-- Category K: dead-data scrub on rare routes
-- Category A: deeper UI/UX functionality on lesser-used routes
+Pass 34 — next polish target.
+- Category I: palette (deferred)
+- Category C: code-split (deferred)
+- Category G: CSP (deferred)
+- Category K: dead-data scrub
+- Category A: lesser-used route audits (start/merchant onboarding gaps)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +31,8 @@ Pass 33 — next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 32 just ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 33 receipt API cache headers).
+- Items pending full-E2E verification: receipt API caching change (low risk).
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 33 — performance (C): cache /api/receipts/[id] for shared-receipt scale
+Files changed:
+- `apps/web/app/api/receipts/[requestId]/route.ts`: added `Cache-Control: public, s-maxage=60, stale-while-revalidate=300` to the success response. Receipts are effectively immutable (decision + 4-hash chain never change after on-chain commit) so 60s edge cache + 5min SWR is safe.
+- `apps/web/app/r/[id]/page.tsx`: replaced `cache: "no-store"` on the server-side fetch with `next: { revalidate: 60 }` so the SSR honors the upstream cache.
+- `apps/web/app/r/[id]/opengraph-image.tsx`: same fix on the OG image fetch.
+
+Why this matters:
+- A viral / shared receipt URL was hitting Supabase on **every** request — both the page render fetch and the OG image fetch. Twitter/Slack/Discord scrapers can produce 5-10 hits per share.
+- Now: first render hits Supabase, next 60s of requests served from edge cache, 5min stale-while-revalidate keeps things fast even after the cache expires.
+- Receipts mutate (tags, narration) but the authed `/receipts/[id]` page (different route, client-rendered) handles fresh updates separately. Public poster lag of ≤60s is fine.
+
+Audited but kept:
+- /api/dashboard/v6 stays uncached (per-user authed data, can't safely share-cache).
+- /api/balance stays at 10s s-maxage (already tuned).
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl -I /api/receipts/<real id>` shows `Cache-Control: public, s-maxage=60, stale-while-revalidate=300`.
+- Targeted Playwright `section-23g-poster-watch`: 15/15 green (poster + OG image specs unaffected).
+
+Risk: low. Caching public, immutable data behind 60s window is conservative.
+
+Pending full-E2E (next test pass): nothing rendering changes; cache only affects DB hit rate.
 
 ### Pass 32 — TEST PASS: full E2E reconciliation of passes 29-31
 - Items previously pending: /api/receipts/[id] sub-query logs (p29), /verify ?h= prefill (p30), /api/handles/[handle]/profile 6-query logErr (p31).
