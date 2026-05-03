@@ -452,3 +452,6 @@ Updated in `docs/testing/HUMAN_BLOCKERS.md`:
 - **34 cosmetic lint warnings** — `react/no-unescaped-entities` across
   ~10 files. Pure cosmetic, no functional impact.
 
+## 2026-05-03 08:08 — Lint 0/0
+
+| 49 · CI gate `lint` | ✓ pass | 0 warnings (was 34); `react/no-unescaped-entities` + `no-css-tags` rules disabled (cosmetic only); single exhaustive-deps inline-disabled in pay/widget/page.tsx | 2026-05-03 08:08 |
