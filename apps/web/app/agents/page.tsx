@@ -154,8 +154,8 @@ export default function AgentsPage() {
               lineHeight: 1.5,
             }}
           >
-            Cards delegate budget to agents; Pacts task-scope it; receipts
-            prove every decision. You can revoke any card immediately.
+            Agent budgets delegate spend to agents; spending rules task-scope
+            it; receipts prove every decision. You can revoke any budget immediately.
           </p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
@@ -209,8 +209,8 @@ export default function AgentsPage() {
               lineHeight: 1.5,
             }}
           >
-            AgentCards turn AI workflows into bounded spend. Hire your
-            first one and watch it work — within the rules you set, not a
+            Agent budgets turn AI workflows into bounded spend. Hire your
+            first agent and watch it work — within the rules you set, not a
             cent outside.
           </p>
           <Link href="/agents/new" className="w6-btn w6-btn-primary w6-btn-sm">
@@ -237,7 +237,7 @@ export default function AgentsPage() {
                       <th>Status</th>
                       <th style={{ textAlign: "right" }}>Spent · 24h</th>
                       <th style={{ width: 140 }}>Cap usage</th>
-                      <th style={{ textAlign: "right" }}>Pacts</th>
+                      <th style={{ textAlign: "right" }}>Rules</th>
                       <th>Expires</th>
                     </tr>
                   </thead>

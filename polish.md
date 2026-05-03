@@ -3,12 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 35 — next polish target.
-- Category I: palette (deferred)
-- Category C: code-split (deferred)
-- Category G: CSP (deferred)
-- Category K: dead-data scrub
-- Category A: start/merchant onboarding gap (CTAs land on /m/me which doesn't render correctly for unclaimed handles)
+Pass 36 = TEST PASS (every 4th). Reconcile passes 33, 34, 35 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +26,8 @@ Pass 35 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 33 receipt cache, pass 34 handles routes silent-failures).
-- Items pending full-E2E verification: receipt API cache, 6 silent-failure logs across handles/relationship + badges + claim.
+- Polish passes since last full-E2E: 3 (pass 33 receipt cache, pass 34 handles silent-failures, pass 35 /agents copy). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: receipt API cache, /api/handles/* logErr (6 queries), /agents user-visible copy rename.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +180,26 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 35 — copywriting (F): /agents page plain-English deeper rename
+Files changed:
+- `apps/web/app/agents/page.tsx`:
+  - Subtitle copy: `"Cards delegate budget to agents; Pacts task-scope it; receipts prove every decision. You can revoke any card immediately."` → `"Agent budgets delegate spend to agents; spending rules task-scope it; receipts prove every decision. You can revoke any budget immediately."`
+  - Empty-state copy: `"AgentCards turn AI workflows into bounded spend. Hire your first one and watch it work — within the rules you set, not a cent outside."` → `"Agent budgets turn AI workflows into bounded spend. Hire your first agent and watch it work — within the rules you set, not a cent outside."`
+  - Table column: `<th>Pacts</th>` → `<th>Rules</th>`
+
+Why this matters:
+- /agents is the entry point for the Agent persona surface. Continued the plain-English rollout from passes 5/6/15 — internal type names (`Pact`, `AgentCard`) stay as-is in code; user-facing labels switch to `spending rule`/`agent budget`.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (§23i rename + nav-smoke): 20/20 green.
+
+Risk: very low (UI copy only; no type/code changes).
+
+Pending full-E2E (next test pass): nothing rendering changes.
 
 ### Pass 34 — error handling + observability (D + M): unsilence remaining /api/handles/* routes
 Files changed:
