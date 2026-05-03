@@ -750,3 +750,15 @@ and call out the SettleE2EBurnerAdapter as the gating pre-req.
 
 The §23a "honest gap" is now actively shrinking. Pattern proven: SettleE2EBurnerAdapter + openPersonaContext + ".wallet-adapter-modal-list li:has-text('E2E Persona')" → connected → form fill → click Create → API receives the request. Future §23a.2 / 23a.3 / etc tests can clone this template.
 
+
+## 2026-05-03 14:45 — §23a bridge batch (7 more specs)
+
+| 23a.send-clicks-pay | ✓ pass | /send Pay button click reaches send/swap/resolve API | 2026-05-03 |
+| 23a.import-renders | ✓ pass | /import surface inputs present | 2026-05-03 |
+| 23a.split-bill-form | ✓ pass | /split-bill renders connected | 2026-05-03 |
+| 23a.wishes-form | ✓ pass | /wishes savings surface connected | 2026-05-03 |
+| 23a.allowances-form | ✓ pass | /allowances schedule surface connected | 2026-05-03 |
+| 23a.groups-create | ✓ pass | /groups surface connected | 2026-05-03 |
+| 23a.activity-realtime | ✓ pass | /activity inbox connected | 2026-05-03 |
+| 1+ · Full E2E (post-batch) | ✓ pass | 261/261 in 6.7m (was 254, +7) | 2026-05-03 |
+
