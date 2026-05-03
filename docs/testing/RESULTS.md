@@ -909,3 +909,20 @@ The §23a "honest gap" is closed for direct send: a real Playwright Pay button c
 | Cross-wallet 2nd-tier | 1 | BOB's /api/dashboard/v6 after ALICE pays |
 | Full E2E (workers=4) | — | ✓ **497/497 in 6.6m (+38)** |
 
+
+## 2026-05-03 19:30 — §23a end-to-end loop (click → on-chain → UI updates)
+
+| Flow | Result |
+|---|---|
+| Streaming pause/resume/claim API endpoints | ✓ 3/3 |
+| Receipt detail tags + refund + render | ✓ 3/3 |
+| Group 3-of-3 quorum (3-context + create API) | ✓ 2/2 |
+| Allowance kid spend (parent+kid 2-context + API) | ✓ 2/2 |
+| Capability publish + DNS verify + webhook config | ✓ 3/3 |
+| Dispute file + AI draft + approve | ✓ 3/3 |
+| Hire from template + publish + blink JSON | ✓ 3/3 |
+| Customer QR pays merchant — REAL on-chain (BOB +0.002) | ✓ 1/1 |
+| Cross-wallet Supabase Realtime check | ✓ 1/1 |
+| Round-up + savings + gift APIs | ✓ 3/3 |
+| Full E2E (workers=4) | ✓ **521/521 in 6.9m (+24)** |
+
