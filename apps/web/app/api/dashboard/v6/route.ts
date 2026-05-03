@@ -117,11 +117,20 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
   const sb = createClient(supabaseUrl, key, { auth: { persistSession: false } });
 
+  // Tag-prefixed error logger for the 9 Supabase queries below. Each
+  // query soft-fails to safe defaults ([] / 0) when Supabase is down,
+  // but ops needs *some* signal that data went missing — matches the
+  // [route/path] convention used elsewhere (balance, landing/feed, etc).
+  const logErr = (tag: string, err: { message?: string } | null) => {
+    if (err) console.warn(`[dashboard/v6] ${tag} query failed:`, err.message);
+  };
+
   // Cards owned by this pubkey
-  const { data: ownedCards } = await sb
+  const { data: ownedCards, error: ownedCardsErr } = await sb
     .from("agent_cards")
     .select("card_pubkey, label, daily_cap_lamports, revoked, used_today")
     .eq("authority_pubkey", pubkey);
+  logErr("ownedCards", ownedCardsErr);
 
   const cardPubkeys = (ownedCards ?? []).map((c) => c.card_pubkey as string);
   const activeCards = (ownedCards ?? []).filter((c) => !c.revoked);
@@ -134,12 +143,13 @@ export async function GET(req: NextRequest): Promise<Response> {
   // Outbound (cards user owns, ALLOW)
   let outboundToday: Array<{ amount_lamports: string; card_pubkey: string }> = [];
   if (cardPubkeys.length > 0) {
-    const { data } = await sb
+    const { data, error } = await sb
       .from("receipts")
       .select("amount_lamports, card_pubkey")
       .in("card_pubkey", cardPubkeys)
       .eq("decision", "ALLOW")
       .gte("created_at", todayIso);
+    logErr("outboundToday", error);
     outboundToday = (data ?? []) as Array<{
       amount_lamports: string;
       card_pubkey: string;
@@ -147,12 +157,13 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   // Inbound (user is merchant, ALLOW)
-  const { data: inboundTodayRaw } = await sb
+  const { data: inboundTodayRaw, error: inboundErr } = await sb
     .from("receipts")
     .select("amount_lamports")
     .eq("merchant_pubkey", pubkey)
     .eq("decision", "ALLOW")
     .gte("created_at", todayIso);
+  logErr("inboundToday", inboundErr);
   const inboundToday = (inboundTodayRaw ?? []) as Array<{ amount_lamports: string }>;
 
   const spentLamports = outboundToday.reduce(
@@ -208,7 +219,7 @@ export async function GET(req: NextRequest): Promise<Response> {
       cardPubkeys.length > 0
         ? `card_pubkey.in.(${cardPubkeys.map((k) => `"${k}"`).join(",")}),merchant_pubkey.eq.${pubkey}`
         : `merchant_pubkey.eq.${pubkey}`;
-    const { data } = await sb
+    const { data, error } = await sb
       .from("receipts")
       .select(
         "request_id, receipt_kind, merchant_pubkey, card_pubkey, amount_lamports, decision, deny_code, created_at",
@@ -216,6 +227,7 @@ export async function GET(req: NextRequest): Promise<Response> {
       .or(orFilter)
       .order("created_at", { ascending: false })
       .limit(5);
+    logErr("recentRows", error);
     recentRows = (data ?? []) as ReceiptRow[];
   }
 
@@ -236,13 +248,14 @@ export async function GET(req: NextRequest): Promise<Response> {
   // Active pacts (top 3)
   let activePacts: W6Dashboard["active_pacts"] = [];
   if (cardPubkeys.length > 0) {
-    const { data } = await sb
+    const { data, error } = await sb
       .from("pacts")
       .select("pact_pubkey, mode, closed, expiry_slot, parent_card, used_lamports, max_total_lamports")
       .in("parent_card", cardPubkeys)
       .eq("closed", false)
       .order("created_at", { ascending: false })
       .limit(3);
+    logErr("activePacts", error);
     activePacts = ((data ?? []) as Array<{
       pact_pubkey: string;
       mode: string;
@@ -273,13 +286,14 @@ export async function GET(req: NextRequest): Promise<Response> {
     next_run_at: string | null;
     amount_lamports: string | null;
   };
-  const { data: schedRowsRaw } = await sb
+  const { data: schedRowsRaw, error: schedErr } = await sb
     .from("scheduled_sends")
     .select("label, cadence, next_run_at, amount_lamports, status, owner_pubkey")
     .eq("owner_pubkey", pubkey)
     .eq("status", "active")
     .order("next_run_at", { ascending: true })
     .limit(3);
+  logErr("schedRows", schedErr);
   const schedRows = (schedRowsRaw ?? []) as SchedRow[];
 
   const comingUp = schedRows.map((s) => ({
@@ -298,12 +312,13 @@ export async function GET(req: NextRequest): Promise<Response> {
     goal_lamports: string | null;
     status: string | null;
   };
-  const { data: savingsRowsRaw } = await sb
+  const { data: savingsRowsRaw, error: savingsErr } = await sb
     .from("save_for_buckets")
     .select("id, label, saved_lamports, goal_lamports, status, owner_pubkey")
     .eq("owner_pubkey", pubkey)
     .order("saved_lamports", { ascending: false })
     .limit(3);
+  logErr("savingsRows", savingsErr);
   const savingsRows = (savingsRowsRaw ?? []) as SaveRow[];
 
   const savings = savingsRows

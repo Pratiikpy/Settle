@@ -3,12 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 27 — next polish target. Categories under-touched:
-- Category I: palette (deferred — risky)
-- Category C: code-split heaviest pages (deferred — risky)
-- Category G: CSP (deferred — needs origin allowlist)
-- Category K: dead-data scrub
-- Category D: deeper API endpoint audits
+Pass 28 = TEST PASS (every 4th). Reconcile passes 25, 26, 27 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +26,8 @@ Pass 27 — next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 25 SSR placeholder, pass 26 receipt 404 branded).
-- Items pending full-E2E verification: SSR placeholder, branded receipt 404 page.
+- Polish passes since last full-E2E: 3 (pass 25 SSR placeholder, pass 26 branded 404, pass 27 dashboard logs). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: SSR placeholder, branded receipt 404, dashboard logErr helper + 7 query error logs.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +180,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 27 — error handling + observability (D + M): unsilence /api/dashboard/v6 query failures
+Files changed:
+- `apps/web/app/api/dashboard/v6/route.ts`: added a small inline helper `logErr(tag, err)` that logs `[dashboard/v6] <tag> query failed: <msg>` when a Supabase query returns an error. Then destructured `error` from 7 Supabase queries and call the helper:
+  1. `ownedCards` (agent_cards by authority_pubkey)
+  2. `outboundToday` (receipts where card in cardPubkeys, ALLOW, today)
+  3. `inboundToday` (receipts where merchant=pubkey, ALLOW, today)
+  4. `recentRows` (last 5 receipts as buyer or merchant)
+  5. `activePacts` (pacts where parent_card in cardPubkeys, not closed)
+  6. `schedRows` (scheduled_sends, owner_pubkey, active)
+  7. `savingsRows` (save_for_buckets, owner_pubkey)
+
+Why this matters:
+- /api/dashboard/v6 is THE highest-traffic authed endpoint (loaded on every dashboard render). 7 Supabase queries each had `{ data }` destructure ignoring `error` — a Supabase outage would silently leave dashboard cells empty with no signal.
+- Tag convention matches /api/balance, /api/landing/feed, /api/stats/landing.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /api/dashboard/v6?pubkey=<ALICE>` returns real data unchanged: 0.00 USDC today, 2 agents on duty (real card pubkeys).
+- Targeted Playwright `section-23a-real-ui-tx`: 12/12 green.
+
+Risk: very low (additive logging only, no behavior change).
+
+Pending full-E2E (next test pass): no rendering impact expected.
 
 ### Pass 26 — final product feel (H): branded 404 for /r/[id]
 Files added:
