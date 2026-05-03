@@ -719,3 +719,14 @@ and call out the SettleE2EBurnerAdapter as the gating pre-req.
 | 23a.cards-list — connected /cards renders 3 mode explainers | ✓ pass | not the disconnect placeholder | 2026-05-03 |
 | 1+ · Full E2E (post-23a-bridge specs) | ✓ pass | 225/225 in 5.3m (was 219, +6) | 2026-05-03 12:50 |
 
+
+## 2026-05-03 13:05 — Section 23a multi-surface bridge
+
+| 23a.consumer · 6 routes connected | ✓ pass | dashboard, send, cards, wishes, activity, settings — all show connected state | 2026-05-03 |
+| 23a.agent · /agents, /agents/new | ✓ pass | persona reaches agent surface | 2026-05-03 |
+| 23a.merchant · /m/me/manage + analytics | ✓ pass | BOB persona reaches merchant surface | 2026-05-03 |
+| 23a.profile · /at/me + trust score | ✓ pass | profile loads | 2026-05-03 |
+| 23a.cards-new-form | ✓ pass | form inputs render under connected state | 2026-05-03 |
+| 23a.balance-loaded — REAL on-chain balance via API | ✓ pass | ALICE's /api/balance returns USDC > 0 and SOL > 0 (real devnet truth, not stub) | 2026-05-03 |
+| 1+ · Full E2E (post multi-surface) | ✓ pass | 231/231 in 5.5m (was 225, +6) | 2026-05-03 13:05 |
+
