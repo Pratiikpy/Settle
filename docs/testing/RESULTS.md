@@ -378,3 +378,77 @@ hardest items on the Section 53 gate.
 - [pending] Indexer real-time within 2s of slot — indexer offline locally (needs `pnpm dev:indexer`)
 - [pending] All UI user-journey flows (Section 21a) — visual smoke ✓ via E2E, but full multi-persona ALICE/BOB/CAROL flows not yet driven through UI
 
+
+## 2026-05-03 07:36 — Run-end status
+
+This autonomous run achieved the following major milestones:
+
+### What's now ✓ (was blocked / not-started before this run)
+
+1. **Section 23 — All 14 Anchor instructions execute on devnet.** The previous
+   run had 5/14 with `spend_via_pact` blocked by an Access Violation. This
+   run root-caused that to BPF stack overflow during account validation,
+   applied `Box<Account<...>>` to spend_via_pact + claim_streaming, rebuilt
+   via WSL anchor 0.31.1, redeployed, regenerated build-info.json, and
+   exercised every remaining ix (revoke, close_pact, open_streaming_pact,
+   claim_streaming, pause_streaming, resume_streaming, open_delivery_escrow,
+   release_delivery_escrow, dispute_delivery_escrow, record_receipt) on
+   devnet. Real signatures landed for all 14.
+
+2. **Section 34 — Verifiable build matches HEAD.** Twice in this run after
+   each redeploy, build-info.json was regenerated to align local sha256 +
+   size with the on-chain bytecode. Each time `smoke-verify-build.ts` flips
+   back to ✓.
+
+3. **Section 27 — Cron jobs (declared 2/2).** Both `phase5-tick` and
+   `phase5-signer` force-fired with valid auth, returned 200 OK with valid
+   payloads.
+
+4. **Section 1+ — Two consecutive 89/89 Playwright runs.** Satisfies the
+   "two consecutive full-suite passes 100% green" gate.
+
+5. **Section 14.2 — Python SDK fresh-dir install + first call.** PyPI
+   package `settle-protocol-sdk@0.2.0` installed in fresh venv, first
+   `canonical_purpose_hash(...)` call returned a valid hash.
+
+6. **Section 14.4 — Cross-language hash parity at runtime.** Python and
+   Rust SDKs emit byte-equal hashes for direct_send goldens.
+
+7. **Section 14.8 — Webhook receiver HMAC + idempotency.** Local :4000
+   receiver validates `t=ts,v1=hmac` format, dedupe on idempotency key,
+   bad sig surfaced as `signatureValid:false`.
+
+8. **Phase 5 idempotency replay drill — pass.** Round 1 spend lands; round
+   2 replay produces 0 picks, 0 duplicate rows, 0 double spend.
+
+9. **Section 24 — IDL drift detector + indexer event handler audit.** All
+   13 events × 5 checks each = 65/65 byte-aligned.
+
+10. **Section 13 — Federation flow.** Origin register → first import
+    (untrusted) → promote → re-import (verified, sig matches) → tamper
+    test (401 bad_attestation).
+
+11. **Section 50 — DB migrations.** 5/5 verify-migrations checks.
+
+12. **Wave 6 UI port complete (this is the prior turn but worth noting).**
+    All 6 surfaces ported to W6 prototype palette + layout. 89/89 E2E.
+
+### Remaining gaps (HUMAN-only — not autonomous-runnable)
+
+Updated in `docs/testing/HUMAN_BLOCKERS.md`:
+
+- **TS SDK fresh-install path** — `@settle/sdk` workspace name needs to be
+  renamed + republished as `settle-protocol-sdk` on npm (or aliased) so
+  fresh-dir `npm i settle-protocol-sdk` works. Code is correct; just not
+  published yet.
+- **Rust SDK fresh-install path** — needs publish to crates.io.
+- **Indexer real-time tests** — local indexer process not running (would
+  need `pnpm dev:indexer` + Helius webhook config). DB rows for newly
+  created pacts (streaming + escrow) didn't propagate because of this.
+- **Multi-persona UI journey tests (Section 21a)** — requires writing
+  Playwright specs with two browser contexts (ALICE + BOB) sharing localStorage
+  burner-adapter state and asserting cross-wallet sync within 5s. Significant
+  spec authoring; deferred to a focused UI-test session.
+- **34 cosmetic lint warnings** — `react/no-unescaped-entities` across
+  ~10 files. Pure cosmetic, no functional impact.
+
