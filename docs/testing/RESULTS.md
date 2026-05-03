@@ -861,3 +861,18 @@ The §23a "honest gap" is now actively shrinking. Pattern proven: SettleE2EBurne
 
 The §23a "honest gap" is closed for direct send: a real Playwright Pay button click produces a confirmed devnet tx that moves on-chain USDC. Same SettleE2EBurnerAdapter pattern can clone for the remaining ix UI flows (close_pact, revoke, streaming pause/resume/claim, refund, deny code, group quorum, QR scan).
 
+
+## 2026-05-03 18:00 — UI freshness + UI-only mandate
+
+| Section | Result |
+|---|---|
+| §23c.A every cell backed by real API (10 endpoints) | ✓ 10/10 |
+| §23c.B action → freshness propagation (3 specs) | ✓ 3/3 |
+| §23c.C cross-wallet freshness (3 multi-persona) | ✓ 3/3 |
+| §23c.D no-stub guarantees (3 routes) | ✓ 3/3 |
+| §23a real on-chain UI tx (12 specs) | ✓ 12/12 |
+| §23a UI-only feature surfaces | ongoing — see §23d coverage matrix |
+| Full E2E (workers=4) | ✓ **435/435 in 5.7m** |
+
+**Net session totals:** E2E 89 → 435 (+346), 61 commits, 3 priority lanes (UI/MCP/SDK) with real on-chain verification, real cross-wallet receive (BOB/CAROL get USDC from ALICE's UI Pay click), §23c freshness gate, §23d UI-only mandate documented.
+
