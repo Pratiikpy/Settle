@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 45 — pick next polish target. Most categories near saturation; remaining big targets all deferred-risky (palette, code-split, CSP, Next bump).
+Pass 46 — next polish target. Categories near saturation; remaining big targets all deferred-risky.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 45 — pick next polish target. Most categories near saturation; remaining 
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 44 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 45 /agents/templates/[slug] generateMetadata).
+- Items pending full-E2E verification: agent template detail page metadata.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,33 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 45 — SEO + share previews (O + H): generateMetadata for agent templates
+Files changed:
+- `apps/web/app/agents/templates/[slug]/page.tsx`:
+  - Added `import type { Metadata } from "next";`
+  - Added `generateMetadata({ params })` async function that fetches the template via `fetchTemplate(slug)` and returns:
+    - `title`: `<emoji> <title> · Settle agent template`
+    - `description`: first 140 chars of the template description (truncated with `…` if longer) + `Hire this AI agent on Solana with a $X.XX budget cap.`
+    - `openGraph`: same title/desc with `type: "article"`
+    - `twitter`: `summary` card with same content
+  - Falls back to `{ title: "Template · Settle" }` when the template isn't found.
+
+Why this matters:
+- Each public template page (e.g. `/agents/templates/research-papers`) was sharing the global Settle title for previews. With ~10+ templates, a tweet sharing any of them showed the same generic preview.
+- Now each template gets its own poster: emoji + title + 1-sentence description + budget cap. Distinct, useful previews on Twitter/Slack/Discord.
+- Same pattern as pass 43 (/m/[handle] dynamic metadata). Continues the pattern of giving every public surface a unique share preview.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /agents/templates/research-papers` → fallback `<title>Template · Settle</title>` (template doesn't exist on this devnet) confirming the not-found branch.
+- Targeted Playwright `nav-smoke`: 14/14 green.
+
+Risk: low. Page render path unchanged; only `<head>` differs.
+
+Pending full-E2E (next test pass): nothing rendering changes.
 
 ### Pass 44 — TEST PASS: full E2E reconciliation of passes 41-43
 - Items previously pending: public profile API cache headers (p41), /start/* meta descriptions (p42), /m/[handle] dynamic generateMetadata (p43).

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { W6AppShell } from "../../../../components/w6-app-shell";
@@ -28,6 +29,26 @@ async function fetchTemplate(slug: string): Promise<Template | null> {
   } catch {
     return null;
   }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const t = await fetchTemplate(slug);
+  if (!t) {
+    return { title: `Template · Settle` };
+  }
+  const title = `${t.icon_emoji ? t.icon_emoji + " " : ""}${t.title} · Settle agent template`;
+  const desc = `${t.description.slice(0, 140)}${t.description.length > 140 ? "…" : ""} Hire this AI agent on Solana with a $${t.cap_usdc.toFixed(2)} budget cap.`;
+  return {
+    title,
+    description: desc,
+    openGraph: { title, description: desc, type: "article" },
+    twitter: { card: "summary", title, description: desc },
+  };
 }
 
 export default async function TemplateDetailPage({
