@@ -44,11 +44,14 @@ export async function GET(
     return NextResponse.json({ error: "handle_not_found" }, { status: 404 });
   }
 
-  const { data: badges } = await supabase
+  const { data: badges, error: badgesErr } = await supabase
     .from("reputation_badges")
     .select("badge_kind, asset_address, sig_solscan, earned_at")
     .eq("user_pubkey", handleRow.pubkey)
     .order("earned_at", { ascending: false });
+  if (badgesErr) {
+    console.warn("[handles/:handle/badges] badges query failed:", badgesErr.message);
+  }
 
   return NextResponse.json({
     ok: true,

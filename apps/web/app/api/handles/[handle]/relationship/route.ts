@@ -48,45 +48,54 @@ export async function GET(
   const supabase = getSupabase();
   if (!supabase) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
 
+  // Tag-prefixed error logger; matches /api/balance, /api/dashboard/v6, etc.
+  const logErr = (tag: string, err: { message?: string } | null) => {
+    if (err) console.warn(`[handles/:handle/relationship] ${tag} query failed:`, err.message);
+  };
+
   // Resolve handle → pubkey
-  const { data: handleRow } = await supabase
+  const { data: handleRow, error: handleErr } = await supabase
     .from("handles")
     .select("pubkey")
     .eq("handle", normalized)
     .maybeSingle();
+  logErr("handle", handleErr);
   if (!handleRow) {
     return NextResponse.json({ error: "handle_not_found" }, { status: 404 });
   }
   const targetPubkey = handleRow.pubkey as string;
 
   // Caller cards (so we can find their receipts to this merchant)
-  const { data: callerCards } = await supabase
+  const { data: callerCards, error: cardsErr } = await supabase
     .from("agent_cards")
     .select("card_pubkey")
     .eq("authority_pubkey", auth.pubkey);
+  logErr("callerCards", cardsErr);
   const callerCardPubkeys = (callerCards ?? []).map((r) => r.card_pubkey as string);
 
   // Aggregate the lifetime payments + payment count from caller's cards to this merchant.
   let youSentCount = 0;
   let youSentTotal = 0n;
   if (callerCardPubkeys.length > 0) {
-    const { data: rows } = await supabase
+    const { data: rows, error: rowsErr } = await supabase
       .from("receipts")
       .select("amount_lamports")
       .eq("merchant_pubkey", targetPubkey)
       .eq("decision", "ALLOW")
       .in("card_pubkey", callerCardPubkeys);
+    logErr("receipts", rowsErr);
     youSentCount = (rows ?? []).length;
     youSentTotal = (rows ?? []).reduce((s, r) => s + BigInt(r.amount_lamports), 0n);
   }
 
   // Follow state
-  const { data: followRow } = await supabase
+  const { data: followRow, error: followErr } = await supabase
     .from("follows")
     .select("follower_pubkey")
     .eq("follower_pubkey", auth.pubkey)
     .eq("following_pubkey", targetPubkey)
     .maybeSingle();
+  logErr("follows", followErr);
 
   return NextResponse.json({
     ok: true,

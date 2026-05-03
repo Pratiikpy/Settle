@@ -60,11 +60,14 @@ export async function POST(req: NextRequest) {
   const supabase = createClient(url, key, { auth: { persistSession: false } });
 
   // Check if this pubkey already has a handle (one-per-pubkey constraint)
-  const { data: existing } = await supabase
+  const { data: existing, error: existingErr } = await supabase
     .from("handles")
     .select("handle")
     .eq("pubkey", auth.pubkey)
     .maybeSingle();
+  if (existingErr) {
+    console.warn("[handles/claim] existing-handle query failed:", existingErr.message);
+  }
 
   if (existing) {
     // Update existing handle (rename) — only if new handle is available

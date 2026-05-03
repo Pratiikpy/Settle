@@ -3,12 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 34 — next polish target.
+Pass 35 — next polish target.
 - Category I: palette (deferred)
 - Category C: code-split (deferred)
 - Category G: CSP (deferred)
 - Category K: dead-data scrub
-- Category A: lesser-used route audits (start/merchant onboarding gaps)
+- Category A: start/merchant onboarding gap (CTAs land on /m/me which doesn't render correctly for unclaimed handles)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +31,8 @@ Pass 34 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 33 receipt API cache headers).
-- Items pending full-E2E verification: receipt API caching change (low risk).
+- Polish passes since last full-E2E: 2 (pass 33 receipt cache, pass 34 handles routes silent-failures).
+- Items pending full-E2E verification: receipt API cache, 6 silent-failure logs across handles/relationship + badges + claim.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,28 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 34 — error handling + observability (D + M): unsilence remaining /api/handles/* routes
+Files changed:
+- `apps/web/app/api/handles/[handle]/relationship/route.ts`: 4 silent Supabase queries unsilenced via inline `logErr(tag, err)` helper. Tags: `handle`, `callerCards`, `receipts`, `follows`. Powers the per-merchant follow + receipt-history relationship widget.
+- `apps/web/app/api/handles/[handle]/badges/route.ts`: 1 silent query unsilenced. Logs `[handles/:handle/badges] badges query failed: <msg>`. Powers the reputation-badges display.
+- `apps/web/app/api/handles/claim/route.ts`: existing-handle lookup before claim/rename now logs `[handles/claim] existing-handle query failed: <msg>` if Supabase fails. Without this, a Supabase outage during claim would silently treat the user as having no handle, then likely fail the insert.
+
+Why this matters:
+- `relationship` route shapes the `/at/[handle]` follow button + payment-history badge — silent DB errors made these widgets show 0 without explanation.
+- Continues the systematic silent-catch sweep across the API surface (passes 15, 21, 27, 29, 31, now 34).
+- Tag prefix matches house convention.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /api/handles/test/badges` returns 404 (not 500) for nonexistent handle.
+- Targeted Playwright (misc-routes + api-validation): 34/34 green.
+
+Risk: very low (additive logging only).
+
+Pending full-E2E (next test pass): no rendering impact expected.
 
 ### Pass 33 — performance (C): cache /api/receipts/[id] for shared-receipt scale
 Files changed:
