@@ -7,6 +7,19 @@ const nextConfig = {
   experimental: {
     typedRoutes: false,
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
+        ],
+      },
+    ];
+  },
   webpack: (config) => {
     // @solana/kit ships ESM; some sub-packages need fallback for fs/crypto in browser bundle.
     config.resolve.fallback = {
