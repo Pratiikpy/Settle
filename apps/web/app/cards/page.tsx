@@ -385,8 +385,8 @@ export default function CardsPage() {
         <div className="w6-card" style={{ padding: 40, textAlign: "center" }}>
           <div className="w6-heading" style={{ fontSize: 20, marginBottom: 8 }}>
             {filter === "all"
-              ? "No active Pacts yet"
-              : `No ${filter === "closed" ? "closed" : filter} Pacts`}
+              ? "No active spending rules yet"
+              : `No ${filter === "closed" ? "closed" : filter} spending rules`}
           </div>
           <p
             className="w6-muted"

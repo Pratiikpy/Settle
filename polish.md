@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 2 — empty / loading / error states audit on key user-facing pages.
+Pass 3 — finish plain-English rename across remaining nested pages.
 
 ## Last verified state (2026-05-03)
 - E2E: **572/572 green** in 7.2m (Playwright workers=4, devnet)
@@ -18,6 +18,12 @@ Pass 2 — empty / loading / error states audit on key user-facing pages.
 - `git rm --cached` removed the two tracked Playwright artifacts that snuck in
 - **Verified:** `git ls-files | grep -iE "test-results|playwright-report"` returns empty
 - **Risk:** none (pure ignore-list addition; no behavior change)
+
+### Pass 2 — empty state copy (plain-English follow-up)
+- `/cards` empty state: "No active Pacts yet" → "No active spending rules yet"
+- Filter labels: "No closed Pacts" → "No closed spending rules"
+- **Verified:** next build clean, tsc --noEmit clean, 25/25 targeted Playwright (rename audit + onboarding + nav-smoke) green
+- **Risk:** none (UI copy only; internal types still use Pact)
 
 ## Audited but not changed (low-impact / risky)
 - **`console.warn` in API routes** — all are intentional non-fatal-error logging with `[tag]` prefixes. Removing would lose ops signal. **Keep.**
