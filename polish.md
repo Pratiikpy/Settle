@@ -3,17 +3,20 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 8 = TEST PASS (every 4th). Run full Playwright on all polish
-since pass 5's last test pass: pass 6 (reduced-motion), pass 7
-(focus rings).
+Pass 9 — pick next high-impact target. Likely candidates:
+- Category C performance: bundle size analysis
+- Category L code health: remove duplicate solscanUrl helper (deferred)
+- Category B data correctness: deeper API validation audit
+- Category G security: rate-limit audit on /api/* routes
+- Category A: scan for dead controls / dead routes
 
 ## Pass cadence (loop policy — 2026-05-04)
 - 3 polish passes → 1 test pass.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (passes 6 + 7).
-- Items pending full-E2E verification: pass 6 reduced-motion CSS, pass 7 :focus-visible CSS.
+- Polish passes since last full-E2E: 0 (pass 8 just ran 572/572).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -166,6 +169,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 8 — TEST PASS: full E2E reconciliation of passes 5-7
+- Ran full Playwright suite (workers=4, all 572 specs).
+- Items previously pending: pass 6 reduced-motion CSS, pass 7 :focus-visible CSS.
+- **Result: 572/572 green in 6.9m.** No regressions introduced by passes 6 or 7.
+- Marked both pending items as fully verified.
 
 ### Pass 7 — accessibility (category N): keyboard focus rings
 Files changed:
