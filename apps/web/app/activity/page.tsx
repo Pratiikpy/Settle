@@ -354,7 +354,7 @@ export default function ActivityPage() {
                   <th>Receipt</th>
                   <th>Card</th>
                   <th>Merchant</th>
-                  <th>Pact</th>
+                  <th>Rule</th>
                   <th style={{ textAlign: "right" }}>Amount</th>
                   <th>Status</th>
                   <th>When</th>

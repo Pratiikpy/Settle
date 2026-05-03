@@ -725,7 +725,7 @@ function BentoPactsAndUpcoming({
           </div>
         ) : (
           <Link href="/cards/new" className="w6-muted" style={{ fontSize: 13 }}>
-            No active Pacts. <strong>Open a Pact →</strong>
+            No active spending rules. <strong>Create a rule →</strong>
           </Link>
         )}
       </W6BentoCard>

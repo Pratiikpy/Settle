@@ -207,7 +207,7 @@ export default function MerchantCapabilitiesPage() {
           <>
             {/* Form */}
             <section className="mb-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
-              <h2 className="text-sm font-medium">New capability</h2>
+              <h2 className="text-sm font-medium">New verified service</h2>
               <div className="mt-4 grid gap-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
