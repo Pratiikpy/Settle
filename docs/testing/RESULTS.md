@@ -625,3 +625,11 @@ Code is correct + tested locally; just not on registries.
 | Test orchestrator (extended × 3 consecutive) | ✓ pass | 24/24 ok including onchain-state-verify | 2026-05-03 |
 | 23 · On-chain state mirror | ✓ pass | scripts/onchain-state-verify.ts: 6 cards, 5 pacts, 48 policy_decisions, program live on devnet, vault PDAs derivable | 2026-05-03 |
 
+
+## 2026-05-03 11:00 — 201/201 E2E
+
+| 21a · Deep journeys | ✓ pass | settings/exports/relayer nav, split-bill, collab/[id], merchant claim wizard, public proof | 2026-05-03 |
+| Misc · public route smoke (14 routes) | ✓ pass | /, /brand, /changelog, /privacy, /terms, /feed, /leaderboard, /capabilities, /capabilities/discover, /stats, /verify, /verify-build, /sandbox, /import | 2026-05-03 |
+| Misc · authed route smoke (12 routes) | ✓ pass | /dashboard, /cards, /cards/new, /wishes, /groups, /allowances, /spending, /activity, /settings, /agents, /audit, /at/me | 2026-05-03 |
+| 1+ · Full Playwright E2E (201 tests) | ✓ pass | 201/201 in 5.6m (was 170 → +31) | 2026-05-03 11:00 |
+
