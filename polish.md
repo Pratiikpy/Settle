@@ -3,12 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 15 — next polish target. Areas under-touched:
-- Category I: palette consistency (deferred — risky)
-- Category D: API error handling deeper audit
-- Category B: cross-user real-time freshness
-- Category K: scan for any "Coming soon" / fixture data in production routes
-- Category C: code-split heaviest pages (/activity 323KB, /allowances 297KB)
+Pass 16 = TEST PASS (every 4th). Reconcile passes 13, 14, 15 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +26,8 @@ Pass 15 — next polish target. Areas under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 13 dep removal, pass 14 README + loading reduced-motion).
-- Items pending full-E2E verification: orphan-dep removal, README docs change, app/loading.tsx reduced-motion CSS.
+- Polish passes since last full-E2E: 3 (pass 13 dep removal, pass 14 README + loading a11y, pass 15 silent-failure logs in /api/balance). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: orphan-dep removal, README docs, loading reduced-motion CSS, balance-route warn logs.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +180,33 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 15 — error handling (category D + M): unsilenced silent failures in /api/balance
+Files changed:
+- `apps/web/app/api/balance/route.ts`: two `catch {}` blocks (SOL fetch failure + USDC fetch failure) had been swallowing errors. Now both call `console.warn` with `[balance]` tag prefix matching the convention used elsewhere (`[x402-proxy]`, `[attachments]`, `[airdrop]`). Output includes truncated pubkey + error message — enough for ops to triage RPC issues without leaking full keys.
+
+Why this matters:
+- /api/balance is one of the highest-traffic endpoints (every dashboard render). Silent RPC failures previously left ops with no signal that Helius/devnet was misbehaving.
+- Behavior unchanged: still soft-fails to empty/zero balances on error so the UI shows "—" placeholders. Only added logging.
+- `silent-failure-hunter` pattern: this is the exact class of issue that pattern targets.
+
+Audited but not changed:
+- Pubkey validation in /api/balance is correct (regex + PublicKey constructor).
+- Cache headers (10s s-maxage) appropriate.
+- /api/landing/feed has no silent catches.
+- Hardcoded 'example.com' in `/m/[handle]/*` pages are input placeholders/hint text — legit.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /api/balance?pubkey=<ALICE>` → real values: 7.42 USDC + 0.08 SOL.
+- `curl /api/balance?pubkey=not-a-pubkey` → 400.
+- Playwright `section-23a-real-ui-tx`: 12/12 green (real on-chain tx flow + balance reads).
+
+Risk: very low (additive logging, no behavior change).
+
+Pending full-E2E (test pass next): no rendering impact expected.
 
 ### Pass 14 — multi-category: README freshness + loading skeleton a11y
 Files changed:

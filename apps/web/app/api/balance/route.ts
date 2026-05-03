@@ -63,7 +63,13 @@ export async function GET(req: NextRequest): Promise<Response> {
   let solLamports = 0;
   try {
     solLamports = await connection.getBalance(pk, "confirmed");
-  } catch {
+  } catch (e) {
+    console.warn(
+      "[balance] SOL fetch failed for",
+      pubkey.slice(0, 6),
+      "—",
+      (e as Error).message,
+    );
     return NextResponse.json(emptyBalance(pubkey, cluster), {
       headers: { "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30" },
     });
@@ -85,8 +91,16 @@ export async function GET(req: NextRequest): Promise<Response> {
       };
       usdcRaw += Number(info.tokenAmount?.amount ?? 0);
     }
-  } catch {
-    // Soft-fail: if we got SOL but USDC failed, return what we have
+  } catch (e) {
+    // Soft-fail: if we got SOL but USDC failed, return what we have.
+    // Log so ops can see RPC issues — matches the [tag] convention used
+    // by other routes (x402-proxy, attachments, etc).
+    console.warn(
+      "[balance] USDC fetch failed for",
+      pubkey.slice(0, 6),
+      "—",
+      (e as Error).message,
+    );
   }
 
   return NextResponse.json(
