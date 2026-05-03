@@ -223,6 +223,12 @@ export function MagicMomentTerminal() {
         </div>
       </header>
       <div
+        // a11y: announce new lines politely to screen readers without
+        // interrupting their current speech. atomic=false so SR reads
+        // only the newly added line, not the whole transcript.
+        aria-live="polite"
+        aria-atomic="false"
+        role="log"
         style={{
           padding: "14px 18px",
           minHeight: 240,
@@ -234,7 +240,7 @@ export function MagicMomentTerminal() {
           <Line key={`${it.request_id}-${idx}`} item={it} isReal={isReal} />
         ))}
         {shown < items.length && (
-          <div style={{ color: "#5a5f66" }}>
+          <div aria-hidden="true" style={{ color: "#5a5f66" }}>
             <span style={{ animation: "blink 1s steps(1) infinite" }}>▮</span>
           </div>
         )}

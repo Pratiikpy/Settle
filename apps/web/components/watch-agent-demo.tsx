@@ -145,6 +145,12 @@ export function WatchAgentDemo() {
       </div>
 
       <div
+        // a11y: live ledger of agent decisions. polite + non-atomic so
+        // SR users hear new spends/blocks without re-reading old rows.
+        aria-live="polite"
+        aria-atomic="false"
+        aria-label="Agent spending ledger"
+        role="log"
         style={{
           background: "#111114",
           border: "1px solid rgba(255,255,255,0.08)",

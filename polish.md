@@ -3,12 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 23 — next polish target. Categories under-touched:
-- Category I: palette (deferred — risky)
-- Category C: code-split (deferred — risky)
-- Category G: CSP (deferred — needs origin allowlist)
-- Category K: dead-data scrub
-- Category B: cross-user freshness on dashboards (data correctness)
+Pass 24 = TEST PASS (every 4th). Reconcile passes 21, 22, 23 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +26,8 @@ Pass 23 — next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 21 landing logs, pass 22 OG images for /watch + /start).
-- Items pending full-E2E verification: pass 21 console.warn additions, pass 22 OG image routes.
+- Polish passes since last full-E2E: 3 (pass 21 landing logs, pass 22 OG images, pass 23 aria-live regions). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: landing console.warns, /watch + /start OG image routes, aria-live="polite" on magic-moment + watch ledgers.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +180,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 23 — accessibility (N): aria-live regions for live ledgers
+Files changed:
+- `components/magic-moment-terminal.tsx`: the rotating-line container now has:
+  - `aria-live="polite"` — new lines announced without interrupting SR speech
+  - `aria-atomic="false"` — only the new line is read, not the whole transcript
+  - `role="log"` — semantic landmark for live activity
+  - The blinking-cursor placeholder div now has `aria-hidden="true"` so screen readers don't read "▮▮▮" repeatedly.
+- `components/watch-agent-demo.tsx`: same pattern on the agent ledger:
+  - `aria-live="polite"`, `aria-atomic="false"`, `role="log"`
+  - `aria-label="Agent spending ledger"` on the container.
+
+Why this matters:
+- WCAG 4.1.3 (Status Messages) — live activity must be announced to AT users.
+- A screen-reader user previously had no idea new spends/blocks were happening on the landing or /watch.
+- `polite` + `atomic=false` is the conservative correct combo: doesn't interrupt, doesn't re-read history.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (§23f magic-moment + §23g poster-watch): 20/20 green. Visual unchanged.
+
+Risk: very low (only ARIA attributes added; no DOM structure change).
+
+Pending full-E2E (next test pass): no rendering impact expected.
 
 ### Pass 22 — final product feel (H): OG images for /watch + /start
 Files added:
