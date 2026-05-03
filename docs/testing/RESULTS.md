@@ -633,3 +633,9 @@ Code is correct + tested locally; just not on registries.
 | Misc · authed route smoke (12 routes) | ✓ pass | /dashboard, /cards, /cards/new, /wishes, /groups, /allowances, /spending, /activity, /settings, /agents, /audit, /at/me | 2026-05-03 |
 | 1+ · Full Playwright E2E (201 tests) | ✓ pass | 201/201 in 5.6m (was 170 → +31) | 2026-05-03 11:00 |
 
+
+## 2026-05-03 11:08 — Orchestrator extended to 25/25
+
+| 26 · API shape validation | ✓ pass | scripts/api-shape-validate.ts: 12/12 endpoints return correct fields (feed.events, stats/landing.is_presentable, leaderboard.capabilities, capabilities.entries, preflight.counts+checks, price/sol-usd.usd+symbol, handles/by-pubkey, templates.templates, federation/origins.origins, balance.usdc+sol, dashboard/v6.today+agents_on_duty+recent_receipts, trust.score+tier+receipts_total) | 2026-05-03 |
+| Test orchestrator (25 steps, 4th consecutive) | ✓ pass | 25/25 ok, ~6min wall-time | 2026-05-03 11:08 |
+
