@@ -310,6 +310,48 @@ async function main() {
     if (e.logs) console.log("  logs:", e.logs.slice(0, 8).join("\n         "));
   }
 
+  // ─────────────────────────────────────────────
+  // 7. dispute_delivery_escrow (fresh escrow refund-to-buyer)
+  //   - authority = ALICE (= pact.authority)
+  //   - escrow must NOT be released/refunded yet
+  // ─────────────────────────────────────────────
+  const FRESH_ESCROW = process.env.FRESH_ESCROW_PACT;
+  if (FRESH_ESCROW) {
+    try {
+      const escrowPact = new PublicKey(FRESH_ESCROW);
+      const [vault] = PublicKey.findProgramAddressSync(
+        [Buffer.from("pact-vault"), escrowPact.toBuffer()],
+        PROGRAM_ID,
+      );
+      const vaultUsdc = await getAssociatedTokenAddress(USDC, vault, true);
+      const aliceUsdc = await getAssociatedTokenAddress(USDC, alice.publicKey);
+
+      const ix = new TransactionInstruction({
+        programId: PROGRAM_ID,
+        data: disc("dispute_delivery_escrow"),
+        keys: [
+          { pubkey: alice.publicKey, isSigner: true, isWritable: true }, // authority (buyer)
+          { pubkey: escrowPact, isSigner: false, isWritable: true },
+          { pubkey: vault, isSigner: false, isWritable: false },
+          { pubkey: USDC, isSigner: false, isWritable: false },
+          { pubkey: vaultUsdc, isSigner: false, isWritable: true },
+          { pubkey: aliceUsdc, isSigner: false, isWritable: true },
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        ],
+      });
+      const sig = await sendAndConfirmTransaction(conn, new Transaction().add(ix), [alice], { commitment: "confirmed" });
+      results.push(["dispute_delivery_escrow", "ok", sig]);
+      console.log(`✓ dispute_delivery_escrow sig: ${sig}`);
+    } catch (e: any) {
+      results.push(["dispute_delivery_escrow", "fail", String(e.message ?? e).slice(0, 200)]);
+      console.log(`✗ dispute_delivery_escrow: ${(e.message ?? e).slice(0, 300)}`);
+      if (e.logs) console.log("  logs:", e.logs.slice(0, 8).join("\n         "));
+    }
+  } else {
+    results.push(["dispute_delivery_escrow", "skip", "no FRESH_ESCROW_PACT in env"]);
+  }
+
   console.log("\n=== Summary ===");
   for (const [name, status, info] of results) {
     console.log(`${status === "ok" ? "✓" : status === "skip" ? "—" : "✗"} ${name.padEnd(28)} ${info.slice(0, 80)}`);

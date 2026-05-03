@@ -314,3 +314,29 @@ The 7 not-yet-verified ix are state transitions on existing pacts (claim/pause/r
 
 1. ✓ create_card · 2. ✓ revoke · 3. ✓ open_pact · 4. ✓ close_pact · 5. ✓ spend · 6. ✓ spend_via_pact · 7. ✓ open_streaming_pact · 8. ✓ claim_streaming · 9. ✓ pause_streaming · 10. ✓ resume_streaming · 11. ✓ open_delivery_escrow · 12. ✓ release_delivery_escrow (NEW) · 13. ✗ dispute_delivery_escrow (needs a fresh escrow that hasn't been released — current one is already released, so dispute would fail with EscrowAlreadyReleased) · 14. ✓ record_receipt
 
+
+| 23 · `dispute_delivery_escrow` (devnet, real, fresh escrow) | ✓ pass | tx 2fS8bHduv8qSwtEZq6ows7VaAcXrCeDr47CoESJ74aJjeVTLCqaunPWLkqomHQw3P6mTmHwMGkCr6tX6rzKDkv5t — escrow pact EvpBgyNh... refunded to ALICE | 2026-05-03 07:34 |
+
+### 🎯 Anchor ix devnet coverage — 14/14 ✓ COMPLETE
+
+All 14 Anchor instructions in the Settle agent-card program have now been
+exercised end-to-end on devnet with real signatures. This is one of the
+hardest items on the Section 53 gate.
+
+| # | ix | tx (most-recent) |
+|---|---|---|
+| 1 | `create_card` | 2WtKfyenG... |
+| 2 | `revoke` | EY1AUKnE... |
+| 3 | `open_pact` (OneShot) | 3W6t5x3t... |
+| 4 | `close_pact` | 61HPD5MB... |
+| 5 | `spend` | (48 policy_decisions rows) |
+| 6 | `spend_via_pact` | 2nRoU3sZ... |
+| 7 | `open_streaming_pact` | 4jnR88sY... |
+| 8 | `claim_streaming` | 38W7dibz... |
+| 9 | `pause_streaming` | Zb1hrQ2h... |
+| 10 | `resume_streaming` | 2xGya5qT... |
+| 11 | `open_delivery_escrow` | 35oeCTvL... |
+| 12 | `release_delivery_escrow` | 5u3oQGo8... |
+| 13 | `dispute_delivery_escrow` | 2fS8bHdu... |
+| 14 | `record_receipt` | wYtYS7LX... |
+
