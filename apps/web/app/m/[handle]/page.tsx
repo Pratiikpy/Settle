@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { W6AppShell } from "../../../components/w6-app-shell";
@@ -56,6 +57,27 @@ function trustLabel(score: number): { label: string; tone: string } {
   if (score >= 0.85) return { label: "Good", tone: "neutral" };
   if (score >= 0.5) return { label: "Mixed", tone: "warn" };
   return { label: "Weak", tone: "warn" };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}): Promise<Metadata> {
+  const { handle } = await params;
+  const profile = await fetchProfile(handle);
+  if (!profile) {
+    return { title: `@${handle} · Settle` };
+  }
+  const trustPct = Math.round(profile.trust_score * 100);
+  const title = `@${profile.handle} on Settle · trust ${trustPct}/100`;
+  const description = `Verified merchant on Solana. ${profile.n_receipts.toLocaleString()} receipts · ${profile.n_unique_payers.toLocaleString()} unique payers · ${formatUsdc(profile.total_revenue_lamports)} settled.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "profile" },
+    twitter: { card: "summary", title, description },
+  };
 }
 
 export default async function MerchantProfile({

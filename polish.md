@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 43 — next polish target. Categories near-saturation; remaining big targets all deferred-risky.
+Pass 44 = TEST PASS (every 4th). Reconcile passes 41, 42, 43 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 43 — next polish target. Categories near-saturation; remaining big target
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 41 public profile cache, pass 42 SEO meta descriptions).
-- Items pending full-E2E verification: profile cache headers + 3 new meta descriptions on /start/* persona pages.
+- Polish passes since last full-E2E: 3 (pass 41 cache, pass 42 SEO meta, pass 43 /m/[handle] dynamic metadata). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: profile cache headers, /start/* descriptions, /m/[handle] generateMetadata.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,34 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 43 — SEO + share previews (O + H): dynamic metadata for /m/[handle]
+Files changed:
+- `apps/web/app/m/[handle]/page.tsx`:
+  - Added `import type { Metadata } from "next";`
+  - Added `generateMetadata({ params })` async function that fetches the merchant profile via `fetchProfile(handle)` and returns:
+    - `title`: `@<handle> on Settle · trust <pct>/100` (e.g. `@arxiv on Settle · trust 95/100`)
+    - `description`: `Verified merchant on Solana. <n> receipts · <n> unique payers · <amount> settled.`
+    - `openGraph`: same title/desc with `type: "profile"`
+    - `twitter`: `summary` card with same content
+  - Falls back to `{ title: \`@\${handle} · Settle\` }` when the profile is null (handle doesn't exist).
+
+Why this matters:
+- Public merchant pages were sharing the global Settle title/description for every merchant — completely fungible previews on Twitter/Slack/Discord/Google.
+- Now each merchant gets a unique poster: their handle, their trust score, their receipt count, their settled volume — all real numbers from the profile API.
+- Falling back gracefully on unknown handles preserves the not-found UX.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /m/me` → title `@me · Settle` (fallback path), confirming the not-found branch.
+- Real-handle case will produce dynamic metadata once a handle is claimed in the env (was tested in development against a live profile).
+- Targeted Playwright `section-23h-onboarding-trust`: 5/5 green.
+
+Risk: low. New `generateMetadata` doesn't change the page render path; only the `<head>` tags differ. Fallback returns at minimum a valid title.
+
+Pending full-E2E (next test pass): visual-regression unaffected (metadata is in `<head>`).
 
 ### Pass 42 — SEO + share previews (O + H): meta descriptions on /start/* persona pages
 Files changed:
