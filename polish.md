@@ -3,12 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 25 — pick next polish target.
+Pass 26 — next polish target. Categories under-touched:
 - Category I: palette (deferred — risky)
-- Category C: code-split (deferred — risky)
+- Category C: more performance polish (heaviest pages still uncode-split)
 - Category G: CSP (deferred — needs origin allowlist)
 - Category K: dead-data scrub
-- Category D: deeper API audit (more endpoints)
+- Category D: deeper API endpoint audits
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +31,8 @@ Pass 25 — pick next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 24 just ran 576/576 — was 574, +2 OG image specs).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 25 magic-moment SSR placeholder).
+- Items pending full-E2E verification: pass 25 SSR placeholder for magic-moment terminal (low risk — visual only).
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,28 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 25 — performance (C): SSR placeholder for magic-moment terminal (CLS fix)
+Files changed:
+- `components/magic-moment-terminal.tsx`: when `items.length === 0` (the SSR + initial-client state), instead of returning `null`, render a 320px-tall section with the same outer dimensions (`maxWidth: 880`, `margin: "32px auto 16px"`, matching border-radius) so the layout doesn't jump when the real terminal swaps in. Placeholder has `data-testid="magic-moment-terminal-placeholder"` and `aria-hidden="true"` (screen readers ignore the empty shell).
+
+Why this matters:
+- "use client" components SSR with their initial state → items=[] → previously returned null → SSR HTML had no terminal.
+- After hydration + fetch resolved, the terminal mounted, pushing all content below it down by ~320px. Classic Cumulative Layout Shift (CLS).
+- Placeholder reserves the slot in SSR HTML. Layout stays stable through hydration.
+
+Verified manually:
+- `curl /` → HTML contains `magic-moment-terminal-placeholder` (SSR confirmed).
+- After client mount: real terminal swaps in at the same dimensions.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- Targeted Playwright `section-23f-magic-moment`: 6/6 green. Tests didn't need updating because they wait for `magic-moment-terminal` testid which appears once the feed resolves.
+
+Risk: very low (one branch added, returns a styled-empty section).
+
+Pending full-E2E (next test pass): no rendering impact expected on existing specs; visual-regression baselines unaffected (placeholder color matches w6-bg-2 background).
 
 ### Pass 24 — TEST PASS: full E2E reconciliation of passes 21-23
 - Items previously pending: landing API console.warns (p21), /watch + /start OG image routes (p22), aria-live regions on ledgers (p23).

@@ -147,7 +147,26 @@ export function MagicMomentTerminal() {
     return () => clearInterval(id);
   }, [items]);
 
-  if (items.length === 0) return null;
+  // CLS-friendly placeholder: reserve the same height as the rendered
+  // terminal so the rest of the landing doesn't jump when the feed
+  // hydrates. Tests and screen readers ignore this empty shell.
+  if (items.length === 0) {
+    return (
+      <section
+        data-testid="magic-moment-terminal-placeholder"
+        aria-hidden="true"
+        style={{
+          maxWidth: 880,
+          margin: "32px auto 16px",
+          height: 320,
+          borderRadius: 14,
+          border: "1px solid rgba(0,0,0,0.05)",
+          background:
+            "linear-gradient(0deg, var(--w6-bg-2, #fafaf7), var(--w6-bg-2, #fafaf7))",
+        }}
+      />
+    );
+  }
 
   return (
     <section
