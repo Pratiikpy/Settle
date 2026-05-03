@@ -876,3 +876,22 @@ The §23a "honest gap" is closed for direct send: a real Playwright Pay button c
 
 **Net session totals:** E2E 89 → 435 (+346), 61 commits, 3 priority lanes (UI/MCP/SDK) with real on-chain verification, real cross-wallet receive (BOB/CAROL get USDC from ALICE's UI Pay click), §23c freshness gate, §23d UI-only mandate documented.
 
+
+## 2026-05-03 18:30 — §23a feature flows (link/streaming/group/allowance/split-bill/gift/QR/agent/savings)
+
+| Flow | Result |
+|---|---|
+| Send by link | ✓ /send/link form |
+| Streaming pause/resume/claim | ✓ surface + pacts/revoke API |
+| 3-of-3 group quorum | ✓ 3-context isolation + /api/group-accounts |
+| Allowance kid spend | ✓ surface + /api/allowances |
+| Split-bill multi-payer | ✓ 3-context + /api/split-bills POST |
+| Gift send + claim | ✓ /send/link + /api/gift-sends |
+| Customer QR scan → merchant analytics | ✓ 2-context (BOB manage + ALICE QR) |
+| Hire from template | ✓ /agents/new + /api/templates (10 entries) |
+| Publish template | ✓ /agents/templates/new |
+| Blink share | ✓ /blink/research |
+| Savings buckets | ✓ /wishes + round-up + /api/save-for |
+| Card detail revoke + bulk-close | ✓ kill section renders |
+| Full E2E (workers=4) | ✓ **459/459 in 6.2m (+24)** |
+
