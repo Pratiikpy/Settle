@@ -582,3 +582,9 @@ Remaining gaps require human action:
 - Phantom/Backpack/Solflare manual wallet matrix verification
 - Real DNS verify TXT-record loop (needs domain control)
 
+
+## 2026-05-03 10:35 — Orchestrator extended to 23 steps
+
+| Test orchestrator (extended) | ✓ pass | 23/23 ok including sdk-integration-live + solana-primitives | 2026-05-03 |
+| 14.4 · SDK integration live (deterministic hash recipes) | ✓ pass | reason_hash 9b8f9854..., policy_snapshot dd3d9c86..., purpose_hash 79ed7a35... — deterministic across repeated calls; schemas validated | 2026-05-03 |
+
