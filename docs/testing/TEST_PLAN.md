@@ -2193,6 +2193,97 @@ Plus end-to-end multi-persona flows:
 
 ---
 
+## 23d · UI-only mandate — TEST EVERYTHING FROM THE UI (no skipping)
+
+> **2026-05-03 mandate:** every shipped feature must be exercised through
+> the UI in Playwright. No "the API works so the UI must work."
+> No "the script verifies on-chain so the UI is fine." If a real user
+> does it through the UI, a Playwright spec must drive that exact UI
+> with the SettleE2EBurnerAdapter persona. No exceptions.
+>
+> The test pyramid for this codebase is:
+>   - Bottom layer: unit tests (already exhaustive: TS 155 + Python 28 + Rust 44)
+>   - Middle layer: API + script-driven on-chain proof (already done)
+>   - **Top layer: UI-driven Playwright specs that drive every button, fill every input, click every CTA, and assert the result reaches the real backend.** This is the layer that catches "UI not backed by real source" / "data stale after action" / "other user can't see my change" / "multi-tab desync."
+>
+> Every flow below MUST have a UI-driven Playwright spec. NOT API tests, NOT scripts, NOT unit tests. UI clicks only.
+
+### Coverage matrix — every UI flow Playwright-tested
+
+#### Consumer
+- [ ] Connect → reach /dashboard
+- [ ] Send by @handle → click Pay → tx confirms → BOB receives
+- [ ] Send by pubkey → same
+- [ ] Send by link → /send/link form
+- [ ] Send by QR → upload QR → decode → fill form
+- [ ] Send by voice → mic capture (mocked) → transcribe → fill form
+- [ ] Send to invalid handle → inline error toast appears
+- [ ] Send insufficient funds → deny code surfaced
+- [ ] Receive: BOB sees ALICE's send within 5s of confirmation
+- [ ] /ledger filter chips: 8 chips clickable + filter results refresh
+- [ ] /receipts/[id] 4-hash chain animation
+- [ ] /receipts/[id] refund button → on-chain refund
+- [ ] /receipts/[id] tag editor → tag persists
+- [ ] /verify paste hash → 3-stage verify shown
+- [ ] /import paste sig → kernel commit recomputed → /verify works
+- [ ] /settings/exports → CSV/JSON downloads
+- [ ] /cards/new OneShot → click Open → vault PDA exists on-chain
+- [ ] /cards/new Streaming → click Open → on-chain
+- [ ] /cards/new Delivery escrow → click Open → on-chain
+- [ ] /cards/[id] revoke → slide-to-confirm → on-chain
+- [ ] /cards/[id] close pact → on-chain refund
+- [ ] /cards/[id] bulk close
+- [ ] /groups create 3-of-3 → invite ALICE+BOB+CAROL → on-chain
+- [ ] /groups vote: each member clicks Approve → quorum fires → on-chain spend
+- [ ] /groups deny vote: 1 deny stops execution
+- [ ] /wishes create bucket → contribute → balance up
+- [ ] /wishes round-up rule fires on real spend
+- [ ] /wishes gift send + recipient claim
+- [ ] /allowances create kid card → kid spends within cap → ALLOW
+- [ ] /allowances kid exceeds cap → DENY code 2 surfaced
+- [ ] /split-bill all N payers pay → status flips to settled
+- [ ] /activity inbox shows every notification trigger
+- [ ] Web push subscribe → mock notification fires
+- [ ] /at/me profile + trust breakdown
+- [ ] Follow button → count updates
+- [ ] /settings every section: profile, theme, privacy, notifications, sessions, developer
+
+#### Merchant
+- [ ] /m/me/manage Generate Pay QR → scannable
+- [ ] Customer scans QR → pays → merchant /m/me/analytics shows new payment within 5s
+- [ ] /m/me/analytics revenue + txn count + dispute rate
+- [ ] /m/me/capabilities publish → registry row
+- [ ] /m/me/verify DNS TXT → flag flips
+- [ ] /m/me/webhook config secret → test event delivers with valid HMAC
+- [ ] /m/me/disputes customer files → merchant gets AI draft
+- [ ] /m/me/disputes approve refund → on-chain refund
+- [ ] /m/[handle] public profile
+
+#### Agent
+- [ ] /agents hire from template → on-chain
+- [ ] /agents publish template → on-chain attestation
+- [ ] /blink/[slug] share link → unfurls
+- [ ] /audit decisions feed realtime
+- [ ] x402 spend via demo agent → receipt UI updates
+
+#### Operator
+- [ ] /control-center health
+- [ ] /admin/cron force-fire button
+- [ ] /admin/preflight all checks
+- [ ] /admin/federation/origins promote → ledger flips
+
+#### Public
+- [ ] /verify walletless verifier
+- [ ] /leaderboard heatmap brightens
+- [ ] /capabilities NL discovery
+- [ ] /feed public-feed
+- [ ] /stats network counters
+
+### Hard constraint
+If a feature ships with a UI surface, a Playwright spec MUST exist that drives it. If we ship without that spec, we ship a regression risk we explicitly committed not to.
+
+---
+
 ## 23c · UI freshness — every cell backed by a real source (NEW)
 
 > Catches the class of bugs the user calls out:

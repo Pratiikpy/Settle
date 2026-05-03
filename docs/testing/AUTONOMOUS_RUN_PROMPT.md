@@ -15,7 +15,11 @@ You are the autonomous test runner for Settle Protocol. Your single job: execute
 
 This run has ONE definition of done: **every test in TEST_PLAN.md is verified end-to-end with zero shortcuts**. Not "tested in spirit." Not "covered by a similar test." Not "the build passes so it's probably fine." Each individual test from sections 1 through 53 — **including the newly added 21c, 23a, 23b** — must:
 
-> **2026-05-03 update — three new sections were added to TEST_PLAN.md to formalize gaps the original plan implied but didn't enforce:**
+> **2026-05-03 second update — UI-only mandate added (§23d):** every shipped feature must be exercised through the UI in Playwright. No "the API works so the UI must work." No "the script verifies on-chain so the UI is fine." If a real user does it through the UI, a Playwright spec must drive that exact UI with the SettleE2EBurnerAdapter persona. The §23d coverage matrix lists every flow and gates the run.
+>
+> **2026-05-03 third update — UI freshness mandate added (§23c):** every UI cell must be backed by a real API source. Catches the "I did something on-chain → frontend doesn't update" / "stale UI" / "hardcoded numbers" / "multi-tab desync" class of bugs. §23c.A-E coverage cells gate the run.
+>
+> **2026-05-03 first update — three new sections were added to TEST_PLAN.md to formalize gaps the original plan implied but didn't enforce:**
 >
 > - **§21c — Cross-wallet UI sync.** Two browser contexts; ALICE clicks Pay, BOB sees it within 5s in their open `/dashboard`. Pre-req: `SettleE2EBurnerAdapter` (loads keypair from `localStorage["settle-e2e-burner-key"]`) so each context can sign as a different funded persona.
 > - **§23a — UI→on-chain bridge tests.** Every Anchor ix exercised through the actual UI button click (no `fetch` shortcuts), with the burner adapter loading a funded keypair so the tx really lands.
