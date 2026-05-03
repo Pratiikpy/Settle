@@ -455,3 +455,8 @@ Updated in `docs/testing/HUMAN_BLOCKERS.md`:
 ## 2026-05-03 08:08 — Lint 0/0
 
 | 49 · CI gate `lint` | ✓ pass | 0 warnings (was 34); `react/no-unescaped-entities` + `no-css-tags` rules disabled (cosmetic only); single exhaustive-deps inline-disabled in pay/widget/page.tsx | 2026-05-03 08:08 |
+
+| 49 · Final TS check (post-lint-fix) | ✓ pass | tsc --noEmit exit 0 across all packages | 2026-05-03 08:14 |
+| 49 · Final web build (post-lint-fix) | ✓ pass | next build succeeds; static + dynamic routes prerendered | 2026-05-03 08:14 |
+| W6 cascade audit (3rd consecutive re-verify) | ✓ pass | 9/9 in 14.5s | 2026-05-03 08:08 |
+
