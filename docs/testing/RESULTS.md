@@ -280,3 +280,30 @@ After this turn:
 
 The 7 not-yet-verified ix are state transitions on existing pacts (claim/pause/resume from a streaming pact; release/dispute on an escrow; close/revoke on any). Now that we have a streaming pact AND an escrow pact open on devnet, these are within reach of a single follow-up script. Boxing-fix may need to be applied prophylactically to `claim_streaming` / `release_delivery_escrow` if they panic similarly (5-6 Account<...> entries each).
 
+
+| 23 · `pause_streaming` (devnet, real) | ✓ pass | tx 4jUkmd2QRv7jckn2PJW2RjZnhYtm5ZZzvN6ntS75iWScje7XvLkCznXkBkCU1fPyfbNRmqJFAPxx15hNQNP7rZcM | 2026-05-03 07:24 |
+| 23 · `resume_streaming` (devnet, real) | ✓ pass | tx 4QQXtpv6N1pvaZ8jQkNvyb9xRM8jUijWGhTE7dBwTLjrLudr3MEDtf74z1TB1RcVskKDyBecYCy6SFxWEJjnHiqR | 2026-05-03 07:24 |
+| 23 · `claim_streaming` (devnet, real) | ✓ pass | tx 38W7dibzz3TFDMoPkcVhkNjLZqaEs8VpGP47etPLQuT6aSe9EvNaDMZ4s7f1rmVeXhXAdAy6u1p3stvdr7yLWA1D — Box<Account> fix preemptively applied here too | 2026-05-03 07:24 |
+| 23 · `close_pact` (devnet, real) | ✓ pass | tx 61HPD5MBwPbLDCWid6mKm3jWn2QPNoiYrptXshXCu8wfXbfkQvutMQjCciF8BRw3JBRxv9zYRvaqTbQQNTDZHcr4 | 2026-05-03 07:24 |
+| 23 · `revoke` (devnet, real) | ✓ pass | tx 3HpDgrZtBN7LGwWc13GjjQafjtd99yYZaxtaZMKo6QikGHC8Mhq6i3kx5yBEFC1gxBMWpQH2XNjNmwDc8a9XS5JP | 2026-05-03 07:24 |
+| 34 · Verifiable build (post-claim_streaming-Box deploy) | ✓ pass | hash 37307f99... matches commit a0cba7a build-info.json | 2026-05-03 07:18 |
+
+### Anchor ix devnet coverage — 12/14
+
+1. ✓ create_card
+2. ✓ revoke (NEW)
+3. ✓ open_pact
+4. ✓ close_pact (NEW)
+5. ✓ spend
+6. ✓ spend_via_pact
+7. ✓ open_streaming_pact
+8. ✓ claim_streaming (NEW)
+9. ✓ pause_streaming (NEW)
+10. ✓ resume_streaming (NEW)
+11. ✓ open_delivery_escrow
+12. ✗ release_delivery_escrow — needs slot-deadline juggling, deferred
+13. ✗ dispute_delivery_escrow — needs slot-deadline juggling, deferred
+14. ✓ record_receipt
+
+(record_denial sometimes counted as #15; not yet verified but covered by spend's deny path.)
+
