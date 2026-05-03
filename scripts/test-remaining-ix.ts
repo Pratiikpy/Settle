@@ -274,6 +274,42 @@ async function main() {
     results.push(["revoke", "skip", "no active card for ALICE"]);
   }
 
+  // ─────────────────────────────────────────────
+  // 6. release_delivery_escrow (buyer-confirmed release path)
+  //   - caller = ALICE (= pact.authority)
+  //   - merchant_usdc owner must equal pact.merchant (pinned at open time)
+  // ─────────────────────────────────────────────
+  try {
+    const [vault] = PublicKey.findProgramAddressSync(
+      [Buffer.from("pact-vault"), ESCROW_PACT.toBuffer()],
+      PROGRAM_ID,
+    );
+    const vaultUsdc = await getAssociatedTokenAddress(USDC, vault, true);
+    const merchantUsdc = await getAssociatedTokenAddress(USDC, merchant);
+
+    const ix = new TransactionInstruction({
+      programId: PROGRAM_ID,
+      data: disc("release_delivery_escrow"),
+      keys: [
+        { pubkey: alice.publicKey, isSigner: true, isWritable: true }, // caller (buyer)
+        { pubkey: ESCROW_PACT, isSigner: false, isWritable: true },
+        { pubkey: vault, isSigner: false, isWritable: false },
+        { pubkey: USDC, isSigner: false, isWritable: false },
+        { pubkey: vaultUsdc, isSigner: false, isWritable: true },
+        { pubkey: merchantUsdc, isSigner: false, isWritable: true },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+      ],
+    });
+    const sig = await sendAndConfirmTransaction(conn, new Transaction().add(ix), [alice], { commitment: "confirmed" });
+    results.push(["release_delivery_escrow", "ok", sig]);
+    console.log(`✓ release_delivery_escrow sig: ${sig}`);
+  } catch (e: any) {
+    results.push(["release_delivery_escrow", "fail", String(e.message ?? e).slice(0, 200)]);
+    console.log(`✗ release_delivery_escrow: ${(e.message ?? e).slice(0, 300)}`);
+    if (e.logs) console.log("  logs:", e.logs.slice(0, 8).join("\n         "));
+  }
+
   console.log("\n=== Summary ===");
   for (const [name, status, info] of results) {
     console.log(`${status === "ok" ? "✓" : status === "skip" ? "—" : "✗"} ${name.padEnd(28)} ${info.slice(0, 80)}`);

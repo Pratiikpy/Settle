@@ -307,3 +307,10 @@ The 7 not-yet-verified ix are state transitions on existing pacts (claim/pause/r
 
 (record_denial sometimes counted as #15; not yet verified but covered by spend's deny path.)
 
+
+| 23 · `release_delivery_escrow` (devnet, real, buyer-confirmed) | ✓ pass | tx 5u3oQGo8EbYKzKj3ikD8ykYauVaCq2Jj6a33rQSxTRgkQeBw9xpoT9Yykj89Qy1esToJrucf2Eb8zAFCjKFmffSM | 2026-05-03 07:30 |
+
+### Anchor ix devnet coverage — 13/14
+
+1. ✓ create_card · 2. ✓ revoke · 3. ✓ open_pact · 4. ✓ close_pact · 5. ✓ spend · 6. ✓ spend_via_pact · 7. ✓ open_streaming_pact · 8. ✓ claim_streaming · 9. ✓ pause_streaming · 10. ✓ resume_streaming · 11. ✓ open_delivery_escrow · 12. ✓ release_delivery_escrow (NEW) · 13. ✗ dispute_delivery_escrow (needs a fresh escrow that hasn't been released — current one is already released, so dispute would fail with EscrowAlreadyReleased) · 14. ✓ record_receipt
+
