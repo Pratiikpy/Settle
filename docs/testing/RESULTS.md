@@ -776,3 +776,11 @@ The §23a "honest gap" is now actively shrinking. Pattern proven: SettleE2EBurne
 | §23b.J cross-cutting (2 rows) | ✓ pass | J7a OG, J11 receipt | 2026-05-03 |
 | 1+ · Full E2E | ✓ pass | 323/323 in 8.3m (was 261, +62) | 2026-05-03 15:10 |
 
+
+## 2026-05-03 15:35 — §23b.A extended + G primitives + J cross-cutting
+
+| §23b.A extended (16 rows) | ✓ pass | A10-A17, A19-A25, A28, A49, A57, A59, A63, A67-A68, A69, A74, A77-A82 | 2026-05-03 |
+| §23b.G primitives (10 rows) | ✓ pass | G1 token ids, G2 ATA, G5 ALT, G6 v0 tx, G7 RPC live, G8 program account, G11 Pyth, G13 token balance live, G14 onLogs cap, G16 VAPID endpoint | 2026-05-03 |
+| §23b.J cross-cutting (9 rows) | ✓ pass | J2 federation, J3 trust recompute, J4 i18n, J6 print, J7b OG receipt, J8 SW, J10 perf, J11a ledger, J12 health | 2026-05-03 |
+| 1+ · Full E2E | ✓ pass | 362/362 in 9.0m (was 323, +39) | 2026-05-03 15:35 |
+
