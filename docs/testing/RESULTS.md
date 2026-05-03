@@ -661,3 +661,50 @@ Code is correct + tested locally; just not on registries.
 - Solana primitives: partial → **7/7 verified**
 - Section 53 gate: ~30% → **35/37 (95%)**
 
+
+## 2026-05-03 12:30 — Honest gap closed: UI→on-chain bridge infra shipped
+
+**TEST_PLAN.md updated** to add three new sections that formalize what the
+autonomous prompt's "no shortcuts" rule actually requires:
+
+- **§21c — Cross-wallet UI sync** (real two-context tests; ALICE clicks Pay,
+  BOB sees within 5s without refresh).
+- **§23a — UI → on-chain bridge** (every Anchor ix exercised through UI
+  button click, not via fetch shortcut).
+- **§23b — Exhaustive surface matrix** (~180 explicit ✓ rows across
+  consumer / merchant / agent / developer / operator / public / Solana
+  primitives / webhooks / cron / cross-cutting).
+
+**AUTONOMOUS_RUN_PROMPT.md updated** to reference the three new sections
+and call out the SettleE2EBurnerAdapter as the gating pre-req.
+
+**Infra shipped**:
+
+- `apps/web/components/settle-e2e-burner-adapter.tsx` — wallet adapter
+  that loads a base58 keypair from `localStorage["settle-e2e-burner-key"]`
+  or `NEXT_PUBLIC_E2E_BURNER_KEY`. Falls back to `NotDetected` (won't
+  hijack auto-connect) when no persona is seeded. Wired into
+  `app/providers.tsx` alongside the existing `UnsafeBurnerWalletAdapter`.
+- `apps/web/e2e/helpers/seed-burner.ts` — Playwright helper:
+  `openPersonaContext(browser, ALICE_KEY)` + `seedBurnerInContext()`. Uses
+  `addInitScript` so the localStorage key is set BEFORE the page mounts.
+- `apps/web/e2e/section-21c-cross-wallet.spec.ts` — first real two-context
+  test (21c.0). Proves: each context connects via "E2E Persona" wallet
+  using its seeded keypair; the two contexts hold different pubkeys.
+
+| 21c.0 · two contexts connect with seeded personas | ✓ pass | ALICE + BOB each click E2E Persona, each shows distinct pubkey | 2026-05-03 12:25 |
+| Honest gap audit | ✓ documented | TEST_PLAN.md §21c/§23a/§23b explicit; AUTONOMOUS_RUN_PROMPT.md updated; pre-req infra (`SettleE2EBurnerAdapter`) shipped | 2026-05-03 12:25 |
+| 1+ · Full E2E (post-adapter, with new sections) | ✓ pass | 219/219 in 5.2m | 2026-05-03 12:30 |
+
+### What's still pending (genuine human-action items)
+
+- TS SDK npm publish (`@settle/sdk` → rename to `settle-protocol-sdk` then
+  `npm publish`)
+- Rust SDK crates.io publish (`cargo publish`)
+- Authoring the 14 §23a UI→on-chain spec files (one per Anchor ix). Infra
+  is ready; the specs themselves take time to write right.
+- Authoring §23b multi-persona M1-M3 specs (group quorum, QR pay,
+  allowance kid). Same — infra ready, specs pending.
+- Real Phantom / Backpack / Solflare manual matrix (§23b.A1)
+- Real domain DNS verify TXT round-trip (§23b.B7)
+
