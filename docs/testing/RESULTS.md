@@ -742,3 +742,11 @@ and call out the SettleE2EBurnerAdapter as the gating pre-req.
 | 23b.J1, J5, J9 | ✓ pass | indexer endpoint via feed, W6 light palette, mobile no-h-scroll | 2026-05-03 |
 | 1+ · Full E2E | ✓ pass | 253/253 in 5.6m (was 231, +22) | 2026-05-03 13:35 |
 
+
+## 2026-05-03 14:20 — First real §23a UI→API bridge test passes
+
+| 23a.1-real — /cards/new "Create AgentCard" UI click → API POST | ✓ pass | CTA flipped to "Signing/Creating", POST /api/agents/create-card fired (status 500 due to placeholder merchant pubkeys, but the BRIDGE is proven — the click reached the server). | 2026-05-03 |
+| 1+ · Full E2E (post-§23a-real) | ✓ pass | 254/254 in 6.1m (was 253, +1) | 2026-05-03 14:20 |
+
+The §23a "honest gap" is now actively shrinking. Pattern proven: SettleE2EBurnerAdapter + openPersonaContext + ".wallet-adapter-modal-list li:has-text('E2E Persona')" → connected → form fill → click Create → API receives the request. Future §23a.2 / 23a.3 / etc tests can clone this template.
+
