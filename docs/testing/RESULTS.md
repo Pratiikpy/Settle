@@ -254,3 +254,29 @@ After this turn:
 | 14.8 · Webhook receiver HMAC + idempotency | ✓ pass | local :4000 receiver validates `Settle-Signature: t=<ts>,v1=<hmac>` against secret; replays with same idempotency key dedupe (count=1 after 2 sends); bad sig returns signatureValid=false and 200 (logged) | 2026-05-03 07:13 |
 | 50 · DB migrations (re-verify) | ✓ pass | 5/5 (receipts.receipt_kind+context_hash, kernel_receipt_attestations, narration_text+refund_emoji, refund_requests.emoji, agent_trust_scores) | 2026-05-03 07:13 |
 
+
+| 23 · `open_streaming_pact` (devnet, real) | ✓ pass | tx 4jnR88sY1puvFvK1fn6bMVgiCTBsMLqXJ3NNS1ed1CFVJkBjiMvQAJharUjaqMAi1i14vsm7m2mtpmvRG9UfXDgR pact 9tqwgWNRjx5vVZSJFZS85BTawhQuhvFmAZQq1SEpo7aa | 2026-05-03 07:18 |
+| 23 · `open_delivery_escrow` (devnet, real) | ✓ pass | tx AWhJGFqXeX9JStPqZ17pNbuEUT6MRv85V2rxQLNzXfk6grqvixj6Ad46YDkHuXvVC6iHbc9CoavtA8yc4XRNz6S pact DftWQG19uJMkz4sMXZnSuyZMF2rJ5fa4BVrwgpFhqEyx | 2026-05-03 07:18 |
+
+### Anchor ix devnet coverage update (post-streaming/escrow seed)
+
+7 of 14 instructions now verified on devnet via real txs:
+1. ✓ `create_card`
+2. ✗ `revoke` — not exercised yet (no card has revoked=true)
+3. ✓ `open_pact` (OneShot)
+4. ✗ `close_pact` — not exercised yet (all pacts still open)
+5. ✓ `spend`
+6. ✓ `spend_via_pact` (post-Box-fix; tx 2nRoU3sZ...)
+7. ✓ `open_streaming_pact` (NEW)
+8. ✗ `claim_streaming`
+9. ✗ `pause_streaming`
+10. ✗ `resume_streaming`
+11. ✓ `open_delivery_escrow` (NEW)
+12. ✗ `release_delivery_escrow`
+13. ✗ `dispute_delivery_escrow`
+14. ✓ `record_receipt`
+
+(`record_denial` is treated as ix #15 in some counting; not yet verified.)
+
+The 7 not-yet-verified ix are state transitions on existing pacts (claim/pause/resume from a streaming pact; release/dispute on an escrow; close/revoke on any). Now that we have a streaming pact AND an escrow pact open on devnet, these are within reach of a single follow-up script. Boxing-fix may need to be applied prophylactically to `claim_streaming` / `release_delivery_escrow` if they panic similarly (5-6 Account<...> entries each).
+
