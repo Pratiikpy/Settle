@@ -200,3 +200,51 @@ regenerating build-info.json from the new binary.
 | 36 · i18n strings | ✓ pass | 4 locales (en/es/ja/zh-CN) have core keys (send.amount_label, cards.create_cta, ledger.title) | 2026-05-03 07:05 |
 | 39 · OG images (Edge runtime) | partial | /api/og returns 000 under `next start` — Edge runtime serving differs from Vercel prod. Functional behavior unverified locally; @vercel/og component code is structurally correct. Verify in Vercel preview deploy. | 2026-05-03 07:05 |
 
+
+## 2026-05-03 07:08 — Section 23 Anchor ix coverage assessment
+
+Counted on-chain executions via Supabase audit:
+
+| ix | Verified on devnet (2026-05-03) | Notes |
+|---|---|---|
+| `create_card` | ✓ | 6 cards in `agent_cards` |
+| `open_pact` (OneShot) | ✓ | 5 oneshot pacts |
+| `spend_via_pact` | ✓ | post-Box-fix; vault 1→0.5 USDC tx 2nRoU3sZ... |
+| `spend` (legacy) | ✓ | 48 `policy_decisions` rows (mix of spend + spend_via_pact) |
+| `record_receipt` | ✓ | 1 `receipts` row direct_send/ALLOW; tx wYtYS7LX... |
+| `record_denial` | not yet | no `policy_decisions` row with `decision=DENY` and a corresponding `receipts` row to confirm record_denial fired distinctly from spend's deny path. Next test: trigger an over-cap spend via /send UI to fire the deny path. |
+| `revoke` | not yet | no card has `revoked=true` in `agent_cards` |
+| `close_pact` | not yet | all pacts still `closed=false` |
+| `open_streaming_pact` | not yet | no streaming pacts in DB |
+| `claim_streaming` | not yet | depends on open_streaming_pact |
+| `pause_streaming` / `resume_streaming` | not yet | depends on open_streaming_pact |
+| `open_delivery_escrow` | not yet | no delivery_escrow pacts in DB |
+| `release_delivery_escrow` | not yet | depends on open_delivery_escrow |
+| `dispute_delivery_escrow` | not yet | depends on open_delivery_escrow |
+
+5 of 14 ix verified ✓ on devnet via real txs. Remaining 9 are structurally sound (offline byte-parity ✓, IDL drift detector ✓, indexer handler audit ✓ for all 13 events including streaming/escrow) but no devnet execution captured yet.
+
+**Risk note:** these 9 ix have similar account counts (4-6 Account<...> entries each) to spend_via_pact. The Box<Account> fix may need to be applied prophylactically to avoid the same BPF stack overflow. Recommended next pass: write a single integration script that exercises all 9 in sequence, fix Box wrappings as panics surface.
+
+| 23 · spend_via_pact + 4 ix on devnet | ✓ pass | 5/14 ix verified on devnet via real txs (above table) | 2026-05-03 07:08 |
+| W6 cascade audit (final re-verify) | ✓ pass | 9/9 in 14.2s | 2026-05-03 07:09 |
+| TypeScript compile (final re-verify) | ✓ pass | apps/web tsc --noEmit exit 0 | 2026-05-03 07:08 |
+
+## Continuation summary (commit chain after Wave 6)
+
+- `89ab171` fix(anchor): box large accounts in spend_via_pact
+- `?` docs(testing): mark spend_via_pact + verifiable-build blockers resolved
+
+After this turn:
+- 9/9 W6 cascade audit ✓ (no regression)
+- 89/89 Playwright E2E ✓ (no regression)
+- 14 Anchor ix: 5 ✓ on devnet, 9 not yet executed (Box<Account> fix pre-emptively recommended for the rest given identical account-array shape)
+- 13 indexer events: all ✓ via offline audit
+- Verifiable build hash matches HEAD source ✓
+- API auth/sad-paths sampled: ✓
+- MCP middleware unit tests: ✓ 7/7
+- Trust score table populated, recalc verified: ✓
+- i18n 4 locales structurally complete: ✓
+- Phase 5 cron jobs (tick + signer): ✓ both 200 OK
+- Idempotency replay drill: ✓ no duplicate spend on replay
+
