@@ -619,3 +619,9 @@ The 2 pending items are infrastructure decisions only the user can make:
 Both unblock the corresponding fresh-install tests (Sections 14.1 + 14.3).
 Code is correct + tested locally; just not on registries.
 
+
+## 2026-05-03 10:51 — Orchestrator at 24/24
+
+| Test orchestrator (extended × 3 consecutive) | ✓ pass | 24/24 ok including onchain-state-verify | 2026-05-03 |
+| 23 · On-chain state mirror | ✓ pass | scripts/onchain-state-verify.ts: 6 cards, 5 pacts, 48 policy_decisions, program live on devnet, vault PDAs derivable | 2026-05-03 |
+
