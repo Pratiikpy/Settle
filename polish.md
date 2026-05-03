@@ -3,7 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 16 = TEST PASS (every 4th). Reconcile passes 13, 14, 15 with full Playwright.
+Pass 17 — pick next polish target. Areas under-touched:
+- Category I: palette consistency (deferred — risky)
+- Category C: code-split heaviest pages (/activity 323KB, /allowances 297KB)
+- Category B: cross-user real-time freshness audit
+- Category D: more API routes to audit for silent failures
+- Category G: rate-limit middleware (deferred — architectural)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +31,8 @@ Pass 16 = TEST PASS (every 4th). Reconcile passes 13, 14, 15 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 13 dep removal, pass 14 README + loading a11y, pass 15 silent-failure logs in /api/balance). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: orphan-dep removal, README docs, loading reduced-motion CSS, balance-route warn logs.
+- Polish passes since last full-E2E: 0 (pass 16 just ran 572/572).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +185,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 16 — TEST PASS: full E2E reconciliation of passes 13-15
+- Items previously pending: orphan-dep removal (p13), README docs change (p14), `app/loading.tsx` reduced-motion CSS (p14), `/api/balance` warn logs (p15).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 572 specs.
+- **Result: 572/572 green in 7.0m.** No regressions from any of the three preceding polish passes.
+- All previously pending items now fully verified.
 
 ### Pass 15 — error handling (category D + M): unsilenced silent failures in /api/balance
 Files changed:
