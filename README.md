@@ -10,6 +10,15 @@ Settle is a payment app for the AI age — built on Solana. Send money to anyone
 
 > 📘 The single source of truth for what Settle does and how it does it is [`docs/PRODUCT_SPEC.md`](docs/PRODUCT_SPEC.md). This README is the elevator pitch.
 
+## Public surfaces
+
+- `/` — landing with live magic-moment terminal pulling real on-chain receipts
+- `/watch` — live demo: a real agent on devnet spends, gets allowed/blocked per spending rule
+- `/start` — 3-fork onboarding (I send / I sell / I build), each ending in a real receipt
+- `/r/<request_id>` — public, shareable cryptographic receipt poster with auto-generated OG image
+- `/m/<handle>` — public merchant profile with trust badge (receipts × revenue × disputes)
+- `/leaderboard` — service usage leaderboard
+
 ---
 
 ## Why Settle

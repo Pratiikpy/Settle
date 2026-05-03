@@ -3,11 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 14 — next polish target. Areas under-touched:
-- Category C performance: bundle size analysis
-- Category I consistent design: palette / typography unification
-- Category D error handling: deeper API route audit
-- Category B data correctness: cross-user real-time freshness
+Pass 15 — next polish target. Areas under-touched:
+- Category I: palette consistency (deferred — risky)
+- Category D: API error handling deeper audit
+- Category B: cross-user real-time freshness
+- Category K: scan for any "Coming soon" / fixture data in production routes
+- Category C: code-split heaviest pages (/activity 323KB, /allowances 297KB)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -30,8 +31,8 @@ Pass 14 — next polish target. Areas under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 13 dep removal).
-- Items pending full-E2E verification: orphan-dep removal (low risk).
+- Polish passes since last full-E2E: 2 (pass 13 dep removal, pass 14 README + loading reduced-motion).
+- Items pending full-E2E verification: orphan-dep removal, README docs change, app/loading.tsx reduced-motion CSS.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -184,6 +185,26 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 14 — multi-category: README freshness + loading skeleton a11y
+Files changed:
+- `README.md`: added a "Public surfaces" section right under the elevator pitch listing the marketing routes shipped this session: `/`, `/watch`, `/start`, `/r/<id>`, `/m/<handle>`, `/leaderboard`. Anyone scanning the repo now sees the real public surface area.
+- `apps/web/app/loading.tsx`: global `<style>` block extended with `@media (prefers-reduced-motion: reduce) { [aria-hidden="true"] { animation: none !important; } }`. The spinner stops animating for users who prefer reduced motion (matching the same a11y policy applied in pass 6 to magic-moment-terminal). Static spinner glyph still visible — just doesn't rotate.
+
+Audited but not changed (deferred — risky):
+- Hardcoded `#fff` color literals across app/ pages — many uses are intentional contrast on dark CTA buttons. Replacing with `var(--w6-bg-1)` could regress visual snapshots. Defer to focused branding pass with full visual-regression.
+- API caching headers on `/api/balance` (10s s-maxage) and `/api/landing/feed` (30s s-maxage) — both already correctly tuned for freshness.
+- Bundle sizes: heaviest /activity 323KB, /allowances 297KB, /agents/new 278KB. None alarming. Code-split candidate for a future perf pass.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (nav-smoke 14 specs) green.
+
+Risk: very low (1 docs change + 1 CSS media-query addition).
+
+Pending full-E2E (next test pass): no rendering impact expected.
 
 ### Pass 13 — code health (category L): remove 2 orphan dependencies
 Files changed:

@@ -40,7 +40,12 @@ export default function GlobalLoading() {
           Loading…
         </div>
       </div>
-      <style>{`@keyframes w6-spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes w6-spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) {
+          [aria-hidden="true"] { animation: none !important; }
+        }
+      `}</style>
     </main>
   );
 }
