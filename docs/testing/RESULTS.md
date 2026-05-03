@@ -588,3 +588,34 @@ Remaining gaps require human action:
 | Test orchestrator (extended) | ✓ pass | 23/23 ok including sdk-integration-live + solana-primitives | 2026-05-03 |
 | 14.4 · SDK integration live (deterministic hash recipes) | ✓ pass | reason_hash 9b8f9854..., policy_snapshot dd3d9c86..., purpose_hash 79ed7a35... — deterministic across repeated calls; schemas validated | 2026-05-03 |
 
+
+## 2026-05-03 10:42 — Readiness check
+
+`pnpm tsx scripts/readiness-check.ts` reports:
+
+```
+Gate: 35/37 (95%) — 2 pending (human-action only)
+  ci              4/4
+  on-chain        4/4
+  hash-kernel     4/4
+  api             4/4
+  webhooks        2/2
+  federation      3/3
+  cron            2/2
+  e2e             2/2
+  security        3/3
+  ui-surface      4/4
+  sdk             1/3   (TS npm + Rust crates.io publish PENDING)
+  db              1/1
+  i18n            1/1
+```
+
+The 2 pending items are infrastructure decisions only the user can make:
+
+1. **TS SDK npm publish.** Rename `packages/sdk/package.json` from `@settle/sdk`
+   to `settle-protocol-sdk` (matching Python on PyPI), then `npm publish`.
+2. **Rust SDK crates.io publish.** `cd packages/rust-sdk && cargo publish`.
+
+Both unblock the corresponding fresh-install tests (Sections 14.1 + 14.3).
+Code is correct + tested locally; just not on registries.
+
