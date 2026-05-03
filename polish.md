@@ -3,12 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 38 — next polish target.
+Pass 39 — next polish target.
 - Category I: palette (deferred)
 - Category C: code-split (deferred)
 - Category G: CSP (deferred)
 - Category K: dead-data scrub
-- Category A: start/merchant onboarding gap
+- Category A: start/merchant onboarding gap (CTAs land on /m/me which doesn't render correctly without claimed handle)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +31,8 @@ Pass 38 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 37 exports/receipts log + magic-moment refresh timestamp).
-- Items pending full-E2E verification: exports/receipts cards-query log, magic-moment "fresh-as-of" header element.
+- Polish passes since last full-E2E: 2 (pass 37 logs + timestamp, pass 38 sandbox copy + /watch CTA).
+- Items pending full-E2E verification: exports/receipts log, magic-moment "fresh-as-of" header, sandbox SOL-amount copy fix, sandbox /watch CTA.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,27 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 38 — sandbox UI bug fix + /watch CTA (categories B + H)
+Files changed:
+- `apps/web/app/sandbox/page.tsx`:
+  - **Real bug fix**: toast and funded-state both said "0.1 SOL" but the backend (`/api/sandbox/airdrop`) actually airdrops `0.5 * LAMPORTS_PER_SOL`. UI was lying about the amount — visible to every sandbox user. Now correctly shows "0.5 SOL".
+  - Added a third CTA card after funding: `/watch — Watch agent demo →`. Was 2 cards (`/send`, `/agents`); now 3-column grid including the live demo. Surface introduced in pass 3 wasn't surfaced from the sandbox onboarding path.
+
+Why this matters:
+- Category B (data correctness): the UI was claiming a 5x-different value from reality. Real users would see a balance update inconsistent with what the toast promised. Real bug.
+- Category H (final product feel): /watch demo is now reachable from the sandbox post-funding state — completing the "experience the wedge" loop.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /sandbox` HTML confirms "0.5 SOL" + "Watch agent demo" both present.
+- Targeted Playwright (§23e + nav-smoke): 38/38 green.
+
+Risk: very low (UI copy + 1 link).
+
+Pending full-E2E (next test pass): no rendering breakage expected.
 
 ### Pass 37 — multi-category: exports route silent-fail log + magic-moment fresh-as-of timestamp
 Files changed:

@@ -32,7 +32,7 @@ export default function SandboxPage() {
       await res.json();
       setFunded(true);
       fireSettlementConfetti();
-      toast.success("Airdropped 0.1 SOL + 25 test-USDC. Try /send next.");
+      toast.success("Airdropped 0.5 SOL + 25 test-USDC. Try /send next.");
     } catch (e) {
       toast.error(`Airdrop failed: ${(e as Error).message}`);
     } finally {
@@ -68,9 +68,9 @@ export default function SandboxPage() {
         ) : (
           <div className="space-y-4">
             <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm text-accent">
-              ✓ Funded · 0.1 SOL + 25 test-USDC airdropped to your wallet
+              ✓ Funded · 0.5 SOL + 25 test-USDC airdropped to your wallet
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-3 gap-3 text-sm">
               <a
                 href="/send"
                 className="rounded-lg border border-[#e4e4e7] px-4 py-3 text-center hover:bg-[#f4f4f5]"
@@ -82,6 +82,12 @@ export default function SandboxPage() {
                 className="rounded-lg border border-[#e4e4e7] px-4 py-3 text-center hover:bg-[#f4f4f5]"
               >
                 Hire an agent →
+              </a>
+              <a
+                href="/watch"
+                className="rounded-lg border border-[#e4e4e7] px-4 py-3 text-center hover:bg-[#f4f4f5]"
+              >
+                Watch agent demo →
               </a>
             </div>
           </div>
