@@ -44,12 +44,14 @@ pub struct SpendViaPact<'info> {
 
     /// Parent AgentCard — MUTABLE because we update used_today + last_reset_slot.
     /// This is what enforces the daily cap across multiple Pacts on the same card.
+    /// Boxed to keep account-validation off the BPF stack (12-account ix overflows
+    /// stack frame 5 otherwise — manifests as "Access violation at 0x200005fa8").
     #[account(
         mut,
         seeds = [AgentCard::SEED_PREFIX, card.authority.as_ref(), card.label_hash.as_ref()],
         bump = card.bump,
     )]
-    pub card: Account<'info, AgentCard>,
+    pub card: Box<Account<'info, AgentCard>>,
 
     #[account(
         mut,
@@ -57,7 +59,7 @@ pub struct SpendViaPact<'info> {
         bump = pact.bump,
         constraint = pact.parent_card == card.key() @ SettleError::PactCardMismatch,
     )]
-    pub pact: Account<'info, Pact>,
+    pub pact: Box<Account<'info, Pact>>,
 
     /// Vault PDA — owns the USDC ATA. Signed by program via with_signer.
     /// CHECK: derived from [b"pact-vault", pact.key()]; verified via seeds.
@@ -69,7 +71,7 @@ pub struct SpendViaPact<'info> {
 
     /// USDC mint, pinned to pact.usdc_mint.
     #[account(address = pact.usdc_mint @ SettleError::WrongMint)]
-    pub usdc_mint: Account<'info, Mint>,
+    pub usdc_mint: Box<Account<'info, Mint>>,
 
     /// Vault's USDC ATA (source).
     #[account(
@@ -77,11 +79,11 @@ pub struct SpendViaPact<'info> {
         associated_token::mint = usdc_mint,
         associated_token::authority = vault,
     )]
-    pub vault_usdc: Account<'info, TokenAccount>,
+    pub vault_usdc: Box<Account<'info, TokenAccount>>,
 
     /// Merchant's USDC token account (destination) — must be owned by `merchant_owner`.
     #[account(mut, token::authority = merchant_owner, token::mint = usdc_mint)]
-    pub merchant_usdc: Account<'info, TokenAccount>,
+    pub merchant_usdc: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: merchant pubkey, validated against pact.allowlist below.
     pub merchant_owner: AccountInfo<'info>,
