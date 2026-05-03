@@ -103,7 +103,10 @@ async function main() {
     JSON.stringify({ host: HOST, total_routes: routes.length, probes }, null, 2),
   );
   console.log(`\n# Wrote logs/api-coverage.json (${probes.length} probes)`);
-  if (fivexx.length > 0) process.exit(1);
+  // /api/health is allowed to 503 (honest service unavailable when redis/cnft/demo-merchants are unconfigured).
+  // Anything ELSE 5xx is a real bug.
+  const realFails = fivexx.filter((p) => !p.url.startsWith("/api/health"));
+  if (realFails.length > 0) process.exit(1);
 }
 
 main().catch((e) => {
