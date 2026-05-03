@@ -612,26 +612,6 @@ function RecentReceipts({
           </Link>
         </div>
       )}
-      <style>{`
-        .w6-table th {
-          text-align: left;
-          padding: 12px 24px;
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: var(--w6-ink-4);
-          border-bottom: 1px solid var(--w6-rule);
-        }
-        .w6-table td {
-          padding: 14px 24px;
-          font-size: 13px;
-          border-bottom: 1px solid var(--w6-rule-2);
-        }
-        .w6-table tr:last-child td { border-bottom: 0; }
-        .w6-table tr:hover td { background: var(--w6-rule-2); }
-        .w6-table a { color: var(--w6-ink); }
-      `}</style>
     </div>
   );
 }

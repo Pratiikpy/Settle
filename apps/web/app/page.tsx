@@ -118,7 +118,7 @@ function NavMarketing() {
             Docs
           </Link>
           <Link
-            href="/docs/api"
+            href="/docs"
             className="w6-muted"
             style={{ fontSize: 13.5, fontWeight: 500 }}
           >
@@ -526,42 +526,42 @@ const AUDIENCES: Array<{
     label: "Consumer",
     title: "Pay & receive",
     body: "Send by handle, link, QR, or screenshot. Get sealed receipts.",
-    href: "/?surface=consumer",
+    href: "/dashboard",
   },
   {
     id: "agent",
     label: "Agent",
     title: "Programmable spend",
     body: "AgentCards with caps + allowlists. Templates and a hire-Blink.",
-    href: "/?surface=agent",
+    href: "/agents",
   },
   {
     id: "merchant",
     label: "Merchant",
     title: "Get paid",
-    body: "Public profile, capabilities, DNS verify, QR, webhooks, disputes.",
-    href: "/?surface=merchant",
+    body: "Public profile, capabilities, DNS verify, webhooks, disputes.",
+    href: "/docs",
   },
   {
     id: "developer",
     label: "Developer",
     title: "Build on Settle",
     body: "Pay / Verify / Webhooks / API. SDKs, MCP, embed components.",
-    href: "/?surface=developer",
+    href: "/docs",
   },
   {
     id: "operator",
     label: "Operator",
     title: "Run a deploy",
     body: "Health, federation, cron, preflight, verifiable build.",
-    href: "/?surface=operator",
+    href: "/control-center",
   },
   {
     id: "public",
     label: "Public",
     title: "Verify · stats",
     body: "Walletless verifier, capability heatmap, network stats, public feed.",
-    href: "/?surface=public",
+    href: "/verify",
   },
 ];
 
@@ -884,7 +884,7 @@ function FooterMarketing() {
         <Link href="/docs" className="w6-muted" style={{ fontSize: 12.5 }}>
           Docs
         </Link>
-        <Link href="/docs/api" className="w6-muted" style={{ fontSize: 12.5 }}>
+        <Link href="/docs" className="w6-muted" style={{ fontSize: 12.5 }}>
           API
         </Link>
         <Link href="/verify" className="w6-muted" style={{ fontSize: 12.5 }}>

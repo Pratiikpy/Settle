@@ -111,15 +111,20 @@ export function W6Sidebar({
           ) : null}
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {section.items.map((item) => {
+              // Resolve dynamic placeholders: "/at/me" → "/at/<handle>" when known.
+              const resolvedHref =
+                item.href === "/at/me" && handle
+                  ? `/at/${handle}`
+                  : item.href;
               const active =
-                pathname === item.href ||
-                (item.href !== "/" &&
-                  item.href !== "/dashboard" &&
-                  pathname?.startsWith(item.href));
+                pathname === resolvedHref ||
+                (resolvedHref !== "/" &&
+                  resolvedHref !== "/dashboard" &&
+                  pathname?.startsWith(resolvedHref));
               return (
                 <Link
                   key={item.href + item.label}
-                  href={item.href}
+                  href={resolvedHref}
                   aria-current={active ? "page" : undefined}
                   style={{
                     display: "inline-flex",
@@ -133,6 +138,7 @@ export function W6Sidebar({
                     background: active ? "var(--w6-rule-2)" : "transparent",
                     transition: "background 140ms, color 140ms",
                   }}
+                  className="w6-nav-item"
                 >
                   <span
                     style={{

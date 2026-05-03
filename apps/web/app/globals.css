@@ -716,6 +716,54 @@
     }
   }
 
+  /* Sidebar nav item hover — applied via .w6-nav-item class so the
+     effect works without inline onMouseEnter/Leave juggling in React. */
+  .w6-nav-item:hover {
+    background: var(--w6-bg-3) !important;
+    color: var(--w6-ink) !important;
+  }
+  /* Active state takes priority — don't let hover override it. */
+  .w6-nav-item[aria-current="page"] {
+    background: var(--w6-rule-2) !important;
+    color: var(--w6-ink) !important;
+  }
+
+  /* Mobile bottom-tab active dot indicator. */
+  .w6-tab-active {
+    background: var(--w6-rule-2);
+    border-radius: 10px;
+  }
+
+  /* Reusable table pattern used in dashboard + ledger + receipts. */
+  .w6-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .w6-table th {
+    text-align: left;
+    padding: 12px 24px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--w6-ink-4);
+    border-bottom: 1px solid var(--w6-rule);
+  }
+  .w6-table td {
+    padding: 14px 24px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--w6-rule-2);
+  }
+  .w6-table tr:last-child td {
+    border-bottom: 0;
+  }
+  .w6-table tr:hover td {
+    background: var(--w6-rule-2);
+  }
+  .w6-table a {
+    color: var(--w6-ink);
+  }
+
   /* Skeleton shimmer. Honors prefers-reduced-motion. */
   .w6-skel {
     background: linear-gradient(90deg, var(--w6-rule-2) 0%, var(--w6-rule) 50%, var(--w6-rule-2) 100%);

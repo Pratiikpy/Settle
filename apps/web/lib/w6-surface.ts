@@ -70,13 +70,13 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
       items: [
         { icon: "hash", label: "Import receipt", href: "/import" },
         { icon: "grid", label: "Split bill", href: "/split-bill" },
-        { icon: "spark", label: "Share via Blink", href: "/blink/research" },
+        { icon: "spark", label: "Agent templates", href: "/agents/templates" },
       ],
     },
     {
       section: "You",
       items: [
-        { icon: "eye", label: "Profile", href: "/at/me" },
+        { icon: "eye", label: "Profile", href: "/settings" },
         { icon: "bell", label: "Notifications", href: "/activity", badgeKey: "unread" },
         { icon: "settings", label: "Settings", href: "/settings" },
       ],
@@ -113,7 +113,7 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
     {
       section: "Sell",
       items: [
-        { icon: "grid", label: "QR & links", href: "/m/me/qr" },
+        { icon: "grid", label: "Manage", href: "/m/me/manage" },
         { icon: "activity", label: "Disputes", href: "/m/me/disputes" },
         { icon: "layers", label: "Webhooks", href: "/m/me/webhook" },
       ],
@@ -131,7 +131,7 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
       section: null,
       items: [
         { icon: "home", label: "Docs", href: "/docs" },
-        { icon: "code", label: "SDKs", href: "/docs/sdks" },
+        { icon: "code", label: "SDKs", href: "/docs" },
         { icon: "terminal", label: "MCP middleware", href: "/docs/mcp" },
       ],
     },
@@ -146,7 +146,7 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
     {
       section: "Tools",
       items: [
-        { icon: "spark", label: "API explorer", href: "/docs/api" },
+        { icon: "spark", label: "API reference", href: "/docs" },
         { icon: "bot", label: "Sandbox", href: "/sandbox" },
       ],
     },
@@ -156,9 +156,9 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
       section: null,
       items: [
         { icon: "home", label: "Health", href: "/control-center" },
-        { icon: "activity", label: "Cron", href: "/admin" },
-        { icon: "globe", label: "Federation", href: "/admin" },
-        { icon: "shield", label: "Preflight", href: "/admin" },
+        { icon: "activity", label: "Cron", href: "/admin/cron" },
+        { icon: "globe", label: "Federation", href: "/admin/federation/origins" },
+        { icon: "shield", label: "Preflight", href: "/admin/preflight" },
         { icon: "code", label: "Verify build", href: "/verify-build" },
       ],
     },

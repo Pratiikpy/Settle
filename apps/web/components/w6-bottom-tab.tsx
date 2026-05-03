@@ -68,8 +68,10 @@ export function W6BottomTab({ surface, unread }: W6BottomTabProps) {
                 borderRadius: 10,
                 color: active ? "var(--w6-ink)" : "var(--w6-ink-4)",
                 fontSize: 11,
-                fontWeight: 500,
+                fontWeight: active ? 600 : 500,
                 textDecoration: "none",
+                background: active ? "var(--w6-rule-2)" : "transparent",
+                transition: "background 140ms, color 140ms",
               }}
             >
               <span style={{ position: "relative" }}>
