@@ -33,9 +33,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "supabase_error", message: error.message }, { status: 502 });
   }
 
-  return NextResponse.json({
-    ok: true,
-    pubkey,
-    ...(data ?? { handle: null }),
-  });
+  return NextResponse.json(
+    {
+      ok: true,
+      pubkey,
+      ...(data ?? { handle: null }),
+    },
+    {
+      // Public handle directory — pubkey → handle is stable except for
+      // claim/rename events. 30s edge cache is conservative; SWR
+      // covers the long tail.
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+      },
+    },
+  );
 }

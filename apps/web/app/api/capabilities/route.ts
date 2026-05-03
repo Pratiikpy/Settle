@@ -83,7 +83,14 @@ export async function GET(req: NextRequest) {
         { status: 502 },
       );
     }
-    return NextResponse.json({ ok: true, hash: hash.toLowerCase(), entries: data ?? [] });
+    return NextResponse.json(
+      { ok: true, hash: hash.toLowerCase(), entries: data ?? [] },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      },
+    );
   }
 
   // List query.
@@ -105,11 +112,21 @@ export async function GET(req: NextRequest) {
       { status: 502 },
     );
   }
-  return NextResponse.json({
-    ok: true,
-    count: data?.length ?? 0,
-    entries: data ?? [],
-  });
+  return NextResponse.json(
+    {
+      ok: true,
+      count: data?.length ?? 0,
+      entries: data ?? [],
+    },
+    {
+      // Capability registry is mostly stable (verifications are
+      // additive). 60s edge cache reduces DB hits on the
+      // /capabilities/discover and capability-leaderboard routes.
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    },
+  );
 }
 
 export async function POST(req: NextRequest) {

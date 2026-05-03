@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 46 — next polish target. Categories near saturation; remaining big targets all deferred-risky.
+Pass 47 — next polish target. Categories near saturation; remaining big targets all deferred-risky.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 46 — next polish target. Categories near saturation; remaining big target
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 45 /agents/templates/[slug] generateMetadata).
-- Items pending full-E2E verification: agent template detail page metadata.
+- Polish passes since last full-E2E: 2 (pass 45 templates metadata, pass 46 by-pubkey + capabilities cache).
+- Items pending full-E2E verification: agent-template metadata, by-pubkey cache, capabilities cache.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 46 — performance (C): cache /api/handles/by-pubkey + /api/capabilities
+Files changed:
+- `apps/web/app/api/handles/by-pubkey/route.ts`: success response now carries `Cache-Control: public, s-maxage=30, stale-while-revalidate=120`. Pubkey → handle mapping is stable except for claim/rename events, so 30s edge cache + 2min SWR is conservative.
+- `apps/web/app/api/capabilities/route.ts`: both response paths (single-hash lookup and list/search) now carry `Cache-Control: public, s-maxage=60, stale-while-revalidate=300`. The capability registry is mostly stable (verifications are additive, not mutating). 60s edge cache reduces DB hits on `/capabilities/discover` and the capability leaderboard pages.
+
+Why this matters:
+- Continues the systematic public-data caching policy from passes 33 (receipt poster) and 41 (profile APIs). The /handles/by-pubkey route is hit on every page that needs to display a "@handle" for a pubkey — easy to thunder.
+- /api/capabilities is queried by the capability registry UI + the heatmap component on the leaderboard.
+- Caching public, mostly-immutable lookups behind 30-60s windows is the right tier (vs /api/balance's 10s for fresher financial data).
+
+Audited but not changed:
+- /api/handles/[handle]/badges: rare-traffic; skip.
+- /api/handles/[handle]/relationship: per-user authed; can't safely public-cache.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl -I /api/handles/by-pubkey?pubkey=ALICE` → `cache-control: public, s-maxage=30, stale-while-revalidate=120`.
+- `curl -I /api/capabilities` → `cache-control: public, s-maxage=60, stale-while-revalidate=300`.
+- Targeted Playwright `section-23e-agent-dev`: 24/24 green.
+
+Risk: low. Same conservative caching tier already proven safe in passes 33 and 41.
+
+Pending full-E2E (next test pass): no rendering changes, only DB hit-rate reduction.
 
 ### Pass 45 — SEO + share previews (O + H): generateMetadata for agent templates
 Files changed:
