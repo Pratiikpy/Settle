@@ -35,12 +35,15 @@ pub struct ClaimStreaming<'info> {
     #[account(mut)]
     pub fee_payer: Signer<'info>,
 
+    /// Boxed: same BPF-stack-overflow risk as spend_via_pact (11 accounts, large
+    /// AgentCard + Pact structs). Box moves the data to heap, leaves a thin
+    /// pointer on the stack.
     #[account(
         mut,
         seeds = [AgentCard::SEED_PREFIX, card.authority.as_ref(), card.label_hash.as_ref()],
         bump = card.bump,
     )]
-    pub card: Account<'info, AgentCard>,
+    pub card: Box<Account<'info, AgentCard>>,
 
     #[account(
         mut,
@@ -48,7 +51,7 @@ pub struct ClaimStreaming<'info> {
         bump = pact.bump,
         constraint = pact.parent_card == card.key() @ SettleError::PactCardMismatch,
     )]
-    pub pact: Account<'info, Pact>,
+    pub pact: Box<Account<'info, Pact>>,
 
     /// CHECK: vault PDA derived from [b"pact-vault", pact.key()]; signs the CPI.
     #[account(
@@ -58,17 +61,17 @@ pub struct ClaimStreaming<'info> {
     pub vault: AccountInfo<'info>,
 
     #[account(address = pact.usdc_mint @ SettleError::WrongMint)]
-    pub usdc_mint: Account<'info, Mint>,
+    pub usdc_mint: Box<Account<'info, Mint>>,
 
     #[account(
         mut,
         associated_token::mint = usdc_mint,
         associated_token::authority = vault,
     )]
-    pub vault_usdc: Account<'info, TokenAccount>,
+    pub vault_usdc: Box<Account<'info, TokenAccount>>,
 
     #[account(mut, token::authority = merchant_owner, token::mint = usdc_mint)]
-    pub merchant_usdc: Account<'info, TokenAccount>,
+    pub merchant_usdc: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: merchant pubkey, validated against pact.allowlist below.
     pub merchant_owner: AccountInfo<'info>,
