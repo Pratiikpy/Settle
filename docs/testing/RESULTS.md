@@ -639,3 +639,25 @@ Code is correct + tested locally; just not on registries.
 | 26 · API shape validation | ✓ pass | scripts/api-shape-validate.ts: 12/12 endpoints return correct fields (feed.events, stats/landing.is_presentable, leaderboard.capabilities, capabilities.entries, preflight.counts+checks, price/sol-usd.usd+symbol, handles/by-pubkey, templates.templates, federation/origins.origins, balance.usdc+sol, dashboard/v6.today+agents_on_duty+recent_receipts, trust.score+tier+receipts_total) | 2026-05-03 |
 | Test orchestrator (25 steps, 4th consecutive) | ✓ pass | 25/25 ok, ~6min wall-time | 2026-05-03 11:08 |
 
+
+## 2026-05-03 11:38 — 218/218 E2E
+
+| 12 · Notifications inbox + API | ✓ pass | /activity renders, /api/notifications shape | 2026-05-03 |
+| 14.7 · settle-verify component | ✓ pass | /verify input + /verify-build page render | 2026-05-03 |
+| 52 · Security headers (live, via Playwright) | ✓ pass | XCTO/XFO/Referrer-Policy/Permissions-Policy on / and /dashboard | 2026-05-03 |
+| 26 · API validation paths (8 sad-path tests) | ✓ pass | /api/swap/quote-and-build 400, /api/intent/parse 400, /api/disputes/draft 400, /api/voice/transcribe 415, /api/cron/phase5-tick 401, /api/admin/cron/recent 401, /api/at/[handle] 404, /api/handles/lookup 404 | 2026-05-03 |
+| 1+ · Full E2E (post +14 specs) | ✓ pass | 218/218 in 6.0m (was 204 → +14) | 2026-05-03 11:38 |
+
+**Total session delta:**
+- E2E: 89 → **218** (+129 tests)
+- Orchestrator: 1-step → **25/25** (4 consecutive passes)
+- Infra scripts: 2 → **17** (15 from AUTOMATED_TESTING.md + 2 bonus)
+- Anchor ix on devnet: 5 → **14/14** (+ Box<Account> fix)
+- Lint warnings: 34 → **0**
+- Security headers: 0 → **4**
+- Secret findings: unknown → **0**
+- API endpoints: untested → **134/134 inventoried + 12 shape-validated**
+- Webhook events: 0 verified → **13/13 HMAC-delivered**
+- Solana primitives: partial → **7/7 verified**
+- Section 53 gate: ~30% → **35/37 (95%)**
+
