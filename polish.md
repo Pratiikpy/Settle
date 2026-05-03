@@ -3,7 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 20 = TEST PASS (every 4th). Reconcile passes 17, 18, 19 with full Playwright.
+Pass 21 — pick next polish target. Categories still under-touched:
+- Category I: palette consistency (deferred — risky)
+- Category C: code-split heaviest pages (/activity 323KB)
+- Category G: CSP (deferred — needs origin allowlist)
+- Category K: dead-data scrub
+- Category B: data correctness deeper sweep on other surfaces
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +31,8 @@ Pass 20 = TEST PASS (every 4th). Reconcile passes 17, 18, 19 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 17 security headers, pass 18 freshness polling, pass 19 OG image spec). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: HSTS + COOP, magic-moment polling, /watch sig-dedupe, OG image route specs.
+- Polish passes since last full-E2E: 0 (pass 20 just ran 574/574 — was 572, +2 OG image specs).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +185,13 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 20 — TEST PASS: full E2E reconciliation of passes 17-19
+- Items previously pending: HSTS + COOP headers (p17), magic-moment 60s polling + /watch sig-dedupe (p18), OG image route specs (p19).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 574 specs.
+- **Result: 574/574 green in 7.0m.** Up from 572 prior baseline (+2 OG image specs from pass 19).
+- No regressions across security headers, freshness polling, or OG image rendering.
+- All previously pending items now fully verified.
 
 ### Pass 19 — test coverage (category L): OG image route specs
 Files changed:
