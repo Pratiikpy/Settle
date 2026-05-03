@@ -21,13 +21,10 @@ import bs58 from "bs58";
 function loadPubkey(rel: string): PublicKey {
   const root = resolve(process.cwd(), "..", "..");
   const arr = JSON.parse(readFileSync(resolve(root, rel), "utf8")) as number[];
-  return PublicKey.decode
-    ? // legacy
-      new PublicKey(bs58.encode(Buffer.from(arr.slice(32, 64))))
-    : (() => {
-        const { Keypair } = require("@solana/web3.js") as { Keypair: any };
-        return Keypair.fromSecretKey(Uint8Array.from(arr)).publicKey;
-      })();
+  // Always derive via Keypair.fromSecretKey — same in modern web3.js
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { Keypair } = require("@solana/web3.js") as { Keypair: { fromSecretKey: (s: Uint8Array) => { publicKey: PublicKey } } };
+  return Keypair.fromSecretKey(Uint8Array.from(arr)).publicKey;
 }
 
 async function connectE2EPersona(page: Page) {
