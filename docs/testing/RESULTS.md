@@ -483,3 +483,16 @@ Updated in `docs/testing/HUMAN_BLOCKERS.md`:
 | 1+ · Full E2E (post-headers + new specs) | ✓ pass | 128/128 (was 89, +39 new) in 4.0m | 2026-05-03 09:34 |
 | Sec headers · X-Frame-Options / nosniff / Referrer-Policy / Permissions-Policy | ✓ pass | added in next.config.mjs; verified via curl -I | 2026-05-03 09:33 |
 
+
+## 2026-05-03 09:50 — Batch 2: 27 more spec tests + 4 more infra scripts
+
+| 14 · Developer surface routes | ✓ pass | 6 docs routes (root, mcp, pay-component, verify-component, webhooks, sandbox) | 2026-05-03 09:50 |
+| 21a · UI user-journeys | ✓ pass | 5 journeys (J1: landing→dashboard→send→ledger; J2: cards CRUD navigation; J3: agent flow; J4: walletless verifier; J5: disconnect + reconnect) | 2026-05-03 09:50 |
+| 29 · Empty / disconnected states | ✓ pass | 9 routes (dashboard, cards, wishes, groups, allowances, activity, settings, agents, at/me) | 2026-05-03 09:50 |
+| 37-44 · Cosmetic/cross-cutting | ✓ pass | 7 tests: theme=W6 light, print mediaQuery, OG image responds, PWA manifest, settings sections, wallet adapter Phantom+Burner, toast container | 2026-05-03 09:50 |
+| 10.3 · Solana Action endpoints | ✓ pass | scripts/blink-coverage.ts: hire/research, request/test-slug, revoke/test-card all return valid Action JSON with CORS:* + X-Action-Version | 2026-05-03 09:48 |
+| 9.1 · Solana Pay QR | ✓ pass | scripts/pay-qr-coverage.ts: /qr/[merchant]/[slug] page renders, /api/sp endpoint wired | 2026-05-03 09:48 |
+| 14.4 · Cross-language kernel parity (live) | ✓ pass | scripts/kernel-parity-cross-lang.ts: TS hash e2441ca5... == Python hash e2441ca5... byte-equal; Rust parity proven separately by 44 cargo tests | 2026-05-03 09:48 |
+| 13 · Federation pipeline (live) | ✓ pass | scripts/federation-coverage.ts: public origins 200 (1 trusted origin), admin requires CRON_SECRET 401/200, list endpoint 400 without pubkey | 2026-05-03 09:48 |
+| 1+ · Full E2E (with new specs) | ✓ pass | 155/155 in 4.5m (was 128 → +27) | 2026-05-03 09:50 |
+
