@@ -895,3 +895,17 @@ The §23a "honest gap" is closed for direct send: a real Playwright Pay button c
 | Card detail revoke + bulk-close | ✓ kill section renders |
 | Full E2E (workers=4) | ✓ **459/459 in 6.2m (+24)** |
 
+
+## 2026-05-03 19:00 — §23a deep flows (every consumer + merchant action)
+
+| Category | Specs | Result |
+|---|---|---|
+| Receipts + ledger | 10 | tags, narrate, ledger filters, exports, import, verify, verify/[hash], federation-import |
+| Profile + Settings | 7 | /at/me, handles/by-pubkey, handles/claim, /at/[handle]/proof, follows, settings/relayer, /api/relayer |
+| Merchant deep | 12 | profile edit, capabilities publish, DNS verify, Pay QR + payment-links, webhook config, disputes draft, analytics |
+| Schedule + recurring | 3 | /allowances, /api/scheduled-sends, /api/auto-refill |
+| Notifications | 2 | /api/notifications, /activity inbox |
+| No-stub deep | 3 | /at/me→trust, /m/me/analytics→merchant API, /leaderboard→leaderboard API |
+| Cross-wallet 2nd-tier | 1 | BOB's /api/dashboard/v6 after ALICE pays |
+| Full E2E (workers=4) | — | ✓ **497/497 in 6.6m (+38)** |
+
