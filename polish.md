@@ -3,7 +3,22 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 4 — start UI empty-state + loading-state audit on authed surfaces.
+Pass 5 — bigger-effort polish targets (next bump, dedup utils) need
+careful verification so they get their own focused passes.
+
+## Deferred — needs review (risky to do without isolated verification)
+
+- **Bump `next@15.0.2` → `next@15.5.15+`** — `pnpm audit` reports 29 vulns
+  (3 low / 18 moderate / 6 high / 2 critical), most chained through next.
+  The bump is ~5 minor versions; could change build/runtime behavior.
+  Plan: run on isolated branch, full E2E (572) + visual-regression
+  before merging.
+- **Consolidate `solscanUrl()` (lib/format.ts) into `getSolscanUrl()`
+  (lib/solana.ts)** — both build the same URL; ~9 files import the older
+  one. Single-pass refactor risk: parameter signature differs (cluster
+  arg vs env-driven). Plan: as a focused refactor pass with full E2E.
+- **Update `bigint-buffer`, `rollup`, `serialize-javascript`, `esbuild`
+  transitive vulns** — pnpm overrides needed; may break Anchor toolchain.
 
 ## Comprehensive polish categories (NEVER forget any of these when picking targets)
 
@@ -142,6 +157,17 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 4 — empty-state audit + security inventory
+- Audited /ledger, /feed, /agents, /allowances, /groups, /spending —
+  all already have functional empty states with CTAs. No change needed.
+- Ran `pnpm audit` — 29 vulns surfaced; 6 high + 2 critical. Logged
+  upgrade plan as deferred (next bump is single biggest gain).
+- Found duplicate `solscanUrl` (format.ts) vs `getSolscanUrl` (solana.ts);
+  logged consolidation as deferred refactor pass.
+- **Verified:** existing empty states checked manually + via Playwright.
+- **Risk:** none (audit only, no code change this pass).
+- **No commit needed beyond polish.md update for this pass.**
 
 ## Audited but not changed (low-impact / risky)
 - **`console.warn` in API routes** — all are intentional non-fatal-error logging with `[tag]` prefixes. Removing would lose ops signal. **Keep.**
