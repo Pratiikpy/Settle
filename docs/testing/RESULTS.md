@@ -460,3 +460,9 @@ Updated in `docs/testing/HUMAN_BLOCKERS.md`:
 | 49 · Final web build (post-lint-fix) | ✓ pass | next build succeeds; static + dynamic routes prerendered | 2026-05-03 08:14 |
 | W6 cascade audit (3rd consecutive re-verify) | ✓ pass | 9/9 in 14.5s | 2026-05-03 08:08 |
 
+
+## 2026-05-03 08:53 — Loop iteration check
+
+| 32 · Trust score recompute API (`GET /api/trust/[pubkey]`) | ✓ pass | live recalc on-demand for both ALICE + BOB; returns score, tier, components, cached:false (fresh compute) | 2026-05-03 08:52 |
+| 26 · API endpoint sample (8/9) | ✓ pass | /api/feed 200, /api/stats/landing 200, /api/handles/by-pubkey 200, /api/leaderboard 200, /api/capabilities 200, /api/preflight 200, /api/federation/origins 200; /api/health 503 (honestly reports unconfigured redis/cnft/demo-merchants — not a regression) | 2026-05-03 08:52 |
+
