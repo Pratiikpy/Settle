@@ -108,6 +108,15 @@ export function MagicMomentTerminal() {
 
   useEffect(() => {
     if (items.length === 0) return;
+    // Respect prefers-reduced-motion: show everything at once, no animation.
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setShown(items.length);
+      return;
+    }
     setShown(0);
     const id = setInterval(() => {
       setShown((n) => {
@@ -215,6 +224,11 @@ export function MagicMomentTerminal() {
       </div>
       <style>{`
         @keyframes blink { 50% { opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) {
+          [data-testid="magic-moment-terminal"] [style*="animation"] {
+            animation: none !important;
+          }
+        }
       `}</style>
     </section>
   );

@@ -3,16 +3,15 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 6 — continue plain-English rename through `/help` Q&A and
-`/admin/cron`, `/control-center` admin copy.
+Pass 7 — accessibility deeper audit (focus rings, keyboard nav).
 
 ## Pass cadence (loop policy — 2026-05-04)
 - 3 polish passes → 1 test pass.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (just ran 572/572 after pass 5).
-- Items pending full-E2E verification since last test pass: NONE.
+- Polish passes since last full-E2E: 1 (pass 6 just done with light verify).
+- Items pending full-E2E verification since last test pass: pass 6 reduced-motion fix.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -165,6 +164,25 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 6 — multi-category: /help rename + reduced-motion accessibility
+Files changed:
+- `app/help/page.tsx`: Q&A "What is a Pact card?" → "What is a spending rule?" with body rewritten ("A spending rule is a child of your main agent budget…"). Q&A "Can the agent steal my money?" body: `Pact's cap` → `rule's cap`, `revoke a card` → `revoke a budget`.
+- `components/magic-moment-terminal.tsx`: respects `prefers-reduced-motion: reduce` — when set, instantly shows all lines and skips the 1100ms interval rotation. CSS rule also disables blink animation. Uses `window.matchMedia` SSR-safe guard.
+
+Audited but skipped (precision matters for engineers):
+- `/admin/cron`, `/control-center`: technical descriptions referencing Anchor instructions — kept jargon for accuracy.
+- README.md: engineering doc — Pact/Capability are real type names — kept.
+
+Audited but found nothing to fix:
+- Empty try/catch blocks (silent failures): none in app/.
+- Commented-out code blocks: none — all `//` lines are real comments.
+- 404/500/global-error pages: already polished with W6 palette + CTAs.
+- PWA icons + manifest + apple-icon: present.
+
+**Verified:** next build clean, tsc --noEmit clean, 26/26 targeted Playwright (magic-moment, rename audit, nav-smoke) green.
+
+**Pending full-E2E (next test pass):** reduced-motion behavior in magic moment — visual regression should still pass.
 
 ### Pass 5 — plain-English rename: agent flows + cards + groups
 Files changed:

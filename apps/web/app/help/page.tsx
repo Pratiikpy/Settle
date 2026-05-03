@@ -12,12 +12,12 @@ const FAQ: { q: string; a: string }[] = [
     a: "Right now Settle runs on Solana devnet for the Solana Frontier Hackathon. The same code, the same Anchor program, the same hash chain — just on the test cluster so we can iterate fast without spending real USDC. Migrating to mainnet only requires updating the cluster, USDC mint, and merkle-tree authority. See MAINNET_MIGRATION.md in the repo.",
   },
   {
-    q: "What is a Pact card?",
-    a: "A Pact is a child of your main Agent Card with a hard cap, a merchant allowlist, and an expiry. It exists on-chain as a PDA. When the agent spends, the Anchor program checks the Pact's cap, allowlist, and expiry — not the parent card's. Close the Pact and any unspent USDC stays with you.",
+    q: "What is a spending rule?",
+    a: "A spending rule is a child of your main agent budget with a hard cap, a merchant allowlist, and an expiry. It exists on-chain as a PDA. When the agent spends, the Anchor program checks the rule's cap, allowlist, and expiry — not the parent budget's. Close the rule and any unspent USDC stays with you.",
   },
   {
     q: "Can the agent steal my money?",
-    a: "Not more than the Pact's cap. Even with full agent credentials, the Anchor program rejects any spend over the cap, outside the allowlist, or after expiry. You can revoke a card on-chain at any time.",
+    a: "Not more than the rule's cap. Even with full agent credentials, the Anchor program rejects any spend over the cap, outside the allowlist, or after expiry. You can revoke a budget on-chain at any time.",
   },
   {
     q: "What is a receipt?",
