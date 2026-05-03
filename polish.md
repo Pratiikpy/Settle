@@ -3,7 +3,13 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 40 = TEST PASS (every 4th). Reconcile passes 37, 38, 39 with full Playwright.
+Pass 41 — pick next polish target.
+- Category I: palette (deferred)
+- Category C: code-split (deferred)
+- Category G: CSP (deferred)
+- Category K: dead-data scrub
+- Category A: start/merchant onboarding gap
+- Category F: continue rename in /admin/cron-style admin pages? (skip — kept technical)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +32,8 @@ Pass 40 = TEST PASS (every 4th). Reconcile passes 37, 38, 39 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 37 logs + timestamp, pass 38 sandbox copy fix, pass 39 streaming rule rename). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: exports/receipts log, magic-moment "fresh-as-of" header, sandbox SOL-amount copy fix, sandbox /watch CTA, /agents/streaming rename.
+- Polish passes since last full-E2E: 0 (pass 40 ran 577/577).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +186,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 40 — TEST PASS: full E2E reconciliation of passes 37-39
+- Items previously pending: exports/receipts log + magic-moment "fresh-as-of" timestamp (p37), sandbox 0.5 SOL copy fix + /watch CTA (p38), /agents/streaming rename (p39).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 577 specs.
+- **Result: 577/577 green in 7.1m.** No regressions.
+- All previously pending items now fully verified.
 
 ### Pass 39 — copywriting (F): /agents/streaming + /start/agent rename
 Files changed:
