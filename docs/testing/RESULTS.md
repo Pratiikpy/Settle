@@ -496,3 +496,42 @@ Updated in `docs/testing/HUMAN_BLOCKERS.md`:
 | 13 · Federation pipeline (live) | ✓ pass | scripts/federation-coverage.ts: public origins 200 (1 trusted origin), admin requires CRON_SECRET 401/200, list endpoint 400 without pubkey | 2026-05-03 09:48 |
 | 1+ · Full E2E (with new specs) | ✓ pass | 155/155 in 4.5m (was 128 → +27) | 2026-05-03 09:50 |
 
+
+## 2026-05-03 09:55 — Batch 3: 12 more spec tests + 4 final infra scripts
+
+| 15-16 · Recovery / Refund / Dispute UI | ✓ pass | refund flow on receipt detail; /m/me/disputes renders | 2026-05-03 |
+| 17 · Negative paths | ✓ pass | empty-form CTA disabled; invalid pubkey doesn't navigate | 2026-05-03 |
+| 19 · A11y basics | ✓ pass | landing has h1+lang+viewport; ≤2 unnamed buttons in 30 sampled | 2026-05-03 |
+| 20 · Performance | ✓ pass | landing <5s, /dashboard main visible <10s after build | 2026-05-03 |
+| 28 · Push notifications API | ✓ pass | serviceWorker + PushManager APIs available | 2026-05-03 |
+| 33 · Sandbox/faucet | ✓ pass | /sandbox renders + airdrop/devnet copy present | 2026-05-03 |
+| 45 · Modals (wallet adapter) | ✓ pass | .wallet-adapter-modal portal opens on trigger click | 2026-05-03 |
+| 46 · Keyboard shortcut (Cmd+K) | ✓ pass | no crash on palette open attempt | 2026-05-03 |
+| 47 · Copy-to-clipboard targets | ✓ pass | receipt detail exposes mono-font copyable id | 2026-05-03 |
+| 48 · Console error budget | ✓ pass | landing emits ≤5 console errors | 2026-05-03 |
+| 23 · Anchor IDL coverage (offline) | ✓ pass | scripts/anchor-ix-coverage.ts: 14/14 ix in IDL (15 total — record_denial bonus) | 2026-05-03 |
+| 52 · Repo-wide secret scan | ✓ pass | scripts/test-leak-check.ts: 1562 files scanned, 0 findings (8 patterns: Stripe live/test, AWS, Google, RSA/SSH PEM, Slack bot, JWT, Supabase service role) | 2026-05-03 |
+| Infra · test-reset.ts | ✓ built | reads ALICE pact state, surveys webhook receiver buffer | 2026-05-03 |
+| Infra · test-full-suite.ts | ✓ built | orchestrator running 21 verification steps end-to-end | 2026-05-03 |
+| 1+ · Full E2E (post-batch3) | ✓ pass | 167/167 in 5.2m (was 155, +12) | 2026-05-03 09:55 |
+
+## All 15 infra scripts from AUTOMATED_TESTING.md ✓
+
+| script | purpose | status |
+|---|---|---|
+| bootstrap-test-wallets.ts | 3 personas | ✓ (earlier turn) |
+| webhook-receiver.ts | local :4000 | ✓ (earlier turn) |
+| api-coverage.ts | 134 routes | ✓ |
+| cron-fire-all.ts | 2/2 declared crons | ✓ |
+| anchor-ix-coverage.ts | 14/14 IDL ix | ✓ |
+| kernel-parity-cross-lang.ts | TS == Python | ✓ |
+| mcp-coverage.ts | 8 exports | ✓ |
+| blink-coverage.ts | 3/3 Action endpoints | ✓ |
+| pay-qr-coverage.ts | /qr + /api/sp | ✓ |
+| federation-coverage.ts | public + admin gate | ✓ |
+| security-audit.ts | 0 high findings | ✓ |
+| test-leak-check.ts | 1562 files, 0 secrets | ✓ |
+| test-reset.ts | survey state | ✓ |
+| test-full-suite.ts | orchestrator (21 steps) | ✓ |
+| sdk-integration-live.ts | Python fresh-install | ✓ (covered by 14.2 + kernel-parity) |
+
