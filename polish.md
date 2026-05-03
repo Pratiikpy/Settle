@@ -3,7 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 36 = TEST PASS (every 4th). Reconcile passes 33, 34, 35 with full Playwright.
+Pass 37 — next polish target.
+- Category I: palette (deferred)
+- Category C: code-split (deferred)
+- Category G: CSP (deferred)
+- Category K: dead-data scrub
+- Category A: start/merchant onboarding gap
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +31,8 @@ Pass 36 = TEST PASS (every 4th). Reconcile passes 33, 34, 35 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 33 receipt cache, pass 34 handles silent-failures, pass 35 /agents copy). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: receipt API cache, /api/handles/* logErr (6 queries), /agents user-visible copy rename.
+- Polish passes since last full-E2E: 0 (pass 36 ran 577/577 after wallet bootstrap top-up).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +185,15 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 36 — TEST PASS: full E2E reconciliation of passes 33-35 + wallet top-up
+- Items previously pending: receipt API cache (p33), /api/handles/* silent-failure logs (p34), /agents user-visible copy rename (p35).
+- First full run: 569/577 — 8 environmental failures, all in real-on-chain spending specs (`23a.ledger-updates`, ALICE→BOB / ALICE→CAROL on-chain). Root cause: ALICE's burner wallet had 0.0009 SOL — not enough gas to sign transactions. Same gas-drain reality from pass 28. Devnet faucet still rate-limited (1 SOL/day/project) so /api/sandbox/airdrop wouldn't fix it.
+- **Fix**: ran `pnpm tsx scripts/bootstrap-test-wallets.ts` — pulled SOL/USDC from the funded `.test-master.json` keypair. Topped ALICE: 0.0009 → 0.5 SOL + 7.03 → 10 USDC. Topped CAROL: 0 → 0.5 SOL + 0 → 10 USDC.
+- Re-ran full suite: **577/577 green in 7.1m**.
+- All previously pending items now fully verified.
+
+NOT a regression. The 8 failing specs were all gated on actual on-chain SOL availability for ALICE — a real-world environmental constraint that the bootstrap script handles.
 
 ### Pass 35 — copywriting (F): /agents page plain-English deeper rename
 Files changed:
