@@ -42,6 +42,11 @@
         },
         {
           "name": "card",
+          "docs": [
+            "Boxed: same BPF-stack-overflow risk as spend_via_pact (11 accounts, large",
+            "AgentCard + Pact structs). Box moves the data to heap, leaves a thin",
+            "pointer on the stack."
+          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -2543,7 +2548,9 @@
           "name": "card",
           "docs": [
             "Parent AgentCard — MUTABLE because we update used_today + last_reset_slot.",
-            "This is what enforces the daily cap across multiple Pacts on the same card."
+            "This is what enforces the daily cap across multiple Pacts on the same card.",
+            "Boxed to keep account-validation off the BPF stack (12-account ix overflows",
+            "stack frame 5 otherwise — manifests as \"Access violation at 0x200005fa8\")."
           ],
           "writable": true,
           "pda": {

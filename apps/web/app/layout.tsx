@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import { Header } from "../components/header";
 import { CommandPalette } from "../components/command-palette";
 import { ThemeProvider } from "../components/theme-provider";
+import { RouteTransition } from "../components/route-transition";
 
 export const metadata: Metadata = {
   title: "Settle — Pay anyone. Hire any AI. Trust the receipts.",
@@ -53,7 +54,7 @@ export default function RootLayout({
         <ThemeProvider>
           <Providers>
             <Header />
-            {children}
+            <RouteTransition>{children}</RouteTransition>
             {/* F1.6 — global Cmd+K palette mounts at root so the keyboard
                 shortcut works on every page without per-page wiring. */}
             <CommandPalette />
@@ -61,9 +62,11 @@ export default function RootLayout({
               position="bottom-center"
               toastOptions={{
                 style: {
-                  background: "rgb(var(--background))",
-                  border: "1px solid rgb(var(--border))",
-                  color: "rgb(var(--foreground))",
+                  background: "var(--w6-paper-2)",
+                  border: "1.5px solid var(--w6-rule)",
+                  color: "var(--w6-ink)",
+                  borderRadius: "8px",
+                  boxShadow: "var(--w6-shadow-md)",
                 },
               }}
             />

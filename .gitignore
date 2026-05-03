@@ -59,3 +59,10 @@ infra/supabase/.branches/
 infra/supabase/.temp/
 .test-wallet.json
 .test-merchant.json
+
+# autonomous test runner master wallet (gitignored - real devnet keypair)
+.test-master.json
+
+# additional funding wallets pooled past Circle's 20-USDC-per-wallet limit
+.test-funder-2.json
+.test-funder-3.json

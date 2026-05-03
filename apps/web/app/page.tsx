@@ -9,6 +9,7 @@ import { ConnectedRedirect } from "../components/connected-redirect";
 import { LandingStatsStrip } from "../components/w6-landing-stats";
 import { LandingWaitlistForm } from "../components/w6-landing-waitlist";
 import { LandingWalletAdapter } from "../components/w6-landing-wallet";
+import { MagicMomentTerminal } from "../components/magic-moment-terminal";
 
 export const dynamic = "force-static";
 export const revalidate = 300;
@@ -31,6 +32,8 @@ export default function Home() {
       <NavMarketing />
       <main className="w6-landing">
         <Hero />
+        <MagicMomentTerminal />
+        <ThesisStrip />
         <LandingStatsStrip />
         <ProductSurface />
         <MadeForEveryone />
@@ -118,7 +121,7 @@ function NavMarketing() {
             Docs
           </Link>
           <Link
-            href="/docs/api"
+            href="/docs#graphql"
             className="w6-muted"
             style={{ fontSize: 13.5, fontWeight: 500 }}
           >
@@ -241,6 +244,38 @@ function Hero() {
           .w6-hero-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+    </section>
+  );
+}
+
+function ThesisStrip() {
+  return (
+    <section
+      data-testid="thesis-strip"
+      className="w6-section"
+      style={{
+        padding: "20px 32px 36px",
+        maxWidth: 1280,
+        margin: "0 auto",
+        textAlign: "center",
+      }}
+    >
+      <p
+        style={{
+          fontSize: 16,
+          lineHeight: 1.55,
+          color: "var(--w6-ink-3)",
+          maxWidth: 760,
+          margin: "0 auto",
+          fontWeight: 500,
+        }}
+      >
+        Stablecoins will move trillions. A growing share will be agent-driven.
+        <br />
+        <span style={{ color: "var(--w6-ink)" }}>
+          Settle makes that money revocable, auditable, and provably yours.
+        </span>
+      </p>
     </section>
   );
 }
@@ -884,7 +919,7 @@ function FooterMarketing() {
         <Link href="/docs" className="w6-muted" style={{ fontSize: 12.5 }}>
           Docs
         </Link>
-        <Link href="/docs/api" className="w6-muted" style={{ fontSize: 12.5 }}>
+        <Link href="/docs#graphql" className="w6-muted" style={{ fontSize: 12.5 }}>
           API
         </Link>
         <Link href="/verify" className="w6-muted" style={{ fontSize: 12.5 }}>

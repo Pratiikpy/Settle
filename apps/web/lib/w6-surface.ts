@@ -131,7 +131,7 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
       section: null,
       items: [
         { icon: "home", label: "Docs", href: "/docs" },
-        { icon: "code", label: "SDKs", href: "/docs/sdks" },
+        { icon: "code", label: "SDKs", href: "/docs#install" },
         { icon: "terminal", label: "MCP middleware", href: "/docs/mcp" },
       ],
     },
@@ -146,7 +146,7 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
     {
       section: "Tools",
       items: [
-        { icon: "spark", label: "API explorer", href: "/docs/api" },
+        { icon: "spark", label: "API reference", href: "/docs#graphql" },
         { icon: "bot", label: "Sandbox", href: "/sandbox" },
       ],
     },

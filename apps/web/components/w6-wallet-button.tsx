@@ -75,9 +75,9 @@ export function W6WalletButton({ handle }: W6WalletButtonProps) {
           gap: 8,
           height: 32,
           padding: "0 4px 0 12px",
-          borderRadius: 999,
+          borderRadius: 6,
           border: "1px solid var(--w6-rule)",
-          background: "#fff",
+          background: "var(--w6-paper-2)",
           cursor: "pointer",
         }}
       >
@@ -118,8 +118,8 @@ export function W6WalletButton({ handle }: W6WalletButtonProps) {
             minWidth: 220,
             padding: 6,
             border: "1px solid var(--w6-rule)",
-            borderRadius: 14,
-            background: "#fff",
+            borderRadius: 8,
+            background: "var(--w6-paper-2)",
             boxShadow: "var(--w6-shadow-md)",
             zIndex: 50,
           }}

@@ -1,0 +1,1486 @@
+{
+  "host": "http://localhost:3000",
+  "total_routes": 134,
+  "probes": [
+    {
+      "route": "/api/actions/hire/test-slug",
+      "url": "/api/actions/hire/test-slug",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"type\":\"action\",\"title\":\"Hire this AI agent\",\"icon\":\"https://settle.so/og/agent-card.png\",\"description\":\"Spawn a Pact card for \\\"test-slug\\\". Cap $0.50, 3 merchants allowlisted, 15-min expiry, one-ta",
+      "durationMs": 51
+    },
+    {
+      "route": "/api/actions/hire/test-slug/spawn",
+      "url": "/api/actions/hire/test-slug/spawn",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/actions/hire/test-slug/spawn",
+      "url": "/api/actions/hire/test-slug/spawn",
+      "method": "POST",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"unknown_agent_template\"}",
+      "durationMs": 154
+    },
+    {
+      "route": "/api/actions/request/test-slug",
+      "url": "/api/actions/request/test-slug",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"type\":\"action\",\"title\":\"Pay @test-slug via Settle\",\"icon\":\"https://settle.so/og/merchant.png\",\"description\":\"Send USDC to @test-slug via Solana Pay. Fresh reference pubkey embedded so the recipient ",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/actions/revoke/x",
+      "url": "/api/actions/revoke/x",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"type\":\"action\",\"title\":\"Revoke Settle card\",\"icon\":\"https://settle.so/og/revoke.png\",\"description\":\"Revoke card x…x. Marks the card revoked on-chain. Future spend attempts on this card will fail wit",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/actions/router/satoshi/x",
+      "url": "/api/actions/router/satoshi/x",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"unknown_type\",\"supported\":[\"tip\",\"pay\",\"request\"]}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/admin/cron/recent",
+      "url": "/api/admin/cron/recent",
+      "method": "GET",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/admin/federation/origins",
+      "url": "/api/admin/federation/origins",
+      "method": "GET",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/admin/federation/retry",
+      "url": "/api/admin/federation/retry",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/admin/federation/retry",
+      "url": "/api/admin/federation/retry",
+      "method": "POST",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/admin/webhooks/retry",
+      "url": "/api/admin/webhooks/retry",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/admin/webhooks/retry",
+      "url": "/api/admin/webhooks/retry",
+      "method": "POST",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/agents/create-card",
+      "url": "/api/agents/create-card",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/agents/create-card",
+      "url": "/api/agents/create-card",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"validation_failed\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"authority\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/agents/credential",
+      "url": "/api/agents/credential",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/agents/credential",
+      "url": "/api/agents/credential",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"validation_failed\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"card_pubkey\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"receiv",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/agents/spawn",
+      "url": "/api/agents/spawn",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/agents/spawn",
+      "url": "/api/agents/spawn",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"validation_failed\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"authority\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received",
+      "durationMs": 6
+    },
+    {
+      "route": "/api/allowances/attach-kid-card",
+      "url": "/api/allowances/attach-kid-card",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/allowances/attach-kid-card",
+      "url": "/api/allowances/attach-kid-card",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\"}",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/allowances",
+      "url": "/api/allowances",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"parent_or_kid_required\"}",
+      "durationMs": 6
+    },
+    {
+      "route": "/api/allowances/spawn-kid-card",
+      "url": "/api/allowances/spawn-kid-card",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/allowances/spawn-kid-card",
+      "url": "/api/allowances/spawn-kid-card",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"allowance_id\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/audit/phase5",
+      "url": "/api/audit/phase5",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_wallet\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/auth/challenge",
+      "url": "/api/auth/challenge",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_or_missing_pubkey\"}",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/auto-refill/attach-pact",
+      "url": "/api/auto-refill/attach-pact",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/auto-refill/attach-pact",
+      "url": "/api/auto-refill/attach-pact",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/auto-refill",
+      "url": "/api/auto-refill",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_owner\"}",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/auto-refill/spawn-pact",
+      "url": "/api/auto-refill/spawn-pact",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/auto-refill/spawn-pact",
+      "url": "/api/auto-refill/spawn-pact",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"rule_id\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"unde",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/balance",
+      "url": "/api/balance",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pubkey\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/bookkeeper/categorize",
+      "url": "/api/bookkeeper/categorize",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/bookkeeper/categorize",
+      "url": "/api/bookkeeper/categorize",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pubkey\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/capabilities/discover",
+      "url": "/api/capabilities/discover",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_query\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"q\"],\"message\":\"Required\"}]}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/capabilities",
+      "url": "/api/capabilities",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"count\":3,\"entries\":[{\"capability_hash\":\"9c5bae3251c1c352ea0ce0ba4aad246c5a7e7aa6d4033d90de846bc7752d1f75\",\"alias\":\"Summarize URL\",\"description\":\"Fetch the URL and return a 200-word summary",
+      "durationMs": 134
+    },
+    {
+      "route": "/api/cards/test-id/authority-info",
+      "url": "/api/cards/test-id/authority-info",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_card_id\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/cards/test-id/bulk-close",
+      "url": "/api/cards/test-id/bulk-close",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 6
+    },
+    {
+      "route": "/api/cards/test-id/bulk-close",
+      "url": "/api/cards/test-id/bulk-close",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"authority\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"array\",\"received\":\"und",
+      "durationMs": 6
+    },
+    {
+      "route": "/api/cards/test-id/pacts",
+      "url": "/api/cards/test-id/pacts",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_card_pubkey\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/cards/test-id/privacy",
+      "url": "/api/cards/test-id/privacy",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/cards/test-id/privacy",
+      "url": "/api/cards/test-id/privacy",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_card_id\"}",
+      "durationMs": 8
+    },
+    {
+      "route": "/api/cards/test-id/receipts/csv",
+      "url": "/api/cards/test-id/receipts/csv",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_card_id\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/cards/test-id/receipts",
+      "url": "/api/cards/test-id/receipts",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_card_id\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/cards/test-id/revoke",
+      "url": "/api/cards/test-id/revoke",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/cards/test-id/revoke",
+      "url": "/api/cards/test-id/revoke",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_card_id\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/cards/delegated",
+      "url": "/api/cards/delegated",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_owner\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/cards/list",
+      "url": "/api/cards/list",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_or_missing_authority\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/cnft/test-id/metadata.json",
+      "url": "/api/cnft/test-id/metadata.json",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"name\":\"Settle Receipt #test-id\",\"symbol\":\"SETTLE\",\"description\":\"AI-agent payment receipt on Solana. This receipt's full metadata is pending indexer ingestion.\",\"image\":\"https://settle.so/og/cnft-re",
+      "durationMs": 735
+    },
+    {
+      "route": "/api/cnft/collection.json",
+      "url": "/api/cnft/collection.json",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"name\":\"Settle Receipts\",\"symbol\":\"SETTLE\",\"description\":\"Cryptographic receipts for AI-agent payments on Solana. Every receipt commits 3 BLAKE3 hashes on-chain plus a binding off-chain purpose_hash.",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/collabs/test-id/pay",
+      "url": "/api/collabs/test-id/pay",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/collabs/test-id/pay",
+      "url": "/api/collabs/test-id/pay",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_id\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/collabs/test-id",
+      "url": "/api/collabs/test-id",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_id\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/collabs",
+      "url": "/api/collabs",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_organizer\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/cron/phase5-signer",
+      "url": "/api/cron/phase5-signer",
+      "method": "GET",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/cron/phase5-tick",
+      "url": "/api/cron/phase5-tick",
+      "method": "GET",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/dashboard",
+      "url": "/api/dashboard",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"missing_pubkey\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/dashboard/v6",
+      "url": "/api/dashboard/v6",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pubkey\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/disputes/draft",
+      "url": "/api/disputes/draft",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/disputes/draft",
+      "url": "/api/disputes/draft",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/escrows/test-id/dispute",
+      "url": "/api/escrows/test-id/dispute",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/escrows/test-id/dispute",
+      "url": "/api/escrows/test-id/dispute",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pact_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/escrows/test-id/release",
+      "url": "/api/escrows/test-id/release",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/escrows/test-id/release",
+      "url": "/api/escrows/test-id/release",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pact_id\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/escrows/open",
+      "url": "/api/escrows/open",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/escrows/open",
+      "url": "/api/escrows/open",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"validation_failed\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"authority\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/exports/receipts",
+      "url": "/api/exports/receipts",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_query\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"pubkey\"],\"message\":\"Required\"}]}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/federation/import",
+      "url": "/api/federation/import",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/federation/import",
+      "url": "/api/federation/import",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"origin_id\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"un",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/federation/list",
+      "url": "/api/federation/list",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pubkey\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/federation/origins",
+      "url": "/api/federation/origins",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"origins\":[{\"origin_id\":\"settle-poc-1777757204907\",\"label\":\"Settle federation PoC\",\"homepage_url\":null,\"trusted_since\":\"2026-05-02T21:26:45.246984+00:00\",\"receipt_count\":1}]}",
+      "durationMs": 270
+    },
+    {
+      "route": "/api/feed",
+      "url": "/api/feed",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"events\":[],\"count\":0}",
+      "durationMs": 127
+    },
+    {
+      "route": "/api/follows/satoshi",
+      "url": "/api/follows/satoshi",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"handle_not_resolvable\"}",
+      "durationMs": 139
+    },
+    {
+      "route": "/api/follows/satoshi/stats",
+      "url": "/api/follows/satoshi/stats",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"handle_not_resolvable\"}",
+      "durationMs": 126
+    },
+    {
+      "route": "/api/fraud/scan",
+      "url": "/api/fraud/scan",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/fraud/scan",
+      "url": "/api/fraud/scan",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pubkey\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/gift-sends/attach-pact",
+      "url": "/api/gift-sends/attach-pact",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/gift-sends/attach-pact",
+      "url": "/api/gift-sends/attach-pact",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/gift-sends/claim",
+      "url": "/api/gift-sends/claim",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/gift-sends/claim",
+      "url": "/api/gift-sends/claim",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/gift-sends",
+      "url": "/api/gift-sends",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"owner_or_handle_required\"}",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/gift-sends/spawn-pact",
+      "url": "/api/gift-sends/spawn-pact",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/gift-sends/spawn-pact",
+      "url": "/api/gift-sends/spawn-pact",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/graphql",
+      "url": "/api/graphql",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"errors\":[{\"message\":\"query_required\"}]}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/group-accounts/test-group_id/requests",
+      "url": "/api/group-accounts/test-group_id/requests",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_group_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/group-accounts/approve",
+      "url": "/api/group-accounts/approve",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/group-accounts/approve",
+      "url": "/api/group-accounts/approve",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"group_id\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"und",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/group-accounts/request-spend",
+      "url": "/api/group-accounts/request-spend",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/group-accounts/request-spend",
+      "url": "/api/group-accounts/request-spend",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"group_id\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"und",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/group-accounts",
+      "url": "/api/group-accounts",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"member_or_group_id_required\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/handles/satoshi/badges",
+      "url": "/api/handles/satoshi/badges",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"handle_not_found\"}",
+      "durationMs": 123
+    },
+    {
+      "route": "/api/handles/satoshi/profile",
+      "url": "/api/handles/satoshi/profile",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"handle_not_found\"}",
+      "durationMs": 134
+    },
+    {
+      "route": "/api/handles/satoshi/relationship",
+      "url": "/api/handles/satoshi/relationship",
+      "method": "GET",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 7
+    },
+    {
+      "route": "/api/handles/by-pubkey",
+      "url": "/api/handles/by-pubkey",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pubkey\"}",
+      "durationMs": 8
+    },
+    {
+      "route": "/api/handles/claim",
+      "url": "/api/handles/claim",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 11
+    },
+    {
+      "route": "/api/handles/claim",
+      "url": "/api/handles/claim",
+      "method": "POST",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"auth_required\",\"reason\":\"missing\"}",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/health",
+      "url": "/api/health",
+      "method": "GET",
+      "status": 503,
+      "bodyPreview": "{\"ok\":false,\"cluster\":\"devnet\",\"service\":\"settle-web\",\"version\":\"0.2.0-consumer\",\"time\":\"2026-05-03T10:15:34.807Z\",\"checks\":{\"solana_rpc\":{\"ok\":true,\"data\":{\"current_slot\":459780272}},\"settle_program\"",
+      "durationMs": 1090
+    },
+    {
+      "route": "/api/import/solana-pay",
+      "url": "/api/import/solana-pay",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/import/solana-pay",
+      "url": "/api/import/solana-pay",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"validation_failed\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"signature\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received",
+      "durationMs": 9
+    },
+    {
+      "route": "/api/intent/parse",
+      "url": "/api/intent/parse",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/intent/parse",
+      "url": "/api/intent/parse",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/internal/push",
+      "url": "/api/internal/push",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/internal/push",
+      "url": "/api/internal/push",
+      "method": "POST",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/leaderboard/test-capabilityHash",
+      "url": "/api/leaderboard/test-capabilityHash",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_capability_hash\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/leaderboard",
+      "url": "/api/leaderboard",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"capabilities\":[]}",
+      "durationMs": 137
+    },
+    {
+      "route": "/api/ledger",
+      "url": "/api/ledger",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_wallet\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/merchants/satoshi/analytics",
+      "url": "/api/merchants/satoshi/analytics",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"handle_not_found\",\"message\":\"@satoshi not registered\"}",
+      "durationMs": 128
+    },
+    {
+      "route": "/api/merchants/satoshi/disputes/resolve",
+      "url": "/api/merchants/satoshi/disputes/resolve",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/merchants/satoshi/disputes/resolve",
+      "url": "/api/merchants/satoshi/disputes/resolve",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"request_id\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"u",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/merchants/satoshi/disputes",
+      "url": "/api/merchants/satoshi/disputes",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"handle_not_found\"}",
+      "durationMs": 126
+    },
+    {
+      "route": "/api/merchants/satoshi/profile",
+      "url": "/api/merchants/satoshi/profile",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"handle_not_found\"}",
+      "durationMs": 141
+    },
+    {
+      "route": "/api/merchants/satoshi/webhook",
+      "url": "/api/merchants/satoshi/webhook",
+      "method": "GET",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\",\"reason\":\"missing_signature\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/merchants/verify-domain",
+      "url": "/api/merchants/verify-domain",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/merchants/verify-domain",
+      "url": "/api/merchants/verify-domain",
+      "method": "POST",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\",\"reason\":\"missing_signature\"}",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/notifications/subscribe",
+      "url": "/api/notifications/subscribe",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"configured\":true,\"public_key\":\"BLO8Souz92TkaRbevoGOMvlTqP5xQBUHBiCV81I_E43sGVj3iplPxbdKtU0gvV410dDsiMft83jc-TyepG5oGrE\"}",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/og/cnft/x",
+      "url": "/api/og/cnft/x",
+      "method": "GET",
+      "status": 0,
+      "bodyPreview": "fetch failed",
+      "durationMs": 36
+    },
+    {
+      "route": "/api/og",
+      "url": "/api/og",
+      "method": "GET",
+      "status": 0,
+      "bodyPreview": "fetch failed",
+      "durationMs": 29
+    },
+    {
+      "route": "/api/payment-links/x",
+      "url": "/api/payment-links/x",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"not_found\"}",
+      "durationMs": 145
+    },
+    {
+      "route": "/api/payment-links",
+      "url": "/api/payment-links",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_creator\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/preflight",
+      "url": "/api/preflight",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"counts\":{\"green\":6,\"yellow\":1,\"red\":0},\"checks\":[{\"name\":\"Supabase reachable\",\"status\":\"green\",\"hint\":\"Read against agent_cards succeeded.\"},{\"name\":\"Latest migration applied\",\"status\":\"gr",
+      "durationMs": 347
+    },
+    {
+      "route": "/api/price/sol-usd",
+      "url": "/api/price/sol-usd",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"symbol\":\"SOL/USD\",\"usd\":83.96783789,\"confidence\":0.05241944,\"publish_time\":1777803263,\"feed_id\":\"0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d\",\"source\":\"Pyth Hermes\"}",
+      "durationMs": 7
+    },
+    {
+      "route": "/api/pricelist",
+      "url": "/api/pricelist",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_merchant\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/receipts/test-requestId/attachments/test-attachmentId/play",
+      "url": "/api/receipts/test-requestId/attachments/test-attachmentId/play",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 6
+    },
+    {
+      "route": "/api/receipts/test-requestId/attachments",
+      "url": "/api/receipts/test-requestId/attachments",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/receipts/test-requestId/decrypt",
+      "url": "/api/receipts/test-requestId/decrypt",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/receipts/test-requestId/narrate",
+      "url": "/api/receipts/test-requestId/narrate",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/receipts/test-requestId/refund-links",
+      "url": "/api/receipts/test-requestId/refund-links",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/receipts/test-requestId/refund",
+      "url": "/api/receipts/test-requestId/refund",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/receipts/test-requestId/refund",
+      "url": "/api/receipts/test-requestId/refund",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/receipts/test-requestId",
+      "url": "/api/receipts/test-requestId",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/receipts/test-requestId/tags",
+      "url": "/api/receipts/test-requestId/tags",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/receipts/test-requestId/verify",
+      "url": "/api/receipts/test-requestId/verify",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_request_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/relayer",
+      "url": "/api/relayer",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"relayer\":{\"configured\":true,\"pubkey\":\"C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY\",\"capabilities\":[\"Fire scheduled_sends on cadence (DAILY/WEEKLY/MONTHLY)\",\"Top up cards via auto_refill_r",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/resolve",
+      "url": "/api/resolve",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"missing_handle\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/round-up",
+      "url": "/api/round-up",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_owner\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/sandbox/airdrop",
+      "url": "/api/sandbox/airdrop",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/sandbox/airdrop",
+      "url": "/api/sandbox/airdrop",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"missing_pubkey\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/save-for",
+      "url": "/api/save-for",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_owner\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/scheduled-sends/attach-pact",
+      "url": "/api/scheduled-sends/attach-pact",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/scheduled-sends/attach-pact",
+      "url": "/api/scheduled-sends/attach-pact",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/scheduled-sends",
+      "url": "/api/scheduled-sends",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_owner\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/scheduled-sends/spawn-pact",
+      "url": "/api/scheduled-sends/spawn-pact",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/scheduled-sends/spawn-pact",
+      "url": "/api/scheduled-sends/spawn-pact",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"schedule_id\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/scheduled-sends/topup-pact",
+      "url": "/api/scheduled-sends/topup-pact",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/scheduled-sends/topup-pact",
+      "url": "/api/scheduled-sends/topup-pact",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"schedule_id\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/sealed-box-pubkey",
+      "url": "/api/sealed-box-pubkey",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"configured\":true,\"pubkey_b64\":\"WrEfFEbO1qyt/1nKa2X3SR7gMhOyRoUH8z+Ig2PRODc=\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/search/receipts",
+      "url": "/api/search/receipts",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"missing_pubkey\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/send/build",
+      "url": "/api/send/build",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/send/build",
+      "url": "/api/send/build",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"missing_fields\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/send/link/build",
+      "url": "/api/send/link/build",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/send/link/build",
+      "url": "/api/send/link/build",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"missing_fields\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/send/link/claim",
+      "url": "/api/send/link/claim",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/send/link/claim",
+      "url": "/api/send/link/claim",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"missing_fields\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/sp/Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB/test-slug",
+      "url": "/api/sp/Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB/test-slug",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"not_found_or_paused\"}",
+      "durationMs": 129
+    },
+    {
+      "route": "/api/spend/forecast",
+      "url": "/api/spend/forecast",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pubkey\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/spending/insights",
+      "url": "/api/spending/insights",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_or_missing_authority\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/split-bills/test-id/confirm",
+      "url": "/api/split-bills/test-id/confirm",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/split-bills/test-id/confirm",
+      "url": "/api/split-bills/test-id/confirm",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_id\"}",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/split-bills/test-id/pay",
+      "url": "/api/split-bills/test-id/pay",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/split-bills/test-id/pay",
+      "url": "/api/split-bills/test-id/pay",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/split-bills/test-id",
+      "url": "/api/split-bills/test-id",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_id\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/split-bills",
+      "url": "/api/split-bills",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/split-bills",
+      "url": "/api/split-bills",
+      "method": "POST",
+      "status": 401,
+      "bodyPreview": "{\"error\":\"unauthorized\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/stats/landing",
+      "url": "/api/stats/landing",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"total_allow_volume_usdc\":\"0.10\",\"total_allow_volume_display\":\"$0.10\",\"p50_confirmation_ms\":423,\"total_denied_count\":0,\"is_presentable\":false,\"as_of\":\"2026-05-03T10:12:25.917Z\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/stats",
+      "url": "/api/stats",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"generated_at\":\"2026-05-03T10:15:37.975Z\",\"cluster\":\"devnet\",\"receipts\":{\"day\":0,\"week\":1,\"all_time\":1},\"usd_volume_lamports\":{\"day\":\"0\",\"week\":\"100000\",\"all_time\":\"100000\"},\"kind_histogram",
+      "durationMs": 1783
+    },
+    {
+      "route": "/api/streaming-pacts/test-id/claim",
+      "url": "/api/streaming-pacts/test-id/claim",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/streaming-pacts/test-id/claim",
+      "url": "/api/streaming-pacts/test-id/claim",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pact_id\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/streaming-pacts/test-id/pause",
+      "url": "/api/streaming-pacts/test-id/pause",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/streaming-pacts/test-id/pause",
+      "url": "/api/streaming-pacts/test-id/pause",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pact_id\"}",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/streaming-pacts/test-id/resume",
+      "url": "/api/streaming-pacts/test-id/resume",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/streaming-pacts/test-id/resume",
+      "url": "/api/streaming-pacts/test-id/resume",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_pact_id\"}",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/streaming-pacts/open",
+      "url": "/api/streaming-pacts/open",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/streaming-pacts/open",
+      "url": "/api/streaming-pacts/open",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"validation_failed\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"authority\"],\"message\":\"Required\"},{\"code\":\"invalid_type\",\"expected\":\"string\",\"received",
+      "durationMs": 2
+    },
+    {
+      "route": "/api/swap/quote-and-build",
+      "url": "/api/swap/quote-and-build",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 1
+    },
+    {
+      "route": "/api/swap/quote-and-build",
+      "url": "/api/swap/quote-and-build",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_body\",\"message\":\"[\\n  {\\n    \\\"code\\\": \\\"invalid_type\\\",\\n    \\\"expected\\\": \\\"string\\\",\\n    \\\"received\\\": \\\"undefined\\\",\\n    \\\"path\\\": [\\n      \\\"from\\\"\\n    ],\\n    \\\"message\\\": \\",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/templates/test-slug",
+      "url": "/api/templates/test-slug",
+      "method": "GET",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"not_found\"}",
+      "durationMs": 135
+    },
+    {
+      "route": "/api/templates",
+      "url": "/api/templates",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"templates\":[{\"slug\":\"research\",\"title\":\"Research Assistant\",\"description\":\"Pulls papers from arXiv, translates Japanese ones, and writes ELI12 summaries. Caps at $0.50 across 3 merchants.\"",
+      "durationMs": 133
+    },
+    {
+      "route": "/api/trust/C5z7pQZx1RxEaBTDZXbLt32qDjnkfysLUtug2fKHxeYY",
+      "url": "/api/trust/C5z7pQZx1RxEaBTDZXbLt32qDjnkfysLUtug2fKHxeYY",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"pubkey\":\"C5z7pQZx1RxEaBTDZXbLt32qDjnkfysLUtug2fKHxeYY\",\"score\":0,\"unique_counterparties\":0,\"receipts_total\":0,\"receipts_allowed\":0,\"receipts_denied\":0,\"refunds_count\":0,\"allow_rate\":0,\"inv",
+      "durationMs": 148
+    },
+    {
+      "route": "/api/verify-build",
+      "url": "/api/verify-build",
+      "method": "GET",
+      "status": 200,
+      "bodyPreview": "{\"ok\":true,\"program_id\":\"HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD\",\"program_data_address\":\"H96chjjd6fxsA1PVpDEn3HshPqmaEkis2N68SqTpPqTv\",\"upgrade_authority\":\"B4cArR1M1MySM4dn4HeDdifdPiF98wTNmbzKYg",
+      "durationMs": 1970
+    },
+    {
+      "route": "/api/verify/test-hash",
+      "url": "/api/verify/test-hash",
+      "method": "GET",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"invalid_hash_format\"}",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/voice/transcribe",
+      "url": "/api/voice/transcribe",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/voice/transcribe",
+      "url": "/api/voice/transcribe",
+      "method": "POST",
+      "status": 415,
+      "bodyPreview": "{\"error\":\"expected_multipart\",\"message\":\"send Content-Type: multipart/form-data\"}",
+      "durationMs": 5
+    },
+    {
+      "route": "/api/waitlist",
+      "url": "/api/waitlist",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 4
+    },
+    {
+      "route": "/api/waitlist",
+      "url": "/api/waitlist",
+      "method": "POST",
+      "status": 400,
+      "bodyPreview": "{\"error\":\"validation_failed\",\"issues\":[{\"code\":\"invalid_type\",\"expected\":\"string\",\"received\":\"undefined\",\"path\":[\"email\"],\"message\":\"Required\"}]}",
+      "durationMs": 6
+    },
+    {
+      "route": "/api/x402/proxy/Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+      "url": "/api/x402/proxy/Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+      "method": "GET",
+      "status": 405,
+      "bodyPreview": "",
+      "durationMs": 3
+    },
+    {
+      "route": "/api/x402/proxy/Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+      "url": "/api/x402/proxy/Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+      "method": "POST",
+      "status": 404,
+      "bodyPreview": "{\"error\":\"unknown_merchant\",\"merchantSlug\":\"Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB\"}",
+      "durationMs": 6
+    }
+  ]
+}

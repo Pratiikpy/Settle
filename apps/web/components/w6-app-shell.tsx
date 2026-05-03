@@ -69,7 +69,7 @@ export function W6AppShell({
         <main
           style={{
             flex: 1,
-            padding: "24px clamp(16px, 4vw, 36px) 88px",
+            padding: "20px clamp(14px, 3vw, 28px) 88px",
             maxWidth: "100%",
           }}
         >
@@ -89,8 +89,8 @@ function DevnetBanner() {
       role="region"
       aria-label="Devnet notice"
       style={{
-        background: "rgba(245, 158, 11, 0.08)",
-        borderBottom: "1px solid rgba(245, 158, 11, 0.24)",
+        background: "var(--w6-paper)",
+        borderBottom: "1px dashed var(--w6-rule-warm)",
         padding: "8px 16px",
         fontSize: 12,
         color: "var(--w6-ink-2)",

@@ -55,8 +55,8 @@ export function W6SurfaceSwitcher({
           display: "flex",
           gap: 4,
           padding: 4,
-          background: "var(--w6-bg-3)",
-          borderRadius: 999,
+          background: "var(--w6-paper)",
+          borderRadius: 8,
           border: "1px solid var(--w6-rule)",
         }}
       >
@@ -74,7 +74,7 @@ export function W6SurfaceSwitcher({
                 position: "relative",
                 height: 30,
                 padding: "0 14px",
-                borderRadius: 999,
+                borderRadius: 5,
                 fontSize: 12.5,
                 fontWeight: 500,
                 color: active ? "#fff" : "var(--w6-ink-3)",
@@ -90,7 +90,7 @@ export function W6SurfaceSwitcher({
                   style={{
                     position: "absolute",
                     inset: 0,
-                    borderRadius: 999,
+                    borderRadius: 5,
                     background: "var(--w6-ink)",
                     zIndex: 0,
                   }}

@@ -43,6 +43,7 @@
     --w6-bg-2: #fafafa;
     --w6-bg-3: #f4f4f5;
     --w6-paper: #fbfaf5;
+    --w6-paper-2: #fffdf7;
 
     --w6-ink: #09090b;
     --w6-ink-2: #27272a;
@@ -52,6 +53,7 @@
 
     --w6-rule: #e4e4e7;
     --w6-rule-2: #f4f4f5;
+    --w6-rule-warm: #c8c4b8;
 
     --w6-ok: #16a34a;
     --w6-ok-soft: rgba(22, 163, 74, 0.12);
@@ -62,14 +64,14 @@
 
     --w6-accent-rgb: 59, 130, 246;
 
-    --w6-r-card: 24px;
+    --w6-r-card: 8px;
     --w6-r-pill: 999px;
-    --w6-r-strip: 32px;
-    --w6-r-input: 12px;
+    --w6-r-strip: 10px;
+    --w6-r-input: 6px;
 
-    --w6-shadow-sm: 0 1px 0 rgba(10, 10, 10, 0.03), 0 1px 2px rgba(10, 10, 10, 0.03);
-    --w6-shadow-md: 0 1px 0 rgba(10, 10, 10, 0.03), 0 4px 14px rgba(10, 10, 10, 0.05);
-    --w6-shadow-lg: 0 1px 0 rgba(10, 10, 10, 0.04), 0 18px 44px rgba(10, 10, 10, 0.08);
+    --w6-shadow-sm: 0 1px 0 rgba(10, 10, 10, 0.04);
+    --w6-shadow-md: 0 1px 0 rgba(10, 10, 10, 0.05), 0 8px 24px rgba(10, 10, 10, 0.04);
+    --w6-shadow-lg: 0 1px 0 rgba(10, 10, 10, 0.06), 0 18px 44px rgba(10, 10, 10, 0.07);
   }
 
   /* The prototype is light-first by design. We deliberately do NOT
@@ -84,6 +86,7 @@
   body {
     background: rgb(var(--background));
     color: rgb(var(--foreground));
+    font-family: var(--font-w6-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-feature-settings: "ss01", "cv05";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -156,13 +159,13 @@
   html.light .bg-foreground\/\[0\.02\],
   html.light .bg-foreground\/\[0\.04\],
   html.light .bg-foreground\/5 {
-    background-color: var(--w6-bg-2) !important;
+    background-color: var(--w6-paper) !important;
   }
   html.light .bg-white\/\[0\.08\],
   html.light .bg-white\/10,
   html.light .bg-foreground\/\[0\.08\],
   html.light .bg-foreground\/10 {
-    background-color: var(--w6-bg-3) !important;
+    background-color: var(--w6-paper-2) !important;
   }
   /* Code blocks across `/docs/*` subpages used `bg-black/30` for the
      pre. On the light W6 body that's a translucent grey-ish black —
@@ -197,6 +200,14 @@
   }
   html.light .bg-background {
     background-color: var(--w6-bg-2) !important;
+  }
+  html body[data-w6="1"] [class~="bg-[#fafafa]"],
+  html body [data-w6-page] [class~="bg-[#fafafa]"] {
+    background-color: var(--w6-paper) !important;
+  }
+  html body[data-w6="1"] [class~="bg-[#f4f4f5]"],
+  html body [data-w6-page] [class~="bg-[#f4f4f5]"] {
+    background-color: var(--w6-paper-2) !important;
   }
   /* Borders default to the W6 rule color. The opacity in the legacy
      class gets ignored — we want a consistent crisp 1px line. */
@@ -403,6 +414,21 @@
   html.light .text-foreground\/5 {
     color: var(--w6-ink-5) !important;
   }
+  html.light .text-emerald-200,
+  html.light .text-emerald-300,
+  html.light .text-emerald-400 {
+    color: #15803d !important;
+  }
+  html.light .text-amber-100,
+  html.light .text-amber-200,
+  html.light .text-amber-300 {
+    color: #92400e !important;
+  }
+  html.light .text-red-200,
+  html.light .text-red-300,
+  html.light .text-red-400 {
+    color: var(--w6-bad) !important;
+  }
   /* Hard-pin button colors so nothing higher in the cascade can flip
      them invisible. `:where()` keeps specificity at 0,1,0, but the
      `!important` survives `[data-w6-page] a { color: inherit }`. */
@@ -442,9 +468,10 @@
      `.w6-card` styling so the cards read as part of the same system. */
   .card-surface,
   .pact-surface {
-    background:
-      linear-gradient(145deg, #ffffff, rgba(244, 244, 245, 0.72)),
-      radial-gradient(circle at 100% 0%, rgba(var(--w6-accent-rgb), 0.06), transparent 18rem) !important;
+    background: linear-gradient(180deg, var(--w6-paper), var(--w6-paper-2)) !important;
+    border-color: var(--w6-rule) !important;
+    border-radius: var(--w6-r-card) !important;
+    box-shadow: var(--w6-shadow-sm);
     color: var(--w6-ink);
   }
   /* Force any text inside the legacy surfaces to read dark on the light
@@ -463,8 +490,14 @@
   }
 
   .cnft-surface {
-    background:
-      conic-gradient(from 180deg at 50% 50%, rgba(153, 69, 255, 0.25), rgba(20, 241, 149, 0.25), rgba(153, 69, 255, 0.25));
+    background: linear-gradient(180deg, var(--w6-paper), var(--w6-paper-2)) !important;
+    border-color: var(--w6-rule) !important;
+    border-radius: var(--w6-r-card) !important;
+    box-shadow: var(--w6-shadow-sm);
+    color: var(--w6-ink);
+  }
+  .cnft-surface * {
+    color: var(--w6-ink);
   }
 
   /* WAVE_6 — typography helpers used by new shell. */
@@ -498,23 +531,24 @@
     color: var(--w6-ink-4);
   }
 
-  /* Bento card surface (light gradient + subtle radial accent glow). */
+  /* Receipt-ticket surface from the offline prototype. */
   .w6-card {
-    background:
-      linear-gradient(145deg, #ffffff, rgba(244, 244, 245, 0.72)),
-      radial-gradient(circle at 100% 0%, rgba(var(--w6-accent-rgb), 0.08), transparent 18rem);
-    border: 1px solid var(--w6-rule);
+    background: linear-gradient(180deg, var(--w6-paper), var(--w6-paper-2));
+    border: 1.5px solid var(--w6-rule);
     border-radius: var(--w6-r-card);
-    transition: transform 220ms, border-color 220ms;
+    box-shadow: var(--w6-shadow-sm);
+    transition: transform 180ms, border-color 180ms, box-shadow 180ms;
   }
   .w6-card-hover:hover {
-    transform: translateY(-3px);
-    border-color: var(--w6-ink-5);
+    transform: translateY(-1px);
+    border-color: var(--w6-rule-warm);
+    box-shadow: var(--w6-shadow-md);
   }
   .w6-card-flat {
-    background: var(--w6-bg);
-    border: 1px solid var(--w6-rule);
-    border-radius: 16px;
+    background: #fff;
+    border: 1.5px solid var(--w6-rule);
+    border-radius: var(--w6-r-card);
+    box-shadow: var(--w6-shadow-sm);
   }
 
   /* Horizontal rule used inside cards (composer dividers, summary
@@ -522,8 +556,62 @@
      subdivider, not a structural border. */
   .w6-hr {
     height: 1px;
-    background: var(--w6-rule);
+    background: repeating-linear-gradient(
+      to right,
+      var(--w6-rule-warm) 0 5px,
+      transparent 5px 10px
+    );
     border: 0;
+  }
+
+  .w6-ticket {
+    position: relative;
+    background: linear-gradient(180deg, var(--w6-paper), var(--w6-paper-2));
+    border: 1.5px solid var(--w6-rule);
+    border-radius: var(--w6-r-card);
+    box-shadow: var(--w6-shadow-sm);
+  }
+  .w6-receipt-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--w6-rule-warm);
+    font-family: var(--font-w6-mono), ui-monospace, monospace;
+    font-size: 12px;
+  }
+  .w6-receipt-row:last-child {
+    border-bottom: 0;
+  }
+  .w6-stamp {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 3px 9px;
+    border: 1.5px solid currentColor;
+    border-radius: 4px;
+    color: var(--w6-ink-2);
+    font-family: var(--font-w6-mono), ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transform: rotate(-3deg);
+  }
+  .w6-barcode {
+    display: block;
+    height: 34px;
+    border-radius: 2px;
+    background:
+      repeating-linear-gradient(
+        to right,
+        var(--w6-ink) 0 2px,
+        transparent 2px 5px,
+        var(--w6-ink) 5px 6px,
+        transparent 6px 10px
+      );
+    opacity: 0.82;
   }
 
   /* Dark "strip" surface for For-Builders + balance hero. */
@@ -531,7 +619,8 @@
     background: var(--w6-ink);
     color: #fff;
     border-radius: var(--w6-r-strip);
-    padding: 32px;
+    border: 1px solid var(--w6-ink);
+    padding: 28px;
   }
 
   /* Pills + dots. */
@@ -541,9 +630,9 @@
     gap: 6px;
     height: 24px;
     padding: 0 10px;
-    border-radius: var(--w6-r-pill);
+    border-radius: 5px;
     border: 1px solid var(--w6-rule);
-    background: #fff;
+    background: var(--w6-paper-2);
     color: var(--w6-ink-2);
     font-size: 11px;
     font-weight: 500;
@@ -574,9 +663,10 @@
     gap: 6px;
     height: 36px;
     padding: 0 16px;
-    border-radius: var(--w6-r-pill);
+    border-radius: var(--w6-r-input);
     font-size: 13px;
     font-weight: 500;
+    border: 1px solid transparent;
     transition: opacity 120ms, transform 80ms, background 140ms;
     cursor: pointer;
     white-space: nowrap;
@@ -640,9 +730,9 @@
   .w6-input {
     height: 40px;
     padding: 0 16px;
-    border: 1px solid var(--w6-rule);
-    border-radius: var(--w6-r-pill);
-    background: #fff;
+    border: 1.5px solid var(--w6-rule);
+    border-radius: var(--w6-r-input);
+    background: var(--w6-paper-2);
     color: var(--w6-ink);
     font-size: 13px;
     transition: border-color 140ms;
@@ -651,6 +741,7 @@
   .w6-input:focus {
     outline: none;
     border-color: var(--w6-ink-3);
+    box-shadow: 0 0 0 3px rgba(9, 9, 11, 0.06);
   }
   .w6-input-lg {
     height: 48px;
@@ -662,7 +753,7 @@
   .w6-bento-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 14px;
   }
   .w6-bento-grid > .span-2 {
     grid-column: span 2;
@@ -688,7 +779,7 @@
   .w6-grid-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 14px;
   }
   @media (max-width: 1024px) {
     .w6-grid-3 {
@@ -703,7 +794,109 @@
   .w6-grid-4 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 14px;
+  }
+
+  html body[data-w6="1"] .rounded-2xl,
+  html body[data-w6="1"] .rounded-3xl,
+  html body [data-w6-page] .rounded-2xl,
+  html body [data-w6-page] .rounded-3xl {
+    border-radius: var(--w6-r-card) !important;
+  }
+
+  html body[data-w6="1"] .shadow-2xl,
+  html body[data-w6="1"] .shadow-card,
+  html body[data-w6="1"] .shadow-glow,
+  html body [data-w6-page] .shadow-2xl,
+  html body [data-w6-page] .shadow-card,
+  html body [data-w6-page] .shadow-glow {
+    box-shadow: var(--w6-shadow-md) !important;
+  }
+
+  html body[data-w6="1"] .border-white\/5,
+  html body[data-w6="1"] .border-white\/10,
+  html body[data-w6="1"] .border-white\/15,
+  html body[data-w6="1"] .border-white\/20,
+  html body [data-w6-page] .border-white\/5,
+  html body [data-w6-page] .border-white\/10,
+  html body [data-w6-page] .border-white\/15,
+  html body [data-w6-page] .border-white\/20 {
+    border-color: var(--w6-rule) !important;
+  }
+
+  html body[data-w6="1"] .text-white,
+  html body [data-w6-page] .text-white {
+    color: var(--w6-ink) !important;
+  }
+  html body[data-w6="1"] .text-white\/80,
+  html body[data-w6="1"] .text-white\/70,
+  html body[data-w6="1"] .text-white\/60,
+  html body [data-w6-page] .text-white\/80,
+  html body [data-w6-page] .text-white\/70,
+  html body [data-w6-page] .text-white\/60 {
+    color: var(--w6-ink-3) !important;
+  }
+  html body[data-w6="1"] .text-white\/50,
+  html body[data-w6="1"] .text-white\/40,
+  html body[data-w6="1"] .text-white\/30,
+  html body [data-w6-page] .text-white\/50,
+  html body [data-w6-page] .text-white\/40,
+  html body [data-w6-page] .text-white\/30 {
+    color: var(--w6-ink-4) !important;
+  }
+
+  html body[data-w6="1"] .bg-gradient-to-br,
+  html body[data-w6="1"] .bg-card-gradient,
+  html body [data-w6-page] .bg-gradient-to-br,
+  html body [data-w6-page] .bg-card-gradient {
+    background: linear-gradient(180deg, var(--w6-paper), var(--w6-paper-2)) !important;
+  }
+
+  html body[data-w6="1"] .bg-black\/80,
+  html body [data-w6-page] .bg-black\/80 {
+    background-color: var(--w6-ink) !important;
+    color: #fff !important;
+  }
+
+  html body[data-w6="1"] .w6-strip .text-white,
+  html body[data-w6="1"] .w6-strip .text-white\/80,
+  html body[data-w6="1"] .w6-strip .text-white\/70,
+  html body[data-w6="1"] .w6-strip .text-white\/60,
+  html body[data-w6="1"] .w6-strip .text-white\/50,
+  html body [data-w6-page] .w6-strip .text-white,
+  html body [data-w6-page] .w6-strip .text-white\/80,
+  html body [data-w6-page] .w6-strip .text-white\/70,
+  html body [data-w6-page] .w6-strip .text-white\/60,
+  html body [data-w6-page] .w6-strip .text-white\/50 {
+    color: rgba(255, 255, 255, 0.88) !important;
+  }
+
+  html body[data-w6="1"] button.rounded-full:not([class*="h-1"]):not([class*="h-2"]):not([class*="w-1"]):not([class*="w-2"]),
+  html body[data-w6="1"] a.rounded-full,
+  html body [data-w6-page] button.rounded-full:not([class*="h-1"]):not([class*="h-2"]):not([class*="w-1"]):not([class*="w-2"]),
+  html body [data-w6-page] a.rounded-full {
+    border-radius: var(--w6-r-input) !important;
+  }
+
+  .w6-route-transition {
+    min-height: inherit;
+  }
+
+  .wallet-adapter-modal-wrapper {
+    border: 1.5px solid var(--w6-rule) !important;
+    border-radius: var(--w6-r-card) !important;
+    background: var(--w6-paper-2) !important;
+    color: var(--w6-ink) !important;
+    box-shadow: var(--w6-shadow-lg) !important;
+  }
+  .wallet-adapter-modal-title,
+  .wallet-adapter-modal-list-more,
+  .wallet-adapter-modal-button-close {
+    color: var(--w6-ink) !important;
+  }
+  .wallet-adapter-modal-list li,
+  .wallet-adapter-button {
+    border-radius: var(--w6-r-input) !important;
   }
   @media (max-width: 1024px) {
     .w6-grid-4 {

@@ -85,8 +85,8 @@ export function W6Sidebar({
         top: 0,
         height: "100vh",
         width: 232,
-        padding: "24px 16px",
-        background: "var(--w6-bg)",
+        padding: "20px 14px",
+        background: "var(--w6-paper)",
         borderRight: "1px solid var(--w6-rule)",
         flexDirection: "column",
         overflowY: "auto",
@@ -126,11 +126,14 @@ export function W6Sidebar({
                     alignItems: "center",
                     gap: 10,
                     padding: "8px 10px",
-                    borderRadius: 10,
+                    borderRadius: 6,
                     fontSize: 13,
                     fontWeight: active ? 600 : 500,
                     color: active ? "var(--w6-ink)" : "var(--w6-ink-3)",
-                    background: active ? "var(--w6-rule-2)" : "transparent",
+                    background: active ? "#fff" : "transparent",
+                    border: active
+                      ? "1px solid var(--w6-rule)"
+                      : "1px solid transparent",
                     transition: "background 140ms, color 140ms",
                   }}
                 >
@@ -243,7 +246,7 @@ export function W6Sidebar({
                 fontSize: 11,
                 background: "transparent",
                 border: "1px solid var(--w6-rule)",
-                borderRadius: 999,
+                borderRadius: 6,
                 color: "var(--w6-ink-3)",
                 cursor: "pointer",
               }}

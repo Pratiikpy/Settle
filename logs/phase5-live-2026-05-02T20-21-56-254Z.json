@@ -1,0 +1,127 @@
+{
+  "host": "http://localhost:3000",
+  "card": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+  "pact": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+  "merchant": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+  "schedule_id": "acfa8674-0381-4a1f-b4f7-625470fbe1d1",
+  "execution": {
+    "execution_id": "6dae8601-00ae-401a-8f6a-96d70864dea2",
+    "intent_kind": "scheduled_send",
+    "intent_id": "acfa8674-0381-4a1f-b4f7-625470fbe1d1",
+    "mode": "live",
+    "status": "failed",
+    "signature": null,
+    "plan_json": {
+      "why": "scheduled DAILY",
+      "ix_kind": "spend_via_pact",
+      "intent_id": "acfa8674-0381-4a1f-b4f7-625470fbe1d1",
+      "pact_ready": true,
+      "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+      "intent_kind": "scheduled_send",
+      "pact_pubkey": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+      "kernel_hashes": null,
+      "source_pubkey": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+      "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+      "amount_lamports": "100000",
+      "card_delegation_validated": true
+    },
+    "error_message": "live spend_via_pact failed: Simulation failed. \nMessage: Transaction simulation failed: Error processing Instruction 0: Program failed to complete. \nLogs: \n[\n  \"Program HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD invoke [1]\",\n  \"Program log: Instruction: SpendViaPact\",\n  \"Program HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD consumed 2944 of 200000 compute units\",\n  \"Program HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD failed: Access violation in stack frame 5 at address 0x200005fa8 of size 8\"\n]. \nCatch the `SendTransactionError` and call `getLogs()` on it for full details.",
+    "created_at": "2026-05-02T20:21:50.983088+00:00",
+    "confirmed_at": null,
+    "fire_window_ms": 493820
+  },
+  "log": [
+    {
+      "step": "pre_state",
+      "ok": true,
+      "detail": "vault=0.1 USDC, merchant=10 USDC"
+    },
+    {
+      "step": "mirror_card",
+      "ok": true,
+      "detail": "card mirrored to agent_cards"
+    },
+    {
+      "step": "mirror_allowlist",
+      "ok": true,
+      "detail": "allowlist row inserted"
+    },
+    {
+      "step": "signer_probe",
+      "ok": true,
+      "detail": "mode=live relayer=C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY"
+    },
+    {
+      "step": "insert_schedule",
+      "ok": true,
+      "detail": "schedule_id=acfa8674-0381-4a1f-b4f7-625470fbe1d1 amount=100000 next_fire_at=2026-05-02T20:20:35.553Z"
+    },
+    {
+      "step": "tick",
+      "ok": true,
+      "detail": "schedules_due=7 refills_due=0",
+      "data": {
+        "ok": true,
+        "at": "2026-05-02T20:21:35.688Z",
+        "schedules_due": 7,
+        "refills_due": 0,
+        "gifts_expired": 0,
+        "gifts_to_send": 0,
+        "errors": []
+      }
+    },
+    {
+      "step": "signer",
+      "ok": true,
+      "detail": "mode=live picked=7 executions_logged=7 errors=0",
+      "data": {
+        "ok": true,
+        "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+        "relayer_warning": null,
+        "mode": "live",
+        "scheduled_picked": 7,
+        "refills_picked": 0,
+        "gift_claims_picked": 0,
+        "gift_refunds_picked": 0,
+        "executions_logged": 7,
+        "errors": []
+      }
+    },
+    {
+      "step": "poll_executions",
+      "ok": true,
+      "detail": "status=failed mode=live tx_sig=(none)",
+      "data": {
+        "execution_id": "6dae8601-00ae-401a-8f6a-96d70864dea2",
+        "intent_kind": "scheduled_send",
+        "intent_id": "acfa8674-0381-4a1f-b4f7-625470fbe1d1",
+        "mode": "live",
+        "status": "failed",
+        "signature": null,
+        "plan_json": {
+          "why": "scheduled DAILY",
+          "ix_kind": "spend_via_pact",
+          "intent_id": "acfa8674-0381-4a1f-b4f7-625470fbe1d1",
+          "pact_ready": true,
+          "dest_pubkey": "Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB",
+          "intent_kind": "scheduled_send",
+          "pact_pubkey": "4rGHHkWLSCF7Mm2wR59ZtqQJ4AwtjPAcG3KXPY2uGSbv",
+          "kernel_hashes": null,
+          "source_pubkey": "6vFisJyJ7NKD1z8NpNommtTeAWeyUYityjXicHRsiMBb",
+          "relayer_pubkey": "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY",
+          "amount_lamports": "100000",
+          "card_delegation_validated": true
+        },
+        "error_message": "live spend_via_pact failed: Simulation failed. \nMessage: Transaction simulation failed: Error processing Instruction 0: Program failed to complete. \nLogs: \n[\n  \"Program HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD invoke [1]\",\n  \"Program log: Instruction: SpendViaPact\",\n  \"Program HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD consumed 2944 of 200000 compute units\",\n  \"Program HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD failed: Access violation in stack frame 5 at address 0x200005fa8 of size 8\"\n]. \nCatch the `SendTransactionError` and call `getLogs()` on it for full details.",
+        "created_at": "2026-05-02T20:21:50.983088+00:00",
+        "confirmed_at": null,
+        "fire_window_ms": 493820
+      }
+    },
+    {
+      "step": "onchain_delta",
+      "ok": false,
+      "detail": "vault: 0.1 → 0.1 (Δ 0); merchant: 10 → 10 (Δ 0)"
+    }
+  ]
+}

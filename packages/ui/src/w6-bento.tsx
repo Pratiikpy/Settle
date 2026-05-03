@@ -50,7 +50,7 @@ export const W6BentoCard = forwardRef<HTMLDivElement, W6BentoCardProps>(
       hover ? "w6-card-hover" : "",
       span === 2 ? "span-2" : "",
       rowSpan === 2 ? "row-2" : "",
-      "p-6 md:p-8",
+      "p-5 md:p-6",
       className ?? "",
     ]
       .filter(Boolean)
