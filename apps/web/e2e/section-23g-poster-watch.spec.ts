@@ -99,6 +99,35 @@ test.describe("§23g · Receipt poster /r/[id]", () => {
     const href = await link.getAttribute("href");
     expect(href).toContain(`/verify?request_id=${id!}`);
   });
+
+  test("23g.poster-og-image-renders — /r/<id>/opengraph-image returns a real PNG", async ({
+    request,
+  }) => {
+    const id = await findRealReceiptId(request);
+    test.skip(!id, "no real receipt found");
+    const r = await request.get(`${APP}/r/${id!}/opengraph-image`);
+    expect(r.status()).toBe(200);
+    expect(r.headers()["content-type"]).toMatch(/^image\/png/);
+    const body = await r.body();
+    expect(body.length).toBeGreaterThan(2000); // sanity: a real PNG
+    // PNG magic bytes
+    expect(body[0]).toBe(0x89);
+    expect(body[1]).toBe(0x50);
+    expect(body[2]).toBe(0x4e);
+    expect(body[3]).toBe(0x47);
+  });
+
+  test("23g.poster-og-image-fallback — bad uuid still renders a generic PNG", async ({
+    request,
+  }) => {
+    const r = await request.get(
+      `${APP}/r/00000000-0000-0000-0000-000000000000/opengraph-image`,
+    );
+    expect(r.status()).toBe(200);
+    expect(r.headers()["content-type"]).toMatch(/^image\/png/);
+    const body = await r.body();
+    expect(body.length).toBeGreaterThan(2000);
+  });
 });
 
 test.describe("§23g · /watch agent demo", () => {

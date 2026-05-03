@@ -3,11 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 19 — pick next polish target. Categories still under-touched:
-- Category I: palette consistency (deferred — risky)
-- Category C: code-split heaviest pages
-- Category G: CSP (deferred — needs origin allowlist audit)
-- Category K: dead-data scrub (any seed/sample fixtures shipped to prod?)
+Pass 20 = TEST PASS (every 4th). Reconcile passes 17, 18, 19 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -30,8 +26,8 @@ Pass 19 — pick next polish target. Categories still under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 17 security headers, pass 18 freshness polling).
-- Items pending full-E2E verification: HSTS + COOP headers, magic-moment 60s polling, /watch sig-deduped polling.
+- Polish passes since last full-E2E: 3 (pass 17 security headers, pass 18 freshness polling, pass 19 OG image spec). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: HSTS + COOP, magic-moment polling, /watch sig-dedupe, OG image route specs.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -184,6 +180,26 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 19 — test coverage (category L): OG image route specs
+Files changed:
+- `apps/web/e2e/section-23g-poster-watch.spec.ts`: added two specs:
+  1. `23g.poster-og-image-renders` — visits `/r/<real id>/opengraph-image`, asserts 200, `image/png` content type, body length > 2000 bytes, and PNG magic bytes (0x89 0x50 0x4e 0x47).
+  2. `23g.poster-og-image-fallback` — visits with `00000000-0000-0000-0000-000000000000` (well-formed but unknown id), asserts the fallback "Cryptographic receipt" PNG still renders.
+
+Why this matters:
+- The OG image route was added in pass 10 with manual curl verification, but no Playwright spec was guarding it against regression.
+- A future change that breaks Satori parsing or the edge runtime would have gone unnoticed until someone tried sharing a receipt.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec next lint` zero warnings.
+- 12/12 Playwright in `section-23g-poster-watch`.
+- Encountered a transient dev-server choke after extended polling — fixed by full server restart. Polling is fine, the dev server just had stale connections from prior pass tests.
+
+Risk: very low (test-only addition).
+
+Pending full-E2E (next test pass): nothing rendering changes; OG image now has guard rails.
 
 ### Pass 18 — data freshness (category B): poll /api/landing/feed + dedupe identical updates
 Files changed:
