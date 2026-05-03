@@ -730,3 +730,15 @@ and call out the SettleE2EBurnerAdapter as the gating pre-req.
 | 23a.balance-loaded — REAL on-chain balance via API | ✓ pass | ALICE's /api/balance returns USDC > 0 and SOL > 0 (real devnet truth, not stub) | 2026-05-03 |
 | 1+ · Full E2E (post multi-surface) | ✓ pass | 231/231 in 5.5m (was 225, +6) | 2026-05-03 13:05 |
 
+
+## 2026-05-03 13:35 — §23b matrix coverage starts landing
+
+| 23b.A1-A4 | ✓ pass | Phantom + Burner in modal, disconnect button | 2026-05-03 |
+| 23b.B1, B17, B18 | ✓ pass | merchant /m/me/manage QR; pay-component + verify-component docs/embed | 2026-05-03 |
+| 23b.C1, C5, C9 | ✓ pass | agent hire wizard, /blink/research, /audit decisions feed | 2026-05-03 |
+| 23b.E1, E9 | ✓ pass | operator /control-center; auth-gated routes 401 | 2026-05-03 |
+| 23b.F1, F2, F5, F6, F7 | ✓ pass | walletless /verify, /leaderboard, /capabilities, /feed, /stats | 2026-05-03 |
+| 23b.G12 — Pyth ticker live | ✓ pass | /api/price/sol-usd returns symbol="SOL/USD", usd > 0 (real oracle) | 2026-05-03 |
+| 23b.J1, J5, J9 | ✓ pass | indexer endpoint via feed, W6 light palette, mobile no-h-scroll | 2026-05-03 |
+| 1+ · Full E2E | ✓ pass | 253/253 in 5.6m (was 231, +22) | 2026-05-03 13:35 |
+
