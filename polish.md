@@ -3,29 +3,34 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 10 — explore category C (performance) or H (final feel).
-Possible targets: bundle size, /watch motion polish, /r/[id] OG image.
+Pass 11 — pick next high-impact target. Candidates:
+- Category C: bundle size analysis
+- Category I: branding consistency (logo / palette unification)
+- Category L: dedupe `solscanUrl` / `getSolscanUrl` (deferred)
+- Category D: scan POST routes for missing input validation (zod)
 
-## Deferred (added pass 9)
+## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
   imports any rate-limiter (`lib/jupiter.ts`). Adding rate limiting
   needs a coherent strategy (per-IP, per-handle, per-route bucket).
   Plan: dedicated security pass — add `lib/rate-limit.ts` Upstash
   bucket helper, then progressively wrap public/auth-gated routes.
-- **OG image generation for /r/[id]** — Twitter card declares
-  `summary_large_image` but no `og:image` URL is set. Fix needs an
-  `opengraph-image.tsx` route generating a dynamic image. Non-trivial.
 - **ESLint v9 flat-config migration** — `next lint` still works via
   `.eslintrc.json` (deprecated path), but Next 16 will require
   `eslint.config.js`. Defer until Next bump pass.
+- **`next@15.0.2` → `next@15.5.15+`** — 29 vulns chained through next.
+  Plan: isolated branch + full E2E + visual-regression before merge.
+
+## Resolved
+- ✓ OG image generation for /r/[id] (pass 10).
 
 ## Pass cadence (loop policy — 2026-05-04)
 - 3 polish passes → 1 test pass.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 9 sitemap addition).
-- Items pending full-E2E verification: pass 9 sitemap entries (low risk — new static routes only).
+- Polish passes since last full-E2E: 2 (passes 9 sitemap, 10 OG image).
+- Items pending full-E2E verification: pass 9 sitemap entries, pass 10 OG image route.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -178,6 +183,26 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 10 — final product feel (category H): dynamic OG image for /r/[id]
+Files changed:
+- `app/r/[id]/opengraph-image.tsx` — NEW. Edge runtime ImageResponse generator. Renders 1200×630 PNG with: `SETTLE · ON SOLANA` wordmark, decision badge (`VERIFIED ✓` green / `BLOCKED ✗` red), `$amount USDC` (180px black), `#receiptId` (mono), `Verifiable money on Solana. settle.xyz` footer. Falls back to a generic "Cryptographic receipt" card if id is malformed or fetch fails.
+
+Why this matters:
+- The receipt poster page already had `og:title` / `og:description` / `twitter:card`, but no `og:image`. Twitter/X falls back to a tiny summary card which doesn't sell the product.
+- Now any shared `/r/[id]` URL renders as a beautiful poster preview on Twitter, Slack, iMessage, Discord. Every receipt becomes a marketing asset.
+
+Verified manually:
+- `pnpm exec next build` clean — `/r/[id]/opengraph-image` listed in route manifest.
+- `curl /r/<real id>/opengraph-image` returns `200 OK` with `Content-Type: image/png`, 28634 bytes.
+- Receipt page now exposes `<meta property="og:image" content="…/opengraph-image?…">` (auto-wired by Next.js).
+- Targeted Playwright `section-23g-poster-watch.spec.ts`: 10/10 green.
+
+Known minor: Satori warns about dynamic font for `✓`/`✗` glyphs (falls back gracefully, image renders correctly).
+
+Risk: low. New route, no edits to existing pages. Edge runtime requirement is standard for `next/og`.
+
+Pending full-E2E (next test pass): poster page should still pass §23g specs (already targeted-verified above; full E2E will confirm no other surface breaks).
 
 ### Pass 9 — SEO + discoverability: sitemap.ts adds new public surfaces
 Files changed:
