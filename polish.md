@@ -3,12 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 22 — next polish target. Categories under-touched:
+Pass 23 — next polish target. Categories under-touched:
 - Category I: palette (deferred — risky)
 - Category C: code-split (deferred — risky)
 - Category G: CSP (deferred — needs origin allowlist)
 - Category K: dead-data scrub
-- Category H: deeper product-feel polish
+- Category B: cross-user freshness on dashboards (data correctness)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +31,8 @@ Pass 22 — next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 21 landing API silent-failure logs).
-- Items pending full-E2E verification: pass 21 console.warn additions (low risk — logging only).
+- Polish passes since last full-E2E: 2 (pass 21 landing logs, pass 22 OG images for /watch + /start).
+- Items pending full-E2E verification: pass 21 console.warn additions, pass 22 OG image routes.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,39 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 22 — final product feel (H): OG images for /watch + /start
+Files added:
+- `app/watch/opengraph-image.tsx` — edge-runtime ImageResponse. Black 1200×630 card matching the /watch dark theme:
+  - `SETTLE · LIVE DEMO` wordmark + `ON DEVNET · NOW` green pill (top)
+  - Headline split: "Watch an AI agent spend" (white) / "— safely." (green)
+  - Footer: `Real txs. Real receipts. Real revoke.` / `settle.xyz/watch`
+- `app/start/opengraph-image.tsx` — edge-runtime ImageResponse. Light 1200×630 card matching the /start picker:
+  - `SETTLE · GET STARTED` wordmark
+  - Headline: "Pick how you'll / use Settle." (88px, 800-weight)
+  - Three white cards in a row: "I send", "I sell", "I build"
+  - Footer: `Three paths. Each ends with a real receipt on Solana.` / `settle.xyz/start`
+
+Spec changes:
+- `e2e/section-23g-poster-watch.spec.ts`: 2 new specs (`23g.watch-og-image`, `23g.start-og-image`) verifying both OG routes return 200 + `image/png` + sane size + PNG magic bytes.
+
+Why this matters:
+- /watch and /start are public marketing surfaces but had no `og:image`. A shared link rendered as a tiny generic Next preview on Twitter/Slack/Discord.
+- Now every public surface (/, /r/[id], /watch, /start) has poster-quality preview cards.
+
+Manual verification:
+- `curl /watch/opengraph-image` → 200 image/png 42830 bytes.
+- `curl /start/opengraph-image` → 200 image/png 35386 bytes.
+- Page metadata confirms `og:image:alt` is auto-wired by Next.
+
+Light verify:
+- `pnpm exec next build` clean (both routes show in manifest).
+- `pnpm exec tsc --noEmit` clean.
+- Targeted Playwright `section-23g-poster-watch`: 14/14 green (12 prior + 2 new OG).
+
+Risk: low. New isolated edge routes, no edits to existing pages.
+
+Pending full-E2E (next test pass): full suite expected to remain green; 2 new specs added so spec count → 576.
 
 ### Pass 21 — error handling + observability (D + M): unsilence landing API failures
 Files changed:

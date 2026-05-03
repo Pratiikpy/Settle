@@ -181,4 +181,29 @@ test.describe("§23g · /watch agent demo", () => {
     const href = await link.getAttribute("href");
     expect(href).toMatch(/^\/r\/[0-9a-f-]{36}$/i);
   });
+
+  test("23g.watch-og-image — /watch/opengraph-image returns a real PNG", async ({
+    request,
+  }) => {
+    const r = await request.get(`${APP}/watch/opengraph-image`);
+    expect(r.status()).toBe(200);
+    expect(r.headers()["content-type"]).toMatch(/^image\/png/);
+    const body = await r.body();
+    expect(body.length).toBeGreaterThan(2000);
+    // PNG magic
+    expect(body[0]).toBe(0x89);
+    expect(body[1]).toBe(0x50);
+  });
+
+  test("23g.start-og-image — /start/opengraph-image returns a real PNG", async ({
+    request,
+  }) => {
+    const r = await request.get(`${APP}/start/opengraph-image`);
+    expect(r.status()).toBe(200);
+    expect(r.headers()["content-type"]).toMatch(/^image\/png/);
+    const body = await r.body();
+    expect(body.length).toBeGreaterThan(2000);
+    expect(body[0]).toBe(0x89);
+    expect(body[1]).toBe(0x50);
+  });
 });
