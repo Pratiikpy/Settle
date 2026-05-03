@@ -13,10 +13,16 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: false, // wallet state is process-global, can't parallelize within one browser
+  // Each test creates its own browser context (no shared localStorage),
+  // and persona-seeded contexts are spawned per-test via openPersonaContext.
+  // True parallelism is safe because of context isolation; the
+  // visual-regression file marks itself serial internally.
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1,
+  workers: process.env.PLAYWRIGHT_WORKERS
+    ? Number(process.env.PLAYWRIGHT_WORKERS)
+    : 4,
   // Next.js dev server compiles routes on first hit (30-60s cold). Bump
   // the per-test timeout so cold-compile doesn't fail tests. After warm-up
   // the compile is cached and tests run fast.

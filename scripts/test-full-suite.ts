@@ -36,6 +36,7 @@ const STEPS: Step[] = [
   { name: "solana primitives", cmd: "pnpm tsx scripts/solana-primitives-coverage.ts", required: true },
   { name: "onchain state verify", cmd: "pnpm tsx scripts/onchain-state-verify.ts", required: true },
   { name: "api shape validate (12 endpoints)", cmd: "pnpm tsx scripts/api-shape-validate.ts", required: true },
+  { name: "mcp subprocess JSON-RPC", cmd: "pnpm tsx scripts/mcp-subprocess-test.ts", required: true },
   { name: "leak check (no secrets)", cmd: "pnpm tsx scripts/test-leak-check.ts", required: true },
   { name: "security audit", cmd: "pnpm tsx scripts/security-audit.ts", required: true },
   { name: "Playwright E2E (full)", cmd: "cd apps/web && pnpm exec playwright test --reporter=line", required: true },

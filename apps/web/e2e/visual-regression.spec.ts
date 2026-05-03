@@ -29,6 +29,7 @@ const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
 ];
 
+test.describe.configure({ mode: "serial" });
 test.describe("Visual regression baselines", () => {
   for (const vp of VIEWPORTS) {
     for (const path of PHASE5_ROUTES) {
