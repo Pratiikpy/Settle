@@ -50,7 +50,7 @@ export async function GET(): Promise<Response> {
   }
 
   // Count denies in 30d.
-  const { count: deniedCount } = await sb
+  const { count: deniedCount, error: denyErr } = await sb
     .from("receipts")
     .select("*", { count: "exact", head: true })
     .eq("decision", "DENY")
@@ -58,9 +58,12 @@ export async function GET(): Promise<Response> {
       "created_at",
       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
     );
+  if (denyErr) {
+    console.warn("[stats/landing] DENY count query failed:", denyErr.message);
+  }
 
   // Sum allow volume + collect timestamps for p50 latency.
-  const { data: allows } = await sb
+  const { data: allows, error: allowErr } = await sb
     .from("receipts")
     .select("amount_lamports, created_at, decision_slot")
     .eq("decision", "ALLOW")
@@ -69,6 +72,9 @@ export async function GET(): Promise<Response> {
       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
     )
     .limit(10_000);
+  if (allowErr) {
+    console.warn("[stats/landing] ALLOW query failed:", allowErr.message);
+  }
 
   if (!allows || allows.length === 0) {
     return NextResponse.json(empty);

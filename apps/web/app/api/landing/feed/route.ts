@@ -27,7 +27,13 @@ export async function GET(): Promise<Response> {
   let sb;
   try {
     sb = getSupabaseServiceClient();
-  } catch {
+  } catch (e) {
+    // Supabase env not configured — return empty so the terminal shows
+    // its "preview · scenario" fallback. Log so dev/staging notices.
+    console.warn(
+      "[landing/feed] supabase client init failed:",
+      (e as Error).message,
+    );
     return NextResponse.json({ ok: true, items: [] as FeedItem[] });
   }
 
@@ -50,6 +56,21 @@ export async function GET(): Promise<Response> {
       .order("created_at", { ascending: false })
       .limit(4),
   ]);
+
+  // Log query errors so a Supabase outage doesn't silently leave the
+  // landing showing preview-mode forever with no signal.
+  if (allows.error) {
+    console.warn(
+      "[landing/feed] ALLOW query failed:",
+      allows.error.message,
+    );
+  }
+  if (denies.error) {
+    console.warn(
+      "[landing/feed] DENY query failed:",
+      denies.error.message,
+    );
+  }
 
   const rows = [...(allows.data ?? []), ...(denies.data ?? [])];
   const items: FeedItem[] = rows

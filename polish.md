@@ -3,12 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 21 — pick next polish target. Categories still under-touched:
-- Category I: palette consistency (deferred — risky)
-- Category C: code-split heaviest pages (/activity 323KB)
+Pass 22 — next polish target. Categories under-touched:
+- Category I: palette (deferred — risky)
+- Category C: code-split (deferred — risky)
 - Category G: CSP (deferred — needs origin allowlist)
 - Category K: dead-data scrub
-- Category B: data correctness deeper sweep on other surfaces
+- Category H: deeper product-feel polish
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +31,8 @@ Pass 21 — pick next polish target. Categories still under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 20 just ran 574/574 — was 572, +2 OG image specs).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 21 landing API silent-failure logs).
+- Items pending full-E2E verification: pass 21 console.warn additions (low risk — logging only).
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,37 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 21 — error handling + observability (D + M): unsilence landing API failures
+Files changed:
+- `app/api/landing/feed/route.ts`:
+  - Empty `try { sb = ... } catch {}` for Supabase client init now logs `[landing/feed] supabase client init failed: <msg>` before returning the empty fallback.
+  - Both Supabase queries (`ALLOW limit 8`, `DENY limit 4`) now destructure `error` from the response and emit `[landing/feed] ALLOW query failed: <msg>` / `[landing/feed] DENY query failed: <msg>` if the query errored. Previously a Supabase outage would silently return zero items and the magic-moment terminal would show preview mode forever with no signal.
+- `app/api/stats/landing/route.ts`:
+  - DENY count query now destructures `error: denyErr` and logs `[stats/landing] DENY count query failed: <msg>`.
+  - ALLOW data query now destructures `error: allowErr` and logs `[stats/landing] ALLOW query failed: <msg>`.
+  - Behavior unchanged: still falls back to `empty` payload when no data; just logs the underlying cause now.
+
+Why this matters:
+- Both endpoints power user-visible widgets on the landing (terminal + stats strip). A silent Supabase failure had zero observability.
+- Tag-prefixed `[route/path] kind failed` matches the convention from `/api/balance` (pass 15), `/api/x402/proxy`, `/api/sandbox/airdrop`, etc.
+
+Audited (no change needed):
+- Cache headers — already 30s s-maxage on /api/landing/feed, 5min on /api/stats/landing. Tuned correctly.
+- Query plan — using `count: "exact", head: true` for denies is efficient (no row data, server-side count only).
+- Both endpoints already validate at the edge — no user input to validate.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /api/landing/feed` returns real receipt data unchanged.
+- `curl /api/stats/landing` returns real stats unchanged.
+- Targeted Playwright (§23f magic-moment + §23i rename-solscan): 12/12 green.
+
+Risk: very low (additive logging only, no behavior change).
+
+Pending full-E2E (next test pass): no rendering impact expected.
 
 ### Pass 20 — TEST PASS: full E2E reconciliation of passes 17-19
 - Items previously pending: HSTS + COOP headers (p17), magic-moment 60s polling + /watch sig-dedupe (p18), OG image route specs (p19).
