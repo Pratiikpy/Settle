@@ -3,7 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 32 = TEST PASS (every 4th). Reconcile passes 29, 30, 31 with full Playwright.
+Pass 33 — next polish target. Categories under-touched:
+- Category I: palette (deferred — risky)
+- Category C: code-split (deferred — risky)
+- Category G: CSP (deferred — needs origin allowlist)
+- Category K: dead-data scrub on rare routes
+- Category A: deeper UI/UX functionality on lesser-used routes
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +31,8 @@ Pass 32 = TEST PASS (every 4th). Reconcile passes 29, 30, 31 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 29 receipts logs, pass 30 verify prefill, pass 31 handles profile logs). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: receipts logs, /verify ?h= prefill, handles/profile 6-query logErr.
+- Polish passes since last full-E2E: 0 (pass 32 just ran 577/577).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +185,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 32 — TEST PASS: full E2E reconciliation of passes 29-31
+- Items previously pending: /api/receipts/[id] sub-query logs (p29), /verify ?h= prefill (p30), /api/handles/[handle]/profile 6-query logErr (p31).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 577 specs.
+- **Result: 577/577 green in 7.0m.** No regressions across observability logs, the /verify auto-prefill flow, or the receipt poster CTA rewiring.
+- All previously pending items now fully verified.
 
 ### Pass 31 — error handling + observability (D + M): unsilence /api/handles/[handle]/profile
 Files changed:
