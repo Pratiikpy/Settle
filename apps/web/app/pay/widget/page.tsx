@@ -90,6 +90,7 @@ export default function PayWidgetPage() {
     }
     window.addEventListener("beforeunload", onUnload);
     return () => window.removeEventListener("beforeunload", onUnload);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
   async function handlePay() {
