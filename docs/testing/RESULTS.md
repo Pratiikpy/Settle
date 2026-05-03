@@ -708,3 +708,14 @@ and call out the SettleE2EBurnerAdapter as the gating pre-req.
 - Real Phantom / Backpack / Solflare manual matrix (§23b.A1)
 - Real domain DNS verify TXT round-trip (§23b.B7)
 
+
+## 2026-05-03 12:50 — Section 23a UI→on-chain bridge tests start landing
+
+| 23a.0a — ALICE persona connects + dashboard non-disconnect | ✓ pass | dashboard renders connected, no "Connect a wallet" prompt | 2026-05-03 |
+| 23a.0b — wallet trigger shows ALICE pubkey (C5z7…) | ✓ pass | proves SettleE2EBurnerAdapter loaded the seeded keypair, not a random one | 2026-05-03 |
+| 23a.0c — context isolation: ALICE vs BOB pubkeys differ | ✓ pass | C5z7 ≠ Hrjj | 2026-05-03 |
+| 23a.0d — devnet RPC reachable from test runner (sanity) | ✓ pass | `getSlot()` returns | 2026-05-03 |
+| 23a.send-form — connected /send shows real CTA, not "Connect a wallet" | ✓ pass | proves the adapter signs the auth message correctly | 2026-05-03 |
+| 23a.cards-list — connected /cards renders 3 mode explainers | ✓ pass | not the disconnect placeholder | 2026-05-03 |
+| 1+ · Full E2E (post-23a-bridge specs) | ✓ pass | 225/225 in 5.3m (was 219, +6) | 2026-05-03 12:50 |
+
