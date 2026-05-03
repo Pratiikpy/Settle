@@ -144,5 +144,15 @@ export async function GET(
     },
   };
 
-  return NextResponse.json({ ok: true, profile });
+  return NextResponse.json(
+    { ok: true, profile },
+    {
+      // Same cache policy as /api/handles/[handle]/profile — public,
+      // mostly-stable merchant data; 30s s-maxage keeps shared
+      // /m/<handle> URLs fast.
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+      },
+    },
+  );
 }

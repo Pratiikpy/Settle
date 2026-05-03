@@ -175,5 +175,12 @@ export async function GET(
       top_senders_count: distinctSenders,
       recent_inbound: recentInboundRows ?? [],
     },
+  }, {
+    // Public handle profiles are mostly stable (trust score, receipts).
+    // 30s edge cache + 2min SWR keeps shared /at/<handle> URLs fast
+    // without staleness past one trust-score recompute window.
+    headers: {
+      "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+    },
   });
 }

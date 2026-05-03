@@ -3,13 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 41 — pick next polish target.
-- Category I: palette (deferred)
-- Category C: code-split (deferred)
-- Category G: CSP (deferred)
-- Category K: dead-data scrub
-- Category A: start/merchant onboarding gap
-- Category F: continue rename in /admin/cron-style admin pages? (skip — kept technical)
+Pass 42 — next polish target. Most remaining categories are either deferred-risky or near-saturation.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -32,8 +26,8 @@ Pass 41 — pick next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 40 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 41 public profile cache headers).
+- Items pending full-E2E verification: /api/handles + /api/merchants profile cache headers.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -186,6 +180,29 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 41 — performance (C): cache public profile APIs
+Files changed:
+- `apps/web/app/api/handles/[handle]/profile/route.ts`: success response now carries `Cache-Control: public, s-maxage=30, stale-while-revalidate=120`. Public handle profiles (used by `/at/[handle]`) are mostly stable — trust score recomputes on a cadence, receipts append. 30s edge cache + 2min SWR keeps shared `/at/<handle>` URLs fast without missing any single trust-recompute window.
+- `apps/web/app/api/merchants/[handle]/profile/route.ts`: same cache policy for the parallel merchant profile endpoint (used by `/m/[handle]`).
+
+Why this matters:
+- Both are public, shareable URLs. A merchant tweets their `/m/<handle>` page → 5-10x scraper hits per share. Without caching every hit ran the full multi-query Supabase aggregation logic.
+- Same approach as pass 33 (which cached the receipt poster API) — uniform 30-60s public-data cache policy across the public surfaces.
+
+Audited but not changed:
+- /api/handles/[handle]/badges and /api/handles/[handle]/relationship: smaller surfaces, lower cache value, skipped to avoid scope creep.
+- /api/dashboard/v6: per-user authed data, can't safely public-cache.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (§23h onboarding-trust + nav-smoke): 19/19 green.
+
+Risk: low. Caching public, mostly-immutable data behind a 30s window is conservative; both endpoints continue to return identical payload shapes.
+
+Pending full-E2E (next test pass): no rendering changes; only cache hit-rate.
 
 ### Pass 40 — TEST PASS: full E2E reconciliation of passes 37-39
 - Items previously pending: exports/receipts log + magic-moment "fresh-as-of" timestamp (p37), sandbox 0.5 SOL copy fix + /watch CTA (p38), /agents/streaming rename (p39).
