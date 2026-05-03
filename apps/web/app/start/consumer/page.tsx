@@ -3,6 +3,8 @@ import { PersonaPage } from "../../../components/persona-page";
 export const dynamic = "force-static";
 export const metadata = {
   title: "Send money safely · Settle",
+  description:
+    "Three steps to your first cryptographic receipt on Solana. Connect a wallet, send a test transfer on devnet, get a receipt you can verify forever.",
 };
 
 export default function ConsumerOnboarding() {

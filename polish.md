@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 42 — next polish target. Most remaining categories are either deferred-risky or near-saturation.
+Pass 43 — next polish target. Categories near-saturation; remaining big targets all deferred-risky.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 42 — next polish target. Most remaining categories are either deferred-ri
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 41 public profile cache headers).
-- Items pending full-E2E verification: /api/handles + /api/merchants profile cache headers.
+- Polish passes since last full-E2E: 2 (pass 41 public profile cache, pass 42 SEO meta descriptions).
+- Items pending full-E2E verification: profile cache headers + 3 new meta descriptions on /start/* persona pages.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,28 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 42 — SEO + share previews (O + H): meta descriptions on /start/* persona pages
+Files changed:
+- `app/start/consumer/page.tsx`: added `description: "Three steps to your first cryptographic receipt on Solana. Connect a wallet, send a test transfer on devnet, get a receipt you can verify forever."`
+- `app/start/merchant/page.tsx`: added `description: "Three steps to your first verified sale on Solana. Claim a merchant handle, generate a payment QR or link, wire your webhook for instant settlement signals."`
+- `app/start/agent/page.tsx`: added `description: "Three steps to a budget your AI agent can actually spend. Set on-chain rules, plug in via SDK or MCP, watch every receipt with full audit logs and instant revoke."`
+
+Why this matters:
+- All 3 persona pages had `title` but no `description`. Search snippets fell back to the page's first paragraph (often boilerplate). OG previews on platforms that don't render the dedicated `opengraph-image.tsx` (rare-but-real) showed Settle's default site description.
+- Each description is concise, unique, and specifically describes the persona-fork value-prop in one sentence. No SEO keyword stuffing — just user-honest copy.
+- Complements the dedicated `app/start/opengraph-image.tsx` from pass 22 (which only Twitter/Facebook scrapers render).
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /start/consumer | grep meta name="description"` confirms each description renders correctly.
+- Targeted Playwright `section-23h-onboarding-trust`: 5/5 green.
+
+Risk: very low (metadata-only addition).
+
+Pending full-E2E (next test pass): no rendering changes; description meta tag is invisible to E2E selectors.
 
 ### Pass 41 — performance (C): cache public profile APIs
 Files changed:

@@ -3,6 +3,8 @@ import { PersonaPage } from "../../../components/persona-page";
 export const dynamic = "force-static";
 export const metadata = {
   title: "Build with AI agents · Settle",
+  description:
+    "Three steps to a budget your AI agent can actually spend. Set on-chain rules, plug in via SDK or MCP, watch every receipt with full audit logs and instant revoke.",
 };
 
 export default function AgentOnboarding() {
