@@ -3,15 +3,17 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 7 — accessibility deeper audit (focus rings, keyboard nav).
+Pass 8 = TEST PASS (every 4th). Run full Playwright on all polish
+since pass 5's last test pass: pass 6 (reduced-motion), pass 7
+(focus rings).
 
 ## Pass cadence (loop policy — 2026-05-04)
 - 3 polish passes → 1 test pass.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 6 just done with light verify).
-- Items pending full-E2E verification since last test pass: pass 6 reduced-motion fix.
+- Polish passes since last full-E2E: 2 (passes 6 + 7).
+- Items pending full-E2E verification: pass 6 reduced-motion CSS, pass 7 :focus-visible CSS.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -164,6 +166,26 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 7 — accessibility (category N): keyboard focus rings
+Files changed:
+- `app/globals.css`: added 3 `:focus-visible` rule blocks.
+  1. `html.light input/textarea/select.bg-transparent:focus-visible` — was missing focus indicator entirely; now renders a 2px solid w6-ink outline with 1px offset on keyboard nav.
+  2. `.w6-input:focus-visible` — added sharper outline supplementing the existing soft box-shadow that was hard to see for keyboard users.
+  3. Global rule for `.w6-btn`, `<button>`, `<a>`, `[role="button"]`, `[tabindex="0"]`: 2px solid currentColor outline with 2px offset, border-radius inherited. Only fires on `:focus-visible` so mouse clicks stay clean.
+
+Why this matters:
+- WCAG 2.4.7 (Focus Visible) requirement.
+- Keyboard-only users (and screen-reader users on Mac VoiceOver) had no way to see where they were in many flows.
+
+Light verify:
+- `pnpm exec next build` — clean.
+- `pnpm exec tsc --noEmit` — clean.
+- Targeted Playwright (50 specs covering nav-smoke + w6-cascade + visual-regression) — 50/50 green. Visual regression confirms `:focus-visible` does NOT affect mouse-driven snapshots (rings only paint on keyboard focus).
+
+Risk: very low. `:focus-visible` is a CSS-level change scoped to keyboard interactions. Fallback: even if outdated browsers don't support it, the input box-shadow + focus border-color from existing rules still apply.
+
+Pending full-E2E (next test pass): visual regression baselines should remain stable.
 
 ### Pass 6 — multi-category: /help rename + reduced-motion accessibility
 Files changed:

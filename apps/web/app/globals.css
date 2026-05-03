@@ -284,6 +284,14 @@
     border-color: var(--w6-ink);
     outline: none;
   }
+  /* a11y: keyboard-only users still need a visible focus ring
+     — show it on :focus-visible without affecting mouse focus. */
+  html.light input.bg-transparent:focus-visible,
+  html.light textarea.bg-transparent:focus-visible,
+  html.light select.bg-transparent:focus-visible {
+    outline: 2px solid var(--w6-ink);
+    outline-offset: 1px;
+  }
   html.light input.bg-transparent::placeholder,
   html.light textarea.bg-transparent::placeholder {
     color: var(--w6-ink-4);
@@ -743,10 +751,30 @@
     border-color: var(--w6-ink-3);
     box-shadow: 0 0 0 3px rgba(9, 9, 11, 0.06);
   }
+  /* a11y: keyboard-only focus ring on .w6-input — the box-shadow above
+     reads as soft on light bg; keyboard users get a sharper outline. */
+  .w6-input:focus-visible {
+    outline: 2px solid var(--w6-ink);
+    outline-offset: 1px;
+  }
   .w6-input-lg {
     height: 48px;
     font-size: 14px;
     padding: 0 20px;
+  }
+
+  /* a11y: global keyboard focus ring for interactive elements that
+     don't define their own. Only fires on :focus-visible (keyboard
+     navigation), so mouse clicks stay clean. Uses currentColor so it
+     inherits the surrounding tone (light vs dark). */
+  .w6-btn:focus-visible,
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex="0"]:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: inherit;
   }
 
   /* Bento grid layout. */
