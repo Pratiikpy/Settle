@@ -59,6 +59,11 @@ export default function NewCardPage() {
   // spend rejects any call whose capability_hash doesn't match exactly — strongest
   // custody guarantee available.
   type AllowlistEntry = { merchant: string; capabilityHashHex?: string };
+  // Default merchants come from env. The fallback placeholders below are
+  // intentionally non-base58 stubs that the API will reject — that's the
+  // signal to the user (and the deploying operator) to set the
+  // NEXT_PUBLIC_MERCHANT_* envs with real on-chain merchant pubkeys before
+  // shipping. They are NOT meant to be left as-is in production.
   const defaultMerchants: AllowlistEntry[] = [
     {
       merchant:
