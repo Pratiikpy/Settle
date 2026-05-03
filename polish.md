@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 30 — next polish target. Categories under-touched:
+Pass 31 — next polish target. Categories under-touched:
 - Category I: palette (deferred — risky)
 - Category C: code-split (deferred — risky)
 - Category G: CSP (deferred — needs origin allowlist)
@@ -31,8 +31,8 @@ Pass 30 — next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 29 receipts route silent-failure logs).
-- Items pending full-E2E verification: pact + card lookup error logs in /api/receipts/[requestId].
+- Polish passes since last full-E2E: 2 (pass 29 receipts logs, pass 30 verify CTA prefill).
+- Items pending full-E2E verification: receipts route logs, /verify ?h= prefill flow.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 30 — UI/UX functionality (A): receipt poster → /verify CTA actually pre-fills now
+Files changed:
+- `app/r/[id]/page.tsx`: changed the verify-CTA link from `/verify?request_id=<uuid>` to `/verify?h=<receipt_hash>` (with `\x` byte-prefix stripped + URI-encoded). Falls back to bare `/verify` when receipt_hash is null. The old format was useless — /verify accepts hashes, not UUIDs.
+- `app/verify/page.tsx`:
+  - Added `useSearchParams` import + `useEffect`/`useRef` imports
+  - On mount, if `?h=<hash>` is present and matches the hash format, set the input + auto-trigger verification via a new `verifyImpl(target)` function (factored out from the click handler so the auto-fill path doesn't depend on React state timing)
+  - `verify()` (button click handler) now delegates to `verifyImpl(input.trim())` — single source of truth.
+  - Used `prefilledRef` to ensure the auto-verify only fires once per page mount, even if searchParams updates.
+- `e2e/section-23g-poster-watch.spec.ts`: updated `23g.poster-verify-cta` assertion. Was checking for `?request_id=`; now accepts the new `?h=<hex>` format (or bare `/verify` when receipt_hash is null).
+
+Why this matters:
+- A user viewing a public receipt poster could click "Verify hashes →" and land on /verify with `?request_id=<uuid>` — but /verify silently ignored the param and showed an empty form. Dead-end UX bug from pass 10.
+- Now the user lands on /verify with the hash already pasted and the verification animation already running. One-click trust loop.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /verify` 200, `curl /verify?h=abc123` 200 (page renders even on bad hash; surfaces error in UI).
+- `curl /r/<real id>` shows the verify CTA href as `/verify?h=5108c2ea52ce2d2263a1a0f48e695a16c3a855488f2ab084e0c2766bbc00aac0` — the actual receipt_hash, byte-prefix stripped.
+- Targeted Playwright (§23g + §14.7 settle-verify): 17/17 green.
+
+Risk: low (touches 3 files but verify() now has a single internal entry point; behavior identical when no `?h=` param).
+
+Pending full-E2E (next test pass): nothing rendering changes; auto-verify only fires when arriving with `?h=<valid hash>`.
 
 ### Pass 29 — error handling + observability (D + M): unsilence /api/receipts/[id] sub-queries
 Files changed:

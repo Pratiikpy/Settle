@@ -18,9 +18,9 @@
  * lifecycle UX, we still animate the 3-stage flow in-page.
  */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { W6AppShell } from "../../components/w6-app-shell";
 
 interface VerifyResponse {
@@ -68,15 +68,32 @@ function fmtHash(h: string | null | undefined): string {
 
 export default function VerifierPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [input, setInput] = useState("");
   const [stage, setStage] = useState<Stage>("idle");
   const [data, setData] = useState<VerifyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Prefill + auto-verify when arriving from /r/<id> "Verify hashes →"
+  // CTA. Only fires once per mount.
+  const prefilledRef = useRef(false);
+  useEffect(() => {
+    if (prefilledRef.current) return;
+    const h = searchParams?.get("h")?.trim();
+    if (h && isHashLike(h)) {
+      prefilledRef.current = true;
+      setInput(h);
+      // Auto-trigger after the input renders. We can't call verify()
+      // directly here because it reads from `input` state — schedule
+      // via microtask.
+      Promise.resolve().then(() => {
+        // Use the captured h instead of reading state to avoid timing.
+        void verifyImpl(h);
+      });
+    }
+  }, [searchParams]);
 
-  async function verify() {
-    const trimmed = input.trim();
-    if (!trimmed) return;
-    if (!isHashLike(trimmed)) {
+  async function verifyImpl(target: string) {
+    if (!isHashLike(target)) {
       setError(
         "Paste any of the 5 commit-chain hashes (hex 64-char) or a base58 signature.",
       );
@@ -85,12 +102,10 @@ export default function VerifierPage() {
     setError(null);
     setData(null);
     setStage("fetching");
-    // Animate the steps even when the network is fast — gives the user
-    // a moment to read what's happening.
     await new Promise((r) => setTimeout(r, 350));
     setStage("computing");
     try {
-      const res = await fetch(`/api/verify/${encodeURIComponent(trimmed)}`);
+      const res = await fetch(`/api/verify/${encodeURIComponent(target)}`);
       const j = (await res.json()) as VerifyResponse;
       await new Promise((r) => setTimeout(r, 250));
       if (j.ok && j.receipt) {
@@ -104,6 +119,12 @@ export default function VerifierPage() {
       setError(String((e as Error).message ?? e));
       setStage("fail");
     }
+  }
+
+  async function verify() {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    await verifyImpl(trimmed);
   }
 
   return (

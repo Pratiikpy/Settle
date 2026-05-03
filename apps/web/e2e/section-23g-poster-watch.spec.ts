@@ -97,7 +97,7 @@ test.describe("§23g · Receipt poster /r/[id]", () => {
     expect(href).toMatch(/cluster=devnet|cluster=testnet|^https:\/\/solscan\.io\/tx\/[A-Za-z0-9]+$/);
   });
 
-  test("23g.poster-verify-cta — verify CTA links to /verify with request_id", async ({
+  test("23g.poster-verify-cta — verify CTA links to /verify with the receipt_hash", async ({
     page,
     request,
   }) => {
@@ -107,7 +107,10 @@ test.describe("§23g · Receipt poster /r/[id]", () => {
     const link = page.getByTestId("receipt-verify-link");
     await expect(link).toBeVisible();
     const href = await link.getAttribute("href");
-    expect(href).toContain(`/verify?request_id=${id!}`);
+    // Pass 30: poster now passes the actual receipt_hash (not request_id)
+    // because /verify accepts hashes, not UUIDs. Either pre-filled hash
+    // or bare /verify (when receipt_hash is null) is acceptable.
+    expect(href).toMatch(/^\/verify(\?h=[a-f0-9]+|$)/i);
   });
 
   test("23g.poster-og-image-renders — /r/<id>/opengraph-image returns a real PNG", async ({

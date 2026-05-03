@@ -275,7 +275,11 @@ export default async function ReceiptPoster({
             ) : null}
             <Link
               data-testid="receipt-verify-link"
-              href={`/verify?request_id=${r.request_id}`}
+              href={
+                r.receipt_hash
+                  ? `/verify?h=${encodeURIComponent((r.receipt_hash || "").replace(/^\\x/, ""))}`
+                  : `/verify`
+              }
               style={{
                 padding: "10px 16px",
                 borderRadius: 10,
