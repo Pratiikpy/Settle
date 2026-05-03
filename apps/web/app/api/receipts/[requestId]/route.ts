@@ -92,21 +92,33 @@ export async function GET(
   if (data.pact_pubkey) {
     // Look up the pact and its parent card's authority (which is the buyer for
     // escrow + the spender for oneshot/streaming).
-    const { data: pactRow } = await supabase
+    const { data: pactRow, error: pactErr } = await supabase
       .from("pacts")
       .select(
         "pact_pubkey, mode, cap_lamports, spent, rate_lamports_per_slot, max_total_lamports, claimed, last_claim_slot, paused, escrow_amount, escrow_merchant_pubkey, escrow_capability_hash, confirm_deadline_slot, dispute_deadline_slot, released, refunded, closed, expiry_slot, parent_card",
       )
       .eq("pact_pubkey", data.pact_pubkey)
       .maybeSingle();
+    if (pactErr) {
+      console.warn(
+        "[receipts/:id] pact lookup failed:",
+        pactErr.message,
+      );
+    }
     if (pactRow) {
       // Parent card → authority pubkey for the EscrowState UI's buyer-vs-stranger check.
       let authorityPubkey: string = "";
-      const { data: cardRow } = await supabase
+      const { data: cardRow, error: cardErr } = await supabase
         .from("agent_cards")
         .select("authority_pubkey")
         .eq("card_pubkey", pactRow.parent_card)
         .maybeSingle();
+      if (cardErr) {
+        console.warn(
+          "[receipts/:id] card lookup failed:",
+          cardErr.message,
+        );
+      }
       authorityPubkey = (cardRow?.authority_pubkey as string | undefined) ?? "";
 
       const mode = (pactRow.mode ?? "oneshot") as

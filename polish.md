@@ -3,12 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 29 — pick next polish target. Categories under-touched:
+Pass 30 — next polish target. Categories under-touched:
 - Category I: palette (deferred — risky)
 - Category C: code-split (deferred — risky)
 - Category G: CSP (deferred — needs origin allowlist)
-- Category K: dead-data scrub
-- Category D: deeper API audit (more endpoints with silent failures)
+- Category K: scan for hardcoded sentinel values rendered to users
+- Category A: deeper UI/UX functionality audit on lesser-used routes
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +31,8 @@ Pass 29 — pick next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 28 ran 577/577 after fixing 2 environmental SOL-assertion failures).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 29 receipts route silent-failure logs).
+- Items pending full-E2E verification: pact + card lookup error logs in /api/receipts/[requestId].
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 29 — error handling + observability (D + M): unsilence /api/receipts/[id] sub-queries
+Files changed:
+- `apps/web/app/api/receipts/[requestId]/route.ts`: 2 secondary Supabase queries had silent-failure paths:
+  1. `pacts` lookup (when `data.pact_pubkey` is set) — destructured only `{ data: pactRow }`, ignored error.
+  2. `agent_cards` lookup (parent-card → authority pubkey for EscrowState UI) — same pattern.
+  Both now destructure `error` and log `[receipts/:id] pact lookup failed: <msg>` / `[receipts/:id] card lookup failed: <msg>`.
+
+Why this matters:
+- /api/receipts/[id] is the source of truth for the receipt poster, EscrowState UI, and verify flows. The MAIN receipt query (line 30) already returns 502 on error, but sub-lookups (pact mode, parent-card authority) silently fell back to defaults — leaving the EscrowState UI showing "stranger" instead of "buyer" if the card lookup failed.
+- Tag convention matches the rest of the codebase.
+
+Audited but kept (no real silent catches found):
+- /api/sp/[merchant]/[slug]: the `getAccount` catch is intentional — Solana's signal for "account doesn't exist" is an exception. Logic correctly creates the ATA in that case.
+- lib/cn.ts: 0 callers but standard shadcn boilerplate; idiomatic to keep for future use. Not deleting.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /api/receipts/<real-id>` returns real data unchanged: amt 100000 lamports, decision ALLOW.
+- Targeted Playwright (§23g poster-watch + §4 receipts): 19/19 green.
+
+Risk: very low (additive logging only, no behavior change).
+
+Pending full-E2E (next test pass): no rendering impact expected.
 
 ### Pass 28 — TEST PASS: full E2E reconciliation of passes 25-27 + flake fix
 - Items previously pending: SSR placeholder (p25), branded receipt 404 (p26), dashboard logErr helper + 7 query logs (p27).
