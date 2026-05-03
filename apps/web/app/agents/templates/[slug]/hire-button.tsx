@@ -57,7 +57,7 @@ export function TemplateHireButton({ slug }: { slug: string }) {
 
       setGesture("success");
       fireSettlementConfetti();
-      toast.success("Pact spawned.", {
+      toast.success("Spending rule active.", {
         action: { label: "Solscan ↗", onClick: () => window.open(getSolscanUrl(sig), "_blank") },
       });
       setTimeout(() => router.push("/cards"), 1200);
@@ -81,10 +81,10 @@ export function TemplateHireButton({ slug }: { slug: string }) {
           : gesture === "signing"
             ? "Signing mandate…"
             : gesture === "confirming"
-              ? "Opening Pact…"
+              ? "Opening spending rule…"
               : gesture === "success"
-                ? "Pact open ✓"
-                : "Hire — sign Pact"}
+                ? "Spending rule open ✓"
+                : "Hire — sign rule"}
       </button>
       <TrustGesture state={gesture} />
     </>

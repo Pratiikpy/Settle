@@ -315,7 +315,7 @@ export default function CardDetailPage() {
       fireSettlementConfetti();
       downloadProof(sig);
       toast.success(
-        kind === "card" ? "Card revoked atomically." : "Pact closed. Refund queued.",
+        kind === "card" ? "Agent budget revoked atomically." : "Spending rule closed. Refund queued.",
         {
           action: { label: "Solscan ↗", onClick: () => window.open(getSolscanUrl(sig), "_blank") },
         },
@@ -435,7 +435,7 @@ export default function CardDetailPage() {
       </div>
 
       <PactCard
-        label="Pact"
+        label="Spending rule"
         capUsdc="—"
         usedUsdc={
           allowReceipts.length === 0

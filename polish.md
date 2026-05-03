@@ -3,8 +3,16 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 5 — bigger-effort polish targets (next bump, dedup utils) need
-careful verification so they get their own focused passes.
+Pass 6 — continue plain-English rename through `/help` Q&A and
+`/admin/cron`, `/control-center` admin copy.
+
+## Pass cadence (loop policy — 2026-05-04)
+- 3 polish passes → 1 test pass.
+- Polish passes do light-verify (lint + tsc + build + targeted spec).
+- Test pass runs full Playwright (workers=4, all 572 specs).
+- Risky changes always trigger a test pass right after.
+- Polish passes since last full-E2E: 0 (just ran 572/572 after pass 5).
+- Items pending full-E2E verification since last test pass: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -157,6 +165,19 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 5 — plain-English rename: agent flows + cards + groups
+Files changed:
+- `app/agents/new/page.tsx`: toast `"Pact spawned. Watch the agent work."` → `"Spending rule active. Watch the agent work."`; description `Pact:` → `Rule:`; gesture states `"Opening Pact on Solana…"` → `"Opening spending rule on Solana…"`, `"Pact open ✓"` → `"Spending rule open ✓"`, `"Spawn Pact card"` → `"Open spending rule"`; PactCard preview `label="Pact · Research"` → `"Rule · Research"`.
+- `app/agents/templates/[slug]/hire-button.tsx`: toast `"Pact spawned."` → `"Spending rule active."`; gesture `"Opening Pact…"` → `"Opening spending rule…"`, `"Pact open ✓"` → `"Spending rule open ✓"`, `"Hire — sign Pact"` → `"Hire — sign rule"`.
+- `app/cards/new/page.tsx`: subtitle "creating a NEW AgentCard…" → "creating a new agent budget…"; submit `"Create AgentCard"` → `"Create agent budget"`.
+- `app/cards/[id]/page.tsx`: revoke toast `"Pact closed. Refund queued."` → `"Spending rule closed. Refund queued."`; `"Card revoked atomically."` → `"Agent budget revoked atomically."`; `<PactCard label="Pact" …>` → `label="Spending rule"`.
+- `app/groups/page.tsx`: button states `"Spawning Pact…"` → `"Opening spending rule…"`, `"Create request + spawn Pact"` → `"Create request + spending rule"`.
+- `e2e/section-23a-real-onchain.spec.ts`: regex now accepts both old and new CTA labels (`/Create (AgentCard|agent budget)/i`).
+
+**Verified:** next build clean, tsc --noEmit clean, **full Playwright 572/572 green in 7.2m** (this counts as the test pass for pass 5).
+
+**Risk mitigated:** spec stale on rename → fixed in same pass.
 
 ### Pass 4 — empty-state audit + security inventory
 - Audited /ledger, /feed, /agents, /allowances, /groups, /spending —

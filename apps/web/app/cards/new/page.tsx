@@ -224,7 +224,7 @@ export default function NewCardPage() {
               }}
             >
               {isDelegationFlow
-                ? "You're creating a NEW AgentCard with the Settle relayer as its agent. Phase 5 automation can spend within the cap + allowlist below — and only that."
+                ? "You're creating a new agent budget with the Settle relayer as its agent. Phase 5 automation can spend within the cap + allowlist below — and only that."
                 : t("cards.new_subtitle")}
             </p>
           </div>
@@ -449,7 +449,7 @@ export default function NewCardPage() {
                   ? "Signing in Phantom…"
                   : gesture === "confirming"
                     ? "Creating on Solana…"
-                    : "Create AgentCard"}
+                    : "Create agent budget"}
             </button>
 
             <p className="w6-muted" style={{ fontSize: 11 }}>

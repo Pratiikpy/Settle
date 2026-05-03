@@ -102,8 +102,8 @@ export default function AgentsPage() {
 
       setGesture("success");
       fireSettlementConfetti();
-      toast.success("Pact spawned. Watch the agent work.", {
-        description: `Pact: ${pact.slice(0, 6)}…${pact.slice(-4)}`,
+      toast.success("Spending rule active. Watch the agent work.", {
+        description: `Rule: ${pact.slice(0, 6)}…${pact.slice(-4)}`,
         action: {
           label: "Solscan ↗",
           onClick: () => window.open(getSolscanUrl(sig), "_blank"),
@@ -225,10 +225,10 @@ export default function AgentsPage() {
               : gesture === "signing"
                 ? "Signing mandate…"
                 : gesture === "confirming"
-                  ? "Opening Pact on Solana…"
+                  ? "Opening spending rule on Solana…"
                   : gesture === "success"
-                    ? "Pact open ✓"
-                    : "Spawn Pact card"}
+                    ? "Spending rule open ✓"
+                    : "Open spending rule"}
           </button>
 
           <p className="text-xs text-[#52525b]">
@@ -243,7 +243,7 @@ export default function AgentsPage() {
           </div>
           <div className="relative">
             <PactCard
-              label="Pact · Research"
+              label="Rule · Research"
               capUsdc={`$${parseFloat(cap || "0").toFixed(2)}`}
               usedUsdc="$0.00"
               fillPct={1}

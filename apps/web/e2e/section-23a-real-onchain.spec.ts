@@ -92,7 +92,9 @@ test.describe("Section 23a · REAL on-chain UI tx", () => {
       const ctaText = await cta.textContent();
       // CTA must not be the disconnect placeholder
       expect(ctaText).not.toMatch(/Connect a wallet/i);
-      expect(ctaText).toMatch(/Create AgentCard/i);
+      // Accept both old and new labels — UI is being plain-Englished from
+      // "Create AgentCard" → "Create agent budget".
+      expect(ctaText).toMatch(/Create (AgentCard|agent budget)/i);
 
       await cta.click();
       // The button copy flips to "Signing in Phantom…" or "Creating on Solana…"

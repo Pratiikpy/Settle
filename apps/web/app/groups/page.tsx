@@ -453,8 +453,8 @@ export default function GroupsPage() {
                     className="w6-btn w6-btn-primary w6-btn-sm"
                   >
                     {busy[`request-${activeGroup.group_id}`]
-                      ? "Spawning Pact…"
-                      : "Create request + spawn Pact"}
+                      ? "Opening spending rule…"
+                      : "Create request + spending rule"}
                   </button>
                 </div>
               )}
