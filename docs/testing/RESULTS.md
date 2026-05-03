@@ -784,3 +784,16 @@ The §23a "honest gap" is now actively shrinking. Pattern proven: SettleE2EBurne
 | §23b.J cross-cutting (9 rows) | ✓ pass | J2 federation, J3 trust recompute, J4 i18n, J6 print, J7b OG receipt, J8 SW, J10 perf, J11a ledger, J12 health | 2026-05-03 |
 | 1+ · Full E2E | ✓ pass | 362/362 in 9.0m (was 323, +39) | 2026-05-03 15:35 |
 
+
+## 2026-05-03 16:10 — Parallelism shipped (~2× speedup)
+
+| Lane | Before | After | Method |
+|---|---|---|---|
+| Playwright E2E | 9.0 min | 4.4 min | `workers: 4`, `fullyParallel: true` (visual-regression marked serial) |
+| Script orchestrator Track A | ~30s serial | ~13s parallel | `Promise.all` over 14 read-only steps |
+| Script orchestrator Track B | unchanged | unchanged | 12 stateful steps still serial |
+| Total full-suite wall-clock | ~14 min | ~7 min | combined |
+
+| §14.5/§23b.D25-D27 — MCP subprocess JSON-RPC | ✓ pass | scripts/mcp-subprocess-test.ts: spawn server + initialize handshake + tools/list returns 6 settle_* tools (settle_pay, settle_verify, settle_open_pact, settle_close_pact, settle_list_capabilities, settle_refund) + tools/call for each → valid JSON-RPC responses (8/8 protocol assertions) | 2026-05-03 |
+| 1+ · Full E2E (workers=4) | ✓ pass | 378/378 in 4.4m (was 362/362 in 9.0m) | 2026-05-03 16:10 |
+
