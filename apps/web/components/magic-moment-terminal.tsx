@@ -83,11 +83,21 @@ export function MagicMomentTerminal() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/landing/feed")
-      .then((r) => r.json())
-      .then((d) => {
+    let lastSig = "";
+    async function refresh() {
+      try {
+        const r = await fetch("/api/landing/feed");
+        const d = await r.json();
         if (cancelled) return;
         const real = (d?.items ?? []) as FeedItem[];
+        // Compute a stable signature so we only restart the animation
+        // when the underlying receipts actually change (not every poll).
+        const sig =
+          real.length >= 2
+            ? real.slice(0, 8).map((x) => x.request_id).join("|")
+            : "scenario";
+        if (sig === lastSig) return;
+        lastSig = sig;
         if (real.length >= 2) {
           setItems(real.slice(0, 8));
           setIsReal(true);
@@ -95,14 +105,21 @@ export function MagicMomentTerminal() {
           setItems(SCENARIO);
           setIsReal(false);
         }
-      })
-      .catch(() => {
-        if (cancelled) return;
+      } catch {
+        if (cancelled || lastSig === "scenario") return;
+        lastSig = "scenario";
         setItems(SCENARIO);
         setIsReal(false);
-      });
+      }
+    }
+    refresh();
+    // Poll every 60s so a long-open landing tab picks up new receipts.
+    // The signature check above keeps the animation steady when nothing
+    // has changed; /api/landing/feed has 30s s-maxage caching upstream.
+    const id = setInterval(refresh, 60_000);
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
   }, []);
 

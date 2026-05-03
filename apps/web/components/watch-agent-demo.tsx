@@ -62,12 +62,19 @@ export function WatchAgentDemo() {
 
   useEffect(() => {
     let stop = false;
+    let lastSig = "";
     async function tick() {
       try {
         const r = await fetch("/api/landing/feed");
         const d = await r.json();
         if (stop) return;
         const real = (d?.items ?? []) as FeedItem[];
+        const sig =
+          real.length >= 2
+            ? real.slice(0, 8).map((x) => x.request_id).join("|")
+            : "preview";
+        if (sig === lastSig) return;
+        lastSig = sig;
         if (real.length >= 2) {
           setItems(real.slice(0, 8));
           setIsReal(true);
@@ -76,10 +83,10 @@ export function WatchAgentDemo() {
           setIsReal(false);
         }
       } catch {
-        if (!stop) {
-          setItems(PREVIEW);
-          setIsReal(false);
-        }
+        if (stop || lastSig === "preview") return;
+        lastSig = "preview";
+        setItems(PREVIEW);
+        setIsReal(false);
       }
     }
     tick();

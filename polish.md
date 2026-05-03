@@ -3,11 +3,11 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 18 — next polish target. Categories under-touched:
-- Category I: palette consistency (deferred — risky for visual snapshots)
-- Category C: code-split heaviest pages (/activity 323KB)
-- Category B: cross-user real-time freshness audit
-- Category G: more security headers (CSP — deferred for now)
+Pass 19 — pick next polish target. Categories still under-touched:
+- Category I: palette consistency (deferred — risky)
+- Category C: code-split heaviest pages
+- Category G: CSP (deferred — needs origin allowlist audit)
+- Category K: dead-data scrub (any seed/sample fixtures shipped to prod?)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -30,8 +30,8 @@ Pass 18 — next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 17 security headers).
-- Items pending full-E2E verification: HSTS + COOP headers (low risk — additive only).
+- Polish passes since last full-E2E: 2 (pass 17 security headers, pass 18 freshness polling).
+- Items pending full-E2E verification: HSTS + COOP headers, magic-moment 60s polling, /watch sig-deduped polling.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -184,6 +184,30 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 18 — data freshness (category B): poll /api/landing/feed + dedupe identical updates
+Files changed:
+- `components/magic-moment-terminal.tsx`: was a one-shot `fetch` on mount → now polls every 60s. Long-open landing tabs pick up new receipts. Cache-friendly: /api/landing/feed has 30s s-maxage upstream so this is at-most-twice-the-cache.
+- `components/watch-agent-demo.tsx`: was already polling every 4s but called `setItems` every tick (causing animation/render churn even when nothing changed). Now both components compute a `lastSig = items.map(it => it.request_id).join("|")` and skip the state update when the underlying data hasn't changed.
+- The signature dedupe means React no longer re-renders the table or restarts the magic-moment line-rotation animation when the feed is steady. Animation only restarts when receipts actually change.
+
+Why this matters:
+- Manifesto bug-class **"data is not updating from action"**: a receipt written on-chain elsewhere now becomes visible within ~60s on the landing instead of requiring a page reload.
+- Smoother UX: no animation flicker on every poll cycle.
+
+Audited but skipped:
+- /api/dashboard/v6 freshness — already covered by §23c.B specs (action → API freshness assertion). No change needed.
+- /api/balance — already 10s s-maxage with `dynamic = "force-dynamic"`. Real-time enough.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (§23f magic-moment + §23g poster-watch + §23i rename-solscan): 22/22 green.
+
+Risk: low. Polling is pure addition; signature dedupe is a refinement that reduces unnecessary updates.
+
+Pending full-E2E (next test pass): no expected impact on existing specs.
 
 ### Pass 17 — security (category G): HSTS + COOP headers
 Files changed:
