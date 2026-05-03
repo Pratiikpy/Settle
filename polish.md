@@ -3,9 +3,9 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 26 — next polish target. Categories under-touched:
+Pass 27 — next polish target. Categories under-touched:
 - Category I: palette (deferred — risky)
-- Category C: more performance polish (heaviest pages still uncode-split)
+- Category C: code-split heaviest pages (deferred — risky)
 - Category G: CSP (deferred — needs origin allowlist)
 - Category K: dead-data scrub
 - Category D: deeper API endpoint audits
@@ -31,8 +31,8 @@ Pass 26 — next polish target. Categories under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 25 magic-moment SSR placeholder).
-- Items pending full-E2E verification: pass 25 SSR placeholder for magic-moment terminal (low risk — visual only).
+- Polish passes since last full-E2E: 2 (pass 25 SSR placeholder, pass 26 receipt 404 branded).
+- Items pending full-E2E verification: SSR placeholder, branded receipt 404 page.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,25 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 26 — final product feel (H): branded 404 for /r/[id]
+Files added:
+- `app/r/[id]/not-found.tsx` — route-scoped Next 404. Replaces the generic site-wide 404 when a receipt id is malformed or unknown. Branded W6 surface with: "SETTLE · RECEIPT" eyebrow, "Receipt not found." 56px headline, contextual body copy (malformed id / pruned / broken link), and two CTAs: "Verify a receipt hash →" (primary, links to /verify) and "Back to home" (secondary).
+- `e2e/section-23g-poster-watch.spec.ts`: new spec `23g.poster-not-found-tailored` asserts the branded 404 renders for unknown UUIDs and that the verify CTA links to /verify.
+
+Why this matters:
+- Previously a malformed/unknown `/r/<id>` rendered the generic site-wide 404 — same dead-end as 404'ing a marketing page. Users with a broken link had no path back.
+- Now the user sees: "Receipt not found. If you have the receipt hash, you can still verify it directly →" with a one-click route to /verify.
+- Closes a real-product-feel gap.
+
+Light verify:
+- `pnpm exec next build` clean (route in manifest at the same line size as before).
+- Manual: `curl /r/00000000-0000-0000-0000-000000000000` HTML contains `receipt-not-found` testid + "Receipt not found" heading.
+- Targeted Playwright `section-23g-poster-watch`: 15/15 green (was 14, +1 new spec).
+
+Risk: low. Route-scoped not-found.tsx is a Next-built convention; only takes effect when notFound() is called from /r/[id] page.tsx.
+
+Pending full-E2E (next test pass): suite count → 577 (was 576, +1).
 
 ### Pass 25 — performance (C): SSR placeholder for magic-moment terminal (CLS fix)
 Files changed:

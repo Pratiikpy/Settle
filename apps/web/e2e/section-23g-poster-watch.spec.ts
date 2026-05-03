@@ -47,6 +47,16 @@ test.describe("§23g · Receipt poster /r/[id]", () => {
     await expect(page.getByTestId("receipt-poster")).toHaveCount(0);
   });
 
+  test("23g.poster-not-found-tailored — unknown id renders branded 404 with verify CTA", async ({
+    page,
+  }) => {
+    await page.goto(`${APP}/r/00000000-0000-0000-0000-000000000000`);
+    await expect(page.getByTestId("receipt-not-found")).toBeVisible();
+    const verifyCta = page.getByTestId("receipt-not-found-verify-cta");
+    await expect(verifyCta).toBeVisible();
+    expect(await verifyCta.getAttribute("href")).toBe("/verify");
+  });
+
   test("23g.poster-real-renders — /r/<real id> renders poster end-to-end", async ({
     page,
     request,
