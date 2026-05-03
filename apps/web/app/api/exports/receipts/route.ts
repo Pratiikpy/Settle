@@ -176,10 +176,13 @@ export async function GET(req: NextRequest) {
   }
 
   // Cards owned by this pubkey
-  const { data: cards } = await sb
+  const { data: cards, error: cardsErr } = await sb
     .from("agent_cards")
     .select("card_pubkey")
     .eq("authority_pubkey", v.pubkey);
+  if (cardsErr) {
+    console.warn("[exports/receipts] cards query failed:", cardsErr.message);
+  }
   const cardPubkeys = (cards ?? []).map((c) => c.card_pubkey as string);
 
   let qb = sb

@@ -80,6 +80,8 @@ export function MagicMomentTerminal() {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [isReal, setIsReal] = useState(false);
   const [shown, setShown] = useState(0);
+  // Last successful refresh — drives the "fresh as of HH:MM:SS" header.
+  const [refreshedAt, setRefreshedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +98,9 @@ export function MagicMomentTerminal() {
           real.length >= 2
             ? real.slice(0, 8).map((x) => x.request_id).join("|")
             : "scenario";
+        // Always bump the refresh timestamp on a successful round-trip,
+        // even when the feed signature is unchanged — proves liveness.
+        setRefreshedAt(new Date());
         if (sig === lastSig) return;
         lastSig = sig;
         if (real.length >= 2) {
@@ -226,6 +231,15 @@ export function MagicMomentTerminal() {
           </span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {refreshedAt ? (
+            <span
+              data-testid="feed-refreshed-at"
+              title={`Last refresh: ${refreshedAt.toISOString()}`}
+              style={{ fontSize: 10.5, color: "#5a5f66", fontVariantNumeric: "tabular-nums" }}
+            >
+              {timeStr(refreshedAt.toISOString())}
+            </span>
+          ) : null}
           <span
             data-testid="feed-mode-pill"
             style={{

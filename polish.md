@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 37 — next polish target.
+Pass 38 — next polish target.
 - Category I: palette (deferred)
 - Category C: code-split (deferred)
 - Category G: CSP (deferred)
@@ -31,8 +31,8 @@ Pass 37 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 36 ran 577/577 after wallet bootstrap top-up).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 37 exports/receipts log + magic-moment refresh timestamp).
+- Items pending full-E2E verification: exports/receipts cards-query log, magic-moment "fresh-as-of" header element.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +185,34 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 37 — multi-category: exports route silent-fail log + magic-moment fresh-as-of timestamp
+Files changed:
+- `apps/web/app/api/exports/receipts/route.ts`: cards lookup query (line 179) was destructured as `const { data: cards } = await sb.from("agent_cards")...` with `error` ignored. Now destructures `error: cardsErr` and logs `[exports/receipts] cards query failed: <msg>`. Categories D + M.
+- `apps/web/components/magic-moment-terminal.tsx`: added a `refreshedAt: Date | null` state. Bumped on every successful poll round-trip (even when feed signature is unchanged — proves liveness). Header now shows the time as a tiny tabular-numeric label next to the live/preview pill, with a `title="Last refresh: <ISO>"` tooltip. `data-testid="feed-refreshed-at"`. Category H final product feel.
+
+Why this matters:
+- Auditing the exports route: confirms our systematic silent-failure sweep is reaching the long tail.
+- Magic-moment timestamp: a viewer who sits on the landing for 3 minutes can see the data is actually being refreshed (instead of wondering if the terminal is frozen). The 60s poll cadence is invisible without this signal.
+
+Audited but kept (already had error handling — false positives from earlier audit):
+- /api/cards/list — returns 500 on cErr / pErr. ✓
+- /api/cards/[id]/pacts — returns 500 on error. ✓
+- /api/cards/[id]/receipts/csv — destructured error. ✓
+- /api/cards/[id]/privacy — destructured error. ✓
+- /api/cards/delegated — destructured error. ✓
+- /api/dashboard/v6 — already covered by pass 27 logErr helper. ✓
+- /api/sandbox/airdrop — catches return 4xx, no silent fails. ✓
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright `section-23f-magic-moment`: 6/6 green.
+
+Risk: very low (additive logging + new harmless state field).
+
+Pending full-E2E (next test pass): no rendering impact expected. The new timestamp UI is small and won't affect existing visual-regression baselines (it appears in the header only after the first refresh).
 
 ### Pass 36 — TEST PASS: full E2E reconciliation of passes 33-35 + wallet top-up
 - Items previously pending: receipt API cache (p33), /api/handles/* silent-failure logs (p34), /agents user-visible copy rename (p35).
