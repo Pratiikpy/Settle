@@ -28,6 +28,11 @@ programs/settle-agent-card/target/idl/*
 coverage/
 *.lcov
 
+# Playwright artifacts — large, per-run, never useful in git
+test-results/
+playwright-report/
+.last-run.json
+
 # logs
 *.log
 npm-debug.log*
