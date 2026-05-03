@@ -762,3 +762,17 @@ The §23a "honest gap" is now actively shrinking. Pattern proven: SettleE2EBurne
 | 23a.activity-realtime | ✓ pass | /activity inbox connected | 2026-05-03 |
 | 1+ · Full E2E (post-batch) | ✓ pass | 261/261 in 6.7m (was 254, +7) | 2026-05-03 |
 
+
+## 2026-05-03 15:10 — §23b matrix mass coverage (62 more rows)
+
+| §23b.A consumer (15 rows) | ✓ pass | A5-A6 onboarding, A8-A12 send, A18/A26/A27 ledger+receipts, A35/A39/A43 pact modes, A36, A72/A73, A76/A78/A83 | 2026-05-03 |
+| §23b.B merchant (8 rows) | ✓ pass | B1, B2, B4, B7, B8, B11, B12, B16 | 2026-05-03 |
+| §23b.C agent (5 rows) | ✓ pass | C1, C3, C4, C5, C9 | 2026-05-03 |
+| §23b.D developer (6 rows) | ✓ pass | D1, D2, D5, D6, D7, D8 | 2026-05-03 |
+| §23b.E operator (10 rows) | ✓ pass | E1-E5, E8 + E9a-E9d auth-gated | 2026-05-03 |
+| §23b.F public (7 rows) | ✓ pass | F1, F2, F3, F5/F5b, F6, F7 | 2026-05-03 |
+| §23b.G primitives (6 rows) | ✓ pass | G3, G4, G12, G15a/b/c | 2026-05-03 |
+| §23b.H webhooks (1 stub) | ✓ pass | H protocol verified by webhook-events-coverage.ts | 2026-05-03 |
+| §23b.J cross-cutting (2 rows) | ✓ pass | J7a OG, J11 receipt | 2026-05-03 |
+| 1+ · Full E2E | ✓ pass | 323/323 in 8.3m (was 261, +62) | 2026-05-03 15:10 |
+
