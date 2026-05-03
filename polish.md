@@ -3,12 +3,11 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 13 — pick next polish target. Areas under-touched:
+Pass 14 — next polish target. Areas under-touched:
 - Category C performance: bundle size analysis
-- Category I consistent design: branding / palette unification
+- Category I consistent design: palette / typography unification
 - Category D error handling: deeper API route audit
 - Category B data correctness: cross-user real-time freshness
-- Category M observability: are errors actually logged anywhere?
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +30,8 @@ Pass 13 — pick next polish target. Areas under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 12 just ran 572/572).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 13 dep removal).
+- Items pending full-E2E verification: orphan-dep removal (low risk).
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +184,34 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 13 — code health (category L): remove 2 orphan dependencies
+Files changed:
+- `apps/web/package.json`: removed two top-level deps with **zero references** anywhere in the source tree (verified via repo-wide grep on .ts/.tsx/.json):
+  1. `lucide-react@^0.456.0` — icon library, no `lucide-react` import in any source file. (Note: a transitive `lucide-react@0.383.0` still exists in node_modules pulled by @walletconnect → @reown/appkit; that's not removable here.)
+  2. `@metaplex-foundation/digital-asset-standard-api@^1.0.4` — no source imports; mpl-bubblegum (still kept) is what we actually use.
+- `pnpm install` ran cleanly to update lockfile.
+
+Audited but kept (deeper scan justified retaining):
+- `@noble/ciphers` — used by `packages/sdk/src/sealed-box.ts`. Both apps/web and packages/sdk declare it; redundancy is intentional for workspace hoisting predictability. Keep both.
+- `@bonfida/spl-name-service` — used in `app/api/resolve/route.ts`.
+- `@solana/kit` — used in `lib/lighthouse.ts` and `lib/solana.ts`.
+- `react-dom` — implicitly required by Next/React; no explicit import needed.
+
+Why this matters:
+- Smaller dependency surface → faster `pnpm install`, smaller node_modules, less attack surface.
+- These two specifically pulled additional transitive trees that bloated the lockfile.
+
+Light verify:
+- `pnpm install` clean (only pre-existing peer warnings, none introduced).
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (nav-smoke + e2e-loop + poster-watch): 48/48 green incl. real on-chain ALICE→BOB QR-pay 12.04 → 12.042 USDC.
+
+Risk: very low (zero source imports verified before removal).
+
+Pending full-E2E (next test pass): nothing render-affecting.
 
 ### Pass 12 — TEST PASS: full E2E reconciliation of passes 9-11
 - Items previously pending: sitemap entries (p9), OG image route (p10), format.ts dead-code delete (p11).
