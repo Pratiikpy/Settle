@@ -16,6 +16,20 @@ const nextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
+          // HSTS: tell browsers to always use HTTPS for settle.so + subdomains
+          // for the next year. Safe in production (Vercel serves HTTPS by
+          // default); no effect on localhost per the HSTS spec.
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
+          // Isolate the browsing context group while still allowing
+          // wallet/Solscan popups via window.open. Without this, a future
+          // CSP audit and Spectre-style isolation are harder to enforce.
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
         ],
       },
     ];

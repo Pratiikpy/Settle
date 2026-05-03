@@ -3,12 +3,11 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 17 — pick next polish target. Areas under-touched:
-- Category I: palette consistency (deferred — risky)
-- Category C: code-split heaviest pages (/activity 323KB, /allowances 297KB)
+Pass 18 — next polish target. Categories under-touched:
+- Category I: palette consistency (deferred — risky for visual snapshots)
+- Category C: code-split heaviest pages (/activity 323KB)
 - Category B: cross-user real-time freshness audit
-- Category D: more API routes to audit for silent failures
-- Category G: rate-limit middleware (deferred — architectural)
+- Category G: more security headers (CSP — deferred for now)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +30,8 @@ Pass 17 — pick next polish target. Areas under-touched:
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 16 just ran 572/572).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 17 security headers).
+- Items pending full-E2E verification: HSTS + COOP headers (low risk — additive only).
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +184,35 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 17 — security (category G): HSTS + COOP headers
+Files changed:
+- `apps/web/next.config.mjs` — added 2 headers to the global `headers()` config:
+  1. `Strict-Transport-Security: max-age=31536000; includeSubDomains` — 1-year HTTPS enforcement, no `preload` (avoids preload-list commitment), `includeSubDomains` is safe since Vercel serves all subdomains over HTTPS by default. No effect on localhost per HSTS spec.
+  2. `Cross-Origin-Opener-Policy: same-origin-allow-popups` — isolates browsing context group while still allowing `window.open` for Phantom/Solflare wallet popups and Solscan tx links (used by magic-moment-terminal, watch demo, receipt poster).
+- `e2e/section-52-security-headers.spec.ts` — extended assertions:
+  - `/` page must include HSTS with `max-age=\d{6,}` and `includeSubDomains`.
+  - `/` page must include COOP `same-origin-allow-popups`.
+  - `/dashboard` must also carry HSTS.
+
+Audited but skipped (risky / out of scope this pass):
+- CSP (Content-Security-Policy): high signal but very risky — wallet adapters need WebSocket connections to many Helius/Solana endpoints, Phantom popups, Sentry, Supabase. CSP without testing breaks the app. Defer to focused security pass.
+
+Why this matters:
+- HSTS prevents downgrade attacks: even if a user types `http://settle.so`, the browser refuses and goes HTTPS.
+- COOP shores up cross-origin isolation; without it, a malicious popup could potentially access this window's globals on some browsers.
+- Existing 4 headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`) were already in place.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl -I /` returned both new headers correctly.
+- `pnpm exec playwright test section-52-security-headers`: 2/2 green.
+
+Risk: very low (additive HTTP headers; no behavior change to app code).
+
+Pending full-E2E (next test pass): no expected impact. Wallet popups still work because COOP is `same-origin-allow-popups`, not the stricter `same-origin`.
 
 ### Pass 16 — TEST PASS: full E2E reconciliation of passes 13-15
 - Items previously pending: orphan-dep removal (p13), README docs change (p14), `app/loading.tsx` reduced-motion CSS (p14), `/api/balance` warn logs (p15).
