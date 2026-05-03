@@ -190,13 +190,13 @@ export default function StreamingDashboard() {
 
       {!connected ? (
         <div className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#f4f4f5] p-6 text-sm text-[#52525b]">
-          Connect Phantom to see your active streaming pacts.
+          Connect Phantom to see your active streaming rules.
         </div>
       ) : loading ? (
         <div className="mt-6 text-sm text-[#52525b]">Loading…</div>
       ) : pacts.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#f4f4f5] p-6 text-sm text-[#52525b]">
-          No active streaming pacts yet. Open one with the form above.
+          No active streaming rules yet. Open one with the form above.
         </div>
       ) : (
         <div className="mt-6 space-y-4">
@@ -301,7 +301,7 @@ function OpenStreamForm({
         },
         "confirmed",
       );
-      toast.success("Streaming pact opened.", {
+      toast.success("Streaming rule opened.", {
         action: { label: "Solscan ↗", onClick: () => window.open(getSolscanUrl(sig), "_blank") },
       });
       setOpen(false);
@@ -327,7 +327,7 @@ function OpenStreamForm({
   return (
     <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-medium">Open a streaming pact</h2>
+        <h2 className="text-sm font-medium">Open a streaming rule</h2>
         <button
           onClick={() => setOpen(false)}
           className="text-[11px] text-[#52525b] hover:text-[#09090b]"

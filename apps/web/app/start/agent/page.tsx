@@ -35,7 +35,7 @@ export default function AgentOnboarding() {
         },
       ]}
       whatNext={[
-        { label: "Streaming pacts", href: "/cards/streaming" },
+        { label: "Streaming rules", href: "/cards/streaming" },
         { label: "Hire a template agent", href: "/agents/templates" },
         { label: "MCP middleware docs", href: "/docs/mcp" },
       ]}

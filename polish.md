@@ -3,12 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 39 — next polish target.
-- Category I: palette (deferred)
-- Category C: code-split (deferred)
-- Category G: CSP (deferred)
-- Category K: dead-data scrub
-- Category A: start/merchant onboarding gap (CTAs land on /m/me which doesn't render correctly without claimed handle)
+Pass 40 = TEST PASS (every 4th). Reconcile passes 37, 38, 39 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -31,8 +26,8 @@ Pass 39 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 37 logs + timestamp, pass 38 sandbox copy + /watch CTA).
-- Items pending full-E2E verification: exports/receipts log, magic-moment "fresh-as-of" header, sandbox SOL-amount copy fix, sandbox /watch CTA.
+- Polish passes since last full-E2E: 3 (pass 37 logs + timestamp, pass 38 sandbox copy fix, pass 39 streaming rule rename). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: exports/receipts log, magic-moment "fresh-as-of" header, sandbox SOL-amount copy fix, sandbox /watch CTA, /agents/streaming rename.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -185,6 +180,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 39 — copywriting (F): /agents/streaming + /start/agent rename
+Files changed:
+- `app/agents/streaming/page.tsx`:
+  - Connect prompt: `"Connect Phantom to see your active streaming pacts"` → `"streaming rules"`
+  - Empty state: `"No active streaming pacts yet"` → `"No active streaming rules yet"`
+  - Toast: `"Streaming pact opened."` → `"Streaming rule opened."`
+  - Form heading: `"Open a streaming pact"` → `"Open a streaming rule"`
+- `app/start/agent/page.tsx`:
+  - whatNext label: `"Streaming pacts"` → `"Streaming rules"`
+
+Audited but kept (technical surfaces — internal terminology):
+- `/control-center` and `/security` pages still mention "streaming pact" — those are admin / engineering docs where the precise on-chain account variant name matters.
+
+Why this matters:
+- Continues the systematic plain-English rollout (passes 5, 6, 15, 35). Streaming is one of the three pact modes and should be referred to as "streaming rule" in user-facing copy for consistency.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (§23h onboarding-trust + §23i rename + nav-smoke): 25/25 green.
+
+Risk: very low (UI copy only).
+
+Pending full-E2E (next test pass): no rendering breakage expected.
 
 ### Pass 38 — sandbox UI bug fix + /watch CTA (categories B + H)
 Files changed:
