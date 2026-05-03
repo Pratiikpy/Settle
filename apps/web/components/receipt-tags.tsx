@@ -107,19 +107,19 @@ export function ReceiptTags({ requestId }: { requestId: string }) {
 
   if (!connected) {
     return (
-      <div className="rounded-lg border border-foreground/10 bg-foreground/[0.02] p-4 text-xs text-foreground/50">
+      <div className="rounded-lg border border-[#e4e4e7] bg-[#fafafa] p-4 text-xs text-[#52525b]">
         Connect your wallet to add private tags to this receipt.
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-foreground/10 bg-foreground/[0.02] p-4">
+    <div className="rounded-lg border border-[#e4e4e7] bg-[#fafafa] p-4">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-xs font-medium uppercase tracking-wider text-foreground/70">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-[#27272a]">
           Your tags
         </h3>
-        <span className="text-[10px] text-foreground/40">private to you</span>
+        <span className="text-[10px] text-[#71717a]">private to you</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -153,7 +153,7 @@ export function ReceiptTags({ requestId }: { requestId: string }) {
           }}
           placeholder="add tag…"
           disabled={busy}
-          className="rounded-full border border-foreground/15 bg-transparent px-3 py-1 text-[11px] outline-none focus:border-foreground/40"
+          className="rounded-full border border-[#e4e4e7] bg-transparent px-3 py-1 text-[11px] outline-none focus:border-[#71717a]"
           maxLength={32}
         />
 
@@ -161,7 +161,7 @@ export function ReceiptTags({ requestId }: { requestId: string }) {
           type="button"
           onClick={() => void addTag()}
           disabled={busy || !draft.trim()}
-          className="rounded-full border border-foreground/15 px-3 py-1 text-[11px] hover:bg-foreground/[0.06] disabled:opacity-40"
+          className="rounded-full border border-[#e4e4e7] px-3 py-1 text-[11px] hover:bg-[#e4e4e7] disabled:opacity-40"
         >
           add
         </button>

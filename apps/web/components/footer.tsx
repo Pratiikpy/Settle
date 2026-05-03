@@ -6,7 +6,7 @@ import { VerifiableBuildBadge } from "./verifiable-build-badge";
  *
  * Inline W6 styles so it reads light-on-light correctly even on legacy
  * routes that haven't been migrated to W6AppShell yet. Avoids
- * `text-foreground/X` Tailwind classes which flip with html.dark and
+ * `text-[#09090b]/X` Tailwind classes which flip with html.dark and
  * produced unreadable text on the W6 prototype palette.
  */
 export function Footer() {

@@ -116,7 +116,7 @@ export default function ImportPage() {
           </div>
         ) : (
           <section className="w6-card" style={{ padding: 24 }}>
-            <label className="text-[11px] uppercase tracking-wide text-foreground/50">
+            <label className="text-[11px] uppercase tracking-wide text-[#52525b]">
               Tx signature
             </label>
             <input
@@ -127,7 +127,7 @@ export default function ImportPage() {
               spellCheck={false}
               autoCorrect="off"
               autoCapitalize="off"
-              className="mt-2 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-2.5 font-mono text-xs outline-none focus:border-accent"
+              className="mt-2 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2.5 font-mono text-xs outline-none focus:border-accent"
             />
             <button
               onClick={() => void handleImport()}
@@ -136,7 +136,7 @@ export default function ImportPage() {
             >
               {submitting ? "Importing…" : "Import receipt"}
             </button>
-            <p className="mt-3 text-[11px] text-foreground/40">
+            <p className="mt-3 text-[11px] text-[#71717a]">
               You must be either the sender or recipient. Stops strangers
               from polluting your trust graph with unrelated txs.
             </p>
@@ -149,13 +149,13 @@ export default function ImportPage() {
               {result.idempotent ? "Already in the index" : "Imported ✓"}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-              <span className="text-foreground/40">amount</span>
+              <span className="text-[#71717a]">amount</span>
               <span>
                 {(Number(result.amount_lamports ?? "0") / 1e6).toFixed(2)} USDC
               </span>
               {result.sender && (
                 <>
-                  <span className="text-foreground/40">sender</span>
+                  <span className="text-[#71717a]">sender</span>
                   <span className="font-mono">
                     {result.sender.slice(0, 6)}…{result.sender.slice(-4)}
                   </span>
@@ -163,7 +163,7 @@ export default function ImportPage() {
               )}
               {result.recipient && (
                 <>
-                  <span className="text-foreground/40">recipient</span>
+                  <span className="text-[#71717a]">recipient</span>
                   <span className="font-mono">
                     {result.recipient.slice(0, 6)}…{result.recipient.slice(-4)}
                   </span>
@@ -171,7 +171,7 @@ export default function ImportPage() {
               )}
               {result.memos && result.memos.length > 0 && (
                 <>
-                  <span className="text-foreground/40">memos</span>
+                  <span className="text-[#71717a]">memos</span>
                   <span>{result.memos.join(" · ")}</span>
                 </>
               )}
@@ -179,13 +179,13 @@ export default function ImportPage() {
             <div className="mt-4 flex flex-wrap gap-2">
               <Link
                 href={`/receipts/${result.request_id}`}
-                className="inline-flex h-9 items-center rounded-full border border-foreground/20 px-4 text-xs hover:bg-foreground/5"
+                className="inline-flex h-9 items-center rounded-full border border-[#a1a1aa] px-4 text-xs hover:bg-[#f4f4f5]"
               >
                 Open receipt →
               </Link>
               <Link
                 href={`/verify/${result.receipt_hash}`}
-                className="inline-flex h-9 items-center rounded-full border border-foreground/20 px-4 text-xs hover:bg-foreground/5"
+                className="inline-flex h-9 items-center rounded-full border border-[#a1a1aa] px-4 text-xs hover:bg-[#f4f4f5]"
               >
                 Public proof →
               </Link>

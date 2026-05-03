@@ -193,11 +193,11 @@ export function PauseOnBlur({
   }, [paused, autoPauseEnabled, ratePerSlot, scopeLabel, hiddenAt]);
 
   return (
-    <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3">
+    <div className="mt-4 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-3">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-[11px] text-foreground/55">
+        <div className="text-[11px] text-[#52525b]">
           Pause-on-blur
-          <span className="ml-2 text-foreground/35">
+          <span className="ml-2 text-[#09090b]/35">
             {autoPauseEnabled
               ? "auto-pause on tab blur"
               : "prompt to pause on tab return"}
@@ -209,7 +209,7 @@ export function PauseOnBlur({
           className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${
             autoPauseEnabled
               ? "bg-amber-500/90 text-background hover:bg-amber-400"
-              : "border border-foreground/15 text-foreground/60 hover:bg-foreground/5"
+              : "border border-[#e4e4e7] text-[#52525b] hover:bg-[#f4f4f5]"
           }`}
           title={
             autoPauseEnabled
@@ -249,7 +249,7 @@ export function PauseOnBlur({
             <button
               type="button"
               onClick={() => setReturnBanner(null)}
-              className="rounded-full border border-foreground/15 px-3 py-1.5 text-[11px] hover:bg-foreground/5"
+              className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[11px] hover:bg-[#f4f4f5]"
             >
               Dismiss
             </button>

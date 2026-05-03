@@ -97,7 +97,7 @@ export default function DocsPage() {
 
         {/* Install */}
         <Section id="install" title="Install">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             Three SDKs ship the same canonical hashing + ix-data byte
             output. Pick the one that fits your stack — or use them
             interleaved (verify in Python, compose in Rust, build the UI
@@ -119,7 +119,7 @@ settle-sdk = "0.1"`}</Code>
 
         {/* Kernel commit */}
         <Section id="kernel" title="Kernel commit (F2.0)">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             Every Settle receipt commits to four BLAKE3-256 hashes —
             structured, sorted-keys-canonical-JSON over the receipt /
             reason / policy snapshot, plus a binding purpose hash. Any
@@ -140,19 +140,19 @@ const out = kernelCommit({
 // out.hashes.receipt_hash, .reason_hash, .policy_snapshot_hash, .purpose_hash
 // out.context_hash — indexable identity, BLAKE3 over { kind, sender, recipient, amount, request_id }`}</Code>
 
-          <p className="mt-4 text-sm text-foreground/70">
+          <p className="mt-4 text-sm text-[#27272a]">
             Seven receipt kinds, each with its own canonical schema:
           </p>
-          <div className="mt-3 overflow-hidden rounded-xl border border-foreground/10">
+          <div className="mt-3 overflow-hidden rounded-xl border border-[#e4e4e7]">
             <table className="w-full text-xs">
-              <thead className="bg-foreground/[0.04]">
-                <tr className="text-left text-foreground/60">
+              <thead className="bg-[#fafafa]">
+                <tr className="text-left text-[#52525b]">
                   <th className="px-3 py-2">Kind</th>
                   <th className="px-3 py-2">Use</th>
                   <th className="px-3 py-2">Card-bound</th>
                 </tr>
               </thead>
-              <tbody className="text-foreground/70">
+              <tbody className="text-[#27272a]">
                 <KindRow kind="x402_spend" use="Agent task spend via x402-style HTTP" cardBound />
                 <KindRow kind="direct_send" use="User-signed wallet → wallet transfer" cardBound={false} />
                 <KindRow kind="link_send" use="Pre-funded payment link claim" cardBound={false} />
@@ -167,7 +167,7 @@ const out = kernelCommit({
 
         {/* Capability hash */}
         <Section id="capability" title="Capability hash">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             32-byte BLAKE3 over <code>(domain, method, path, amount_lamports,
             version)</code>. Pin this in a card&apos;s allowlist to lock the
             agent to one specific tool spec at one specific price.
@@ -186,23 +186,23 @@ cap = compute_capability_hash_hex({
 
         {/* Anchor ix data */}
         <Section id="anchor" title="Anchor instruction data builders">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             All 13 program instructions have byte-parity builders in TS,
             Rust, and Python. Builders return raw <code>bytes</code> that
             you wrap in your preferred Solana client&apos;s
             <code>Instruction</code> type (solana-sdk, anchor-client,
             solders, etc).
           </p>
-          <div className="mt-3 overflow-hidden rounded-xl border border-foreground/10">
+          <div className="mt-3 overflow-hidden rounded-xl border border-[#e4e4e7]">
             <table className="w-full text-xs">
-              <thead className="bg-foreground/[0.04]">
-                <tr className="text-left text-foreground/60">
+              <thead className="bg-[#fafafa]">
+                <tr className="text-left text-[#52525b]">
                   <th className="px-3 py-2">Instruction</th>
                   <th className="px-3 py-2">Signer</th>
                   <th className="px-3 py-2">Body bytes</th>
                 </tr>
               </thead>
-              <tbody className="font-mono text-[11px] text-foreground/70">
+              <tbody className="font-mono text-[11px] text-[#27272a]">
                 <IxRow name="create_card" signer="authority" body="agent + label_hash + caps + allowlist + expiry + version" />
                 <IxRow name="spend" signer="authority" body="amount + 4 hashes" />
                 <IxRow name="spend_via_pact" signer="agent" body="amount + 4 hashes (same shape as spend)" />
@@ -233,7 +233,7 @@ let data: Vec<u8> = spend_via_pact(&SpendArgs {
 
         {/* Webhooks */}
         <Section id="webhooks" title="Webhooks (Stripe-shaped envelope)">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             Settle posts a JSON envelope to your registered webhook URL
             when a receipt is recorded for your merchant pubkey. HMAC-SHA256
             signed with your secret. Verify before trusting the body.
@@ -260,7 +260,7 @@ let data: Vec<u8> = spend_via_pact(&SpendArgs {
     "created_at": "..."
   }
 }`}</Code>
-          <p className="mt-3 text-sm text-foreground/70">
+          <p className="mt-3 text-sm text-[#27272a]">
             Event types:
             {" "}<code>receipt.allowed</code>,{" "}
             <code>receipt.denied</code>,{" "}
@@ -279,7 +279,7 @@ if (!verifyWebhookSignature(req.rawBody, sig, mySharedSecret)) {
 
         {/* Phase 5 */}
         <Section id="phase5" title="Phase 5 automation">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             Phase 5 is the cron-fired automation loop. Six intent kinds
             share one on-chain ix (<code>spend_via_pact</code>) under a
             user-delegated card. The relayer signs; the user&apos;s wallet
@@ -328,7 +328,7 @@ if (!verifyWebhookSignature(req.rawBody, sig, mySharedSecret)) {
 
         {/* Embed */}
         <Section id="embed" title="Embed: Settle Pay button">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             Drop one <code>&lt;script&gt;</code> + one
             <code>&lt;settle-pay&gt;</code> tag into any HTML page. No
             framework. Custom element handles wallet popup + receipt
@@ -345,7 +345,7 @@ if (!verifyWebhookSignature(req.rawBody, sig, mySharedSecret)) {
 document.querySelector("settle-pay")
   .addEventListener("settle:success", (e) => console.log(e.detail));
 </script>`}</Code>
-          <p className="mt-3 text-sm text-foreground/70">
+          <p className="mt-3 text-sm text-[#27272a]">
             Companion <code>&lt;settle-verify request-id=&quot;&quot;&gt;</code>
             re-derives the 4-hash kernel commit client-side and shows ✓ if
             it matches the on-chain anchor. See{" "}
@@ -358,7 +358,7 @@ document.querySelector("settle-pay")
 
         {/* GraphQL */}
         <Section id="graphql" title="GraphQL read API">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             Read-only GraphQL at <code>POST /api/graphql</code> for
             shape-flexible queries over receipts, cards, handles, and
             refund requests. Writes stay REST-only (idempotency-keyed).
@@ -382,7 +382,7 @@ const data = await client<{ receipt: Receipt | null }>(query, { id });`}</Code>
 
         {/* Federation */}
         <Section id="federation" title="Federation contract">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             Foreign protocols (x402-style, Solana Pay bridges, etc) can
             mirror their receipts into Settle&apos;s ledger by signing a
             payload-hash attestation with their registered Ed25519 key.
@@ -396,7 +396,7 @@ const data = await client<{ receipt: Receipt | null }>(query, { id });`}</Code>
   "payload": { "from": "...", "to": "...", "amount_lamports": "20000" },
   "attestation_sig_b58": "<ed25519 sig over payload_hash || origin_id || remote_request_id>"
 }`}</Code>
-          <p className="mt-3 text-sm text-foreground/70">
+          <p className="mt-3 text-sm text-[#27272a]">
             Native Settle receipts (4-hash kernel commit) and federated
             receipts (foreign-attested) NEVER live in the same table —
             the kernel commit guarantees only apply to the native ones.
@@ -406,22 +406,22 @@ const data = await client<{ receipt: Receipt | null }>(query, { id });`}</Code>
 
         {/* Cross-language parity */}
         <Section id="parity" title="Cross-language parity guarantees">
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-[#27272a]">
             Every wire-format byte is asserted against TS-emitted goldens
             in two more languages. Drift between SDKs is impossible to
             ship — the test breaks first.
           </p>
-          <div className="mt-3 overflow-hidden rounded-xl border border-foreground/10">
+          <div className="mt-3 overflow-hidden rounded-xl border border-[#e4e4e7]">
             <table className="w-full text-xs">
-              <thead className="bg-foreground/[0.04]">
-                <tr className="text-left text-foreground/60">
+              <thead className="bg-[#fafafa]">
+                <tr className="text-left text-[#52525b]">
                   <th className="px-3 py-2">Layer</th>
                   <th className="px-3 py-2">TS</th>
                   <th className="px-3 py-2">Python</th>
                   <th className="px-3 py-2">Rust</th>
                 </tr>
               </thead>
-              <tbody className="text-foreground/70">
+              <tbody className="text-[#27272a]">
                 <ParityRow layer="Canonical JSON + capability hash" />
                 <ParityRow layer="Kernel commit (7 receipt kinds)" />
                 <ParityRow layer="Anchor ix data (13 instructions)" />
@@ -431,8 +431,8 @@ const data = await client<{ receipt: Receipt | null }>(query, { id });`}</Code>
         </Section>
 
         {/* Source */}
-        <section className="mt-16 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-          <p className="text-sm text-foreground/70">
+        <section className="mt-16 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+          <p className="text-sm text-[#27272a]">
             Open source, MIT. Issues + PRs welcome.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -440,19 +440,19 @@ const data = await client<{ receipt: Receipt | null }>(query, { id });`}</Code>
               href="https://github.com/settle-protocol/settle"
               target="_blank"
               rel="noreferrer"
-              className="rounded-full border border-foreground/15 px-3 py-1.5 text-[11px] text-foreground/60 hover:bg-foreground/5"
+              className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[11px] text-[#52525b] hover:bg-[#f4f4f5]"
             >
               GitHub ↗
             </a>
             <Link
               href="/docs/mcp"
-              className="rounded-full border border-foreground/15 px-3 py-1.5 text-[11px] text-foreground/60 hover:bg-foreground/5"
+              className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[11px] text-[#52525b] hover:bg-[#f4f4f5]"
             >
               MCP middleware
             </Link>
             <Link
               href="/stats"
-              className="rounded-full border border-foreground/15 px-3 py-1.5 text-[11px] text-foreground/60 hover:bg-foreground/5"
+              className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[11px] text-[#52525b] hover:bg-[#f4f4f5]"
             >
               Network stats
             </Link>
@@ -559,12 +559,12 @@ function Callout({
   const cls = {
     emerald: "border-emerald-400/30 bg-emerald-400/[0.04]",
     amber: "border-amber-400/30 bg-amber-400/[0.04]",
-    neutral: "border-foreground/10 bg-white/[0.02]",
+    neutral: "border-[#e4e4e7] bg-[#fafafa]",
   }[tone];
   return (
     <div className={`mt-4 rounded-xl border ${cls} p-4 text-xs`}>
-      <p className="font-medium text-foreground/85">{title}</p>
-      <p className="mt-1 text-foreground/70">{children}</p>
+      <p className="font-medium text-[#27272a]">{title}</p>
+      <p className="mt-1 text-[#27272a]">{children}</p>
     </div>
   );
 }
@@ -579,10 +579,10 @@ function KindRow({
   cardBound: boolean;
 }) {
   return (
-    <tr className="border-t border-foreground/10">
+    <tr className="border-t border-[#e4e4e7]">
       <td className="px-3 py-2 font-mono">{kind}</td>
       <td className="px-3 py-2">{use}</td>
-      <td className="px-3 py-2 text-foreground/50">
+      <td className="px-3 py-2 text-[#52525b]">
         {cardBound ? "✓" : "—"}
       </td>
     </tr>
@@ -599,10 +599,10 @@ function IxRow({
   body: string;
 }) {
   return (
-    <tr className="border-t border-foreground/10">
+    <tr className="border-t border-[#e4e4e7]">
       <td className="px-3 py-2">{name}</td>
-      <td className="px-3 py-2 text-foreground/50">{signer}</td>
-      <td className="px-3 py-2 text-foreground/60">{body}</td>
+      <td className="px-3 py-2 text-[#52525b]">{signer}</td>
+      <td className="px-3 py-2 text-[#52525b]">{body}</td>
     </tr>
   );
 }
@@ -617,17 +617,17 @@ function PhaseFeature({
   ui: string;
 }) {
   return (
-    <div className="rounded-xl border border-foreground/10 bg-white/[0.02] p-3">
-      <p className="font-mono text-[11px] text-foreground/85">{name}</p>
-      <p className="mt-1 text-[10px] text-foreground/50">trigger: {hook}</p>
-      <p className="text-[10px] text-foreground/50">ui: {ui}</p>
+    <div className="rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-3">
+      <p className="font-mono text-[11px] text-[#27272a]">{name}</p>
+      <p className="mt-1 text-[10px] text-[#52525b]">trigger: {hook}</p>
+      <p className="text-[10px] text-[#52525b]">ui: {ui}</p>
     </div>
   );
 }
 
 function ParityRow({ layer }: { layer: string }) {
   return (
-    <tr className="border-t border-foreground/10">
+    <tr className="border-t border-[#e4e4e7]">
       <td className="px-3 py-2">{layer}</td>
       <td className="px-3 py-2 text-emerald-400">✓</td>
       <td className="px-3 py-2 text-emerald-400">✓</td>

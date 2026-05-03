@@ -59,7 +59,7 @@ export default function PayComponentDocs() {
         >
           &lt;settle-pay&gt;
         </h1>
-        <p className="mt-2 text-sm text-foreground/60 max-w-xl">
+        <p className="mt-2 text-sm text-[#52525b] max-w-xl">
           Embeddable pay button for any merchant. Two HTML tags and your
           page accepts USDC on Solana with a 4-hash on-chain receipt.
           Buyer signs in Phantom in a popup; your page receives the signed
@@ -68,7 +68,7 @@ export default function PayComponentDocs() {
 
         <section className="mt-10">
           <h2 className="text-xl font-medium tracking-tight">Install</h2>
-          <pre className="mt-4 overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
+          <pre className="mt-4 overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-[#27272a]">
             <code>{`<script src="https://settle.so/pay.js"></script>
 
 <settle-pay
@@ -88,7 +88,7 @@ export default function PayComponentDocs() {
 
         <section className="mt-10">
           <h2 className="text-xl font-medium tracking-tight">Live demo</h2>
-          <p className="mt-3 text-sm text-foreground/65">
+          <p className="mt-3 text-sm text-[#09090b]/65">
             Click below to pay $0.10 USDC to the demo merchant on devnet.
             Phantom will open a popup; Settle handles the rest. The
             signature comes back to this page via postMessage.
@@ -113,17 +113,17 @@ export default function PayComponentDocs() {
               <p className="font-medium text-emerald-300">
                 ✓ Got payment-success event
               </p>
-              <div className="mt-3 grid gap-1 text-xs font-mono text-foreground/75">
+              <div className="mt-3 grid gap-1 text-xs font-mono text-[#09090b]/75">
                 <div>
-                  <span className="text-foreground/45">signature:</span>{" "}
+                  <span className="text-[#71717a]">signature:</span>{" "}
                   <span className="break-all">{lastResult.signature}</span>
                 </div>
                 <div>
-                  <span className="text-foreground/45">request_id:</span>{" "}
+                  <span className="text-[#71717a]">request_id:</span>{" "}
                   {lastResult.request_id || "(unknown)"}
                 </div>
                 <div>
-                  <span className="text-foreground/45">amount:</span>{" "}
+                  <span className="text-[#71717a]">amount:</span>{" "}
                   {lastResult.amount_usdc} USDC
                 </div>
               </div>
@@ -132,14 +132,14 @@ export default function PayComponentDocs() {
                   href={`https://solscan.io/tx/${lastResult.signature}?cluster=devnet`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex h-9 items-center rounded-full border border-foreground/20 px-4 text-xs hover:bg-foreground/5"
+                  className="inline-flex h-9 items-center rounded-full border border-[#a1a1aa] px-4 text-xs hover:bg-[#f4f4f5]"
                 >
                   Solscan ↗
                 </a>
                 {lastResult.request_id && (
                   <Link
                     href={`/receipts/${lastResult.request_id}`}
-                    className="inline-flex h-9 items-center rounded-full border border-foreground/20 px-4 text-xs hover:bg-foreground/5"
+                    className="inline-flex h-9 items-center rounded-full border border-[#a1a1aa] px-4 text-xs hover:bg-[#f4f4f5]"
                   >
                     Receipt →
                   </Link>
@@ -159,7 +159,7 @@ export default function PayComponentDocs() {
           <h2 className="text-xl font-medium tracking-tight">Attributes</h2>
           <table className="mt-4 w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-foreground/10 text-left text-xs uppercase tracking-wide text-foreground/50">
+              <tr className="border-b border-[#e4e4e7] text-left text-xs uppercase tracking-wide text-[#52525b]">
                 <th className="py-2">attr</th>
                 <th>required</th>
                 <th>description</th>
@@ -181,21 +181,21 @@ export default function PayComponentDocs() {
 
         <section className="mt-10">
           <h2 className="text-xl font-medium tracking-tight">Events</h2>
-          <ul className="mt-4 space-y-3 text-sm text-foreground/75">
+          <ul className="mt-4 space-y-3 text-sm text-[#09090b]/75">
             <li>
-              <code className="font-mono text-foreground/85">settle:success</code>{" "}
+              <code className="font-mono text-[#27272a]">settle:success</code>{" "}
               — detail: <code>{`{ signature, request_id, amount_usdc, recipient }`}</code>
             </li>
             <li>
-              <code className="font-mono text-foreground/85">settle:error</code>{" "}
+              <code className="font-mono text-[#27272a]">settle:error</code>{" "}
               — detail: <code>{`{ message }`}</code>
             </li>
             <li>
-              <code className="font-mono text-foreground/85">settle:cancel</code>{" "}
+              <code className="font-mono text-[#27272a]">settle:cancel</code>{" "}
               — fired when the popup closes without a payment.
             </li>
           </ul>
-          <p className="mt-3 text-xs text-foreground/55">
+          <p className="mt-3 text-xs text-[#52525b]">
             Listen on the element directly (recommended) or on{" "}
             <code>document</code> (events bubble through the shadow root).
           </p>
@@ -203,7 +203,7 @@ export default function PayComponentDocs() {
 
         <section className="mt-10">
           <h2 className="text-xl font-medium tracking-tight">Why a popup, not a redirect</h2>
-          <p className="mt-3 text-sm text-foreground/65">
+          <p className="mt-3 text-sm text-[#09090b]/65">
             Phantom&apos;s wallet adapter requires a real browser window
             with a same-origin React tree. A redirect-based flow would
             mean the host page loses its state every time someone
@@ -215,13 +215,13 @@ export default function PayComponentDocs() {
         <div className="mt-12 flex gap-3">
           <Link
             href="/docs"
-            className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+            className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
           >
             ← Docs
           </Link>
           <Link
             href="/docs/verify-component"
-            className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+            className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
           >
             &lt;settle-verify&gt; →
           </Link>
@@ -233,10 +233,10 @@ export default function PayComponentDocs() {
 
 function Row({ name, req, desc }: { name: string; req: boolean; desc: string }) {
   return (
-    <tr className="border-b border-foreground/5">
-      <td className="py-2 font-mono text-foreground/85">{name}</td>
+    <tr className="border-b border-[#f4f4f5]">
+      <td className="py-2 font-mono text-[#27272a]">{name}</td>
       <td>{req ? "yes" : "—"}</td>
-      <td className="text-foreground/60">{desc}</td>
+      <td className="text-[#52525b]">{desc}</td>
     </tr>
   );
 }

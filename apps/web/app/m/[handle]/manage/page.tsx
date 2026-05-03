@@ -118,9 +118,9 @@ export default function MerchantManagePage() {
         </header>
 
         {loading ? (
-          <p className="text-sm text-foreground/60">Loading…</p>
+          <p className="text-sm text-[#52525b]">Loading…</p>
         ) : !profile ? (
-          <p className="text-sm text-foreground/60">
+          <p className="text-sm text-[#52525b]">
             Handle not found. Try{" "}
             <Link href="/" className="text-accent">
               home
@@ -128,7 +128,7 @@ export default function MerchantManagePage() {
             .
           </p>
         ) : !connected ? (
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5 text-sm text-foreground/60">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5 text-sm text-[#52525b]">
             Connect the wallet that owns @{params.handle} to manage. Public
             profile is at{" "}
             <Link href={`/m/${params.handle}`} className="text-accent">
@@ -240,9 +240,9 @@ export default function MerchantManagePage() {
             </section>
 
             {/* Reference */}
-            <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">Public profile</h2>
-              <p className="mt-2 text-xs text-foreground/60">
+              <p className="mt-2 text-xs text-[#52525b]">
                 Customers see{" "}
                 <Link
                   href={`/m/${params.handle}`}
@@ -271,14 +271,14 @@ function Stat({
   tone?: "neutral" | "emerald" | "amber" | "red";
 }) {
   const cls = {
-    neutral: "border-foreground/10 text-foreground/70",
+    neutral: "border-[#e4e4e7] text-[#27272a]",
     emerald: "border-emerald-400/30 text-emerald-200",
     amber: "border-amber-400/30 text-amber-200",
     red: "border-red-400/30 text-red-200",
   }[tone];
   return (
-    <div className={`rounded-2xl border bg-white/[0.02] p-4 ${cls}`}>
-      <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+    <div className={`rounded-2xl border bg-[#fafafa] p-4 ${cls}`}>
+      <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
         {label}
       </p>
       <p className="mt-1 text-base">{value}</p>
@@ -300,14 +300,14 @@ function ManageCard({
   badgeTone: "neutral" | "emerald" | "amber";
 }) {
   const badgeCls = {
-    neutral: "border-foreground/15 text-foreground/60",
+    neutral: "border-[#e4e4e7] text-[#52525b]",
     emerald: "border-emerald-400/40 bg-emerald-400/10 text-emerald-300",
     amber: "border-amber-400/40 bg-amber-400/10 text-amber-300",
   }[badgeTone];
   return (
     <Link
       href={href}
-      className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5 hover:border-foreground/20"
+      className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5 hover:border-[#a1a1aa]"
     >
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="text-sm font-medium">{title}</h3>
@@ -319,7 +319,7 @@ function ManageCard({
           </span>
         )}
       </div>
-      <p className="mt-2 text-xs text-foreground/60">{description}</p>
+      <p className="mt-2 text-xs text-[#52525b]">{description}</p>
     </Link>
   );
 }

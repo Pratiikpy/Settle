@@ -550,7 +550,7 @@ export default function WishesPage() {
         </header>
 
         {!connected ? (
-          <p className="text-sm text-foreground/60">Connect your wallet to begin.</p>
+          <p className="text-sm text-[#52525b]">Connect your wallet to begin.</p>
         ) : (
           <>
             {/* Delegation status banner — wishes need a delegated card or
@@ -571,7 +571,7 @@ export default function WishesPage() {
               </div>
             )}
             {relayerConfigured === false && (
-              <div className="mb-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-4 text-xs text-foreground/60">
+              <div className="mb-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-4 text-xs text-[#52525b]">
                 Relayer not configured on this deployment — wishes are stored
                 but won't fire automatically.
               </div>
@@ -584,7 +584,7 @@ export default function WishesPage() {
                 <select
                   value={selectedCard}
                   onChange={(e) => setSelectedCard(e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                 >
                   {delegatedCards.map((c) => (
                     <option key={c.card_pubkey} value={c.card_pubkey}>
@@ -594,7 +594,7 @@ export default function WishesPage() {
                     </option>
                   ))}
                 </select>
-                <p className="mt-2 text-[11px] text-foreground/50">
+                <p className="mt-2 text-[11px] text-[#52525b]">
                   Wishes you create are bound to this card. The relayer can
                   spend within its daily cap and allowlist.
                 </p>
@@ -636,28 +636,28 @@ export default function WishesPage() {
 
             {tab === "schedule" && (
               <section>
-                <p className="mb-3 text-xs text-foreground/50">
+                <p className="mb-3 text-xs text-[#52525b]">
                   Recurring auto-send. Total queued each month:{" "}
-                  <strong className="text-foreground">{totalAutomatedMonthly}</strong>
+                  <strong className="text-[#09090b]">{totalAutomatedMonthly}</strong>
                 </p>
-                <div className="grid gap-3 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+                <div className="grid gap-3 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
                   <input
                     placeholder="Recipient pubkey"
                     value={schedDest}
                     onChange={(e) => setSchedDest(e.target.value)}
-                    className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       placeholder="USDC"
                       value={schedAmount}
                       onChange={(e) => setSchedAmount(e.target.value)}
-                      className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                      className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                     />
                     <select
                       value={schedCadence}
                       onChange={(e) => setSchedCadence(e.target.value as Cadence)}
-                      className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                      className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                     >
                       <option value="DAILY">Daily</option>
                       <option value="WEEKLY">Weekly</option>
@@ -672,20 +672,20 @@ export default function WishesPage() {
                       value={schedDay}
                       onChange={(e) => setSchedDay(parseInt(e.target.value || "1", 10))}
                       placeholder={schedCadence === "WEEKLY" ? "Day (0=Sun..6=Sat)" : "Day (1-28)"}
-                      className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                      className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                     />
                   )}
                   <input
                     type="time"
                     value={schedTime}
                     onChange={(e) => setSchedTime(e.target.value)}
-                    className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                   <input
                     placeholder="Note (optional)"
                     value={schedNote}
                     onChange={(e) => setSchedNote(e.target.value)}
-                    className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                   <button
                     onClick={createSchedule}
@@ -699,30 +699,30 @@ export default function WishesPage() {
                   {schedules.map((s) => (
                     <li
                       key={s.schedule_id}
-                      className="rounded-xl border border-foreground/10 bg-white/[0.02] p-4 text-xs"
+                      className="rounded-xl border border-[#e4e4e7] bg-white/[0.02] p-4 text-xs"
                     >
                       <div className="flex items-baseline justify-between">
                         <div>
                           <div>
                             <strong>{formatUsdc(s.amount_lamports)}</strong> →{" "}
-                            <code className="text-foreground/60">
+                            <code className="text-[#52525b]">
                               {s.dest_pubkey.slice(0, 6)}…{s.dest_pubkey.slice(-4)}
                             </code>
                           </div>
-                          <div className="text-foreground/50">
+                          <div className="text-[#52525b]">
                             {s.cadence}
                             {s.day_of_period !== null ? ` · day ${s.day_of_period}` : ""} ·{" "}
                             {s.time_of_day} UTC{s.note ? ` · ${s.note}` : ""}
                           </div>
                           {s.next_fire_at && (
-                            <div className="mt-1 text-foreground/40">
+                            <div className="mt-1 text-[#71717a]">
                               next: {new Date(s.next_fire_at).toLocaleString()}
                             </div>
                           )}
                         </div>
                         <button
                           onClick={() => deleteSchedule(s.schedule_id)}
-                          className="text-foreground/40 hover:text-foreground"
+                          className="text-[#71717a] hover:text-[#09090b]"
                         >
                           delete
                         </button>
@@ -742,7 +742,7 @@ export default function WishesPage() {
                             </div>
                             <button
                               onClick={() => renewPactForSchedule(s)}
-                              className="rounded-full border border-foreground/20 px-3 py-1 text-[11px] text-foreground/60 hover:bg-foreground/5"
+                              className="rounded-full border border-[#a1a1aa] px-3 py-1 text-[11px] text-[#52525b] hover:bg-[#f4f4f5]"
                               title="Close current Pact + open a fresh one with new cap. Atomic."
                             >
                               ↻ Renew
@@ -757,14 +757,14 @@ export default function WishesPage() {
                           </button>
                         )
                       ) : (
-                        <p className="mt-3 text-[11px] text-foreground/40">
+                        <p className="mt-3 text-[11px] text-[#71717a]">
                           no card · pick a delegated card above before firing
                         </p>
                       )}
                     </li>
                   ))}
                   {schedules.length === 0 && (
-                    <p className="text-xs text-foreground/40">No scheduled sends yet.</p>
+                    <p className="text-xs text-[#71717a]">No scheduled sends yet.</p>
                   )}
                 </ul>
               </section>
@@ -935,7 +935,7 @@ export default function WishesPage() {
             {tab === "roundup" && (
               <section>
                 {roundRule ? (
-                  <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5 text-xs">
+                  <div className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5 text-xs">
                     <p>
                       Round every send up to the nearest{" "}
                       <strong>{formatUsdc(roundRule.round_to_lamports)}</strong>; difference
@@ -947,14 +947,14 @@ export default function WishesPage() {
                     </p>
                     <button
                       onClick={disableRoundUp}
-                      className="mt-3 rounded-full border border-foreground/20 px-4 py-2 text-foreground/70"
+                      className="mt-3 rounded-full border border-[#a1a1aa] px-4 py-2 text-[#27272a]"
                     >
                       Disable
                     </button>
                   </div>
                 ) : (
-                  <div className="grid gap-3 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-                    <p className="text-xs text-foreground/50">
+                  <div className="grid gap-3 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
+                    <p className="text-xs text-[#52525b]">
                       Pick a granularity. Round-ups fire AFTER the original transfer
                       lands; you'll see them as their own receipts.
                     </p>
@@ -966,7 +966,7 @@ export default function WishesPage() {
                           className={`rounded-full px-3 py-1 text-xs ${
                             roundChoice === p.value
                               ? "bg-accent text-background"
-                              : "border border-foreground/10"
+                              : "border border-[#e4e4e7]"
                           }`}
                         >
                           {p.label}
@@ -977,7 +977,7 @@ export default function WishesPage() {
                       placeholder="Destination pubkey (e.g. your savings card)"
                       value={roundDest}
                       onChange={(e) => setRoundDest(e.target.value)}
-                      className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                      className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                     />
                     <button
                       onClick={saveRoundUp}
@@ -992,32 +992,32 @@ export default function WishesPage() {
 
             {tab === "gift" && (
               <section>
-                <div className="grid gap-3 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+                <div className="grid gap-3 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
                   <input
                     placeholder="Recipient @handle"
                     value={giftHandle}
                     onChange={(e) =>
                       setGiftHandle(e.target.value.replace(/^@/, "").toLowerCase())
                     }
-                    className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                   <input
                     placeholder="USDC"
                     value={giftAmount}
                     onChange={(e) => setGiftAmount(e.target.value)}
-                    className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                   <input
                     placeholder="Escrow card pubkey"
                     value={giftEscrow}
                     onChange={(e) => setGiftEscrow(e.target.value)}
-                    className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                   <input
                     placeholder="Note (optional)"
                     value={giftNote}
                     onChange={(e) => setGiftNote(e.target.value)}
-                    className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                   <button
                     onClick={createGift}
@@ -1030,22 +1030,22 @@ export default function WishesPage() {
                   {gifts.map((g) => (
                     <li
                       key={g.gift_id}
-                      className="rounded-xl border border-foreground/10 bg-white/[0.02] p-4 text-xs"
+                      className="rounded-xl border border-[#e4e4e7] bg-white/[0.02] p-4 text-xs"
                     >
                       <div className="flex items-baseline justify-between">
                         <strong>
                           {formatUsdc(g.amount_lamports)} → @{g.recipient_handle}
                         </strong>
                         <span
-                          className={`text-foreground/60 ${
+                          className={`text-[#52525b] ${
                             g.status === "claimed" ? "text-emerald-400" : ""
                           }`}
                         >
                           {g.status}
                         </span>
                       </div>
-                      {g.note && <div className="mt-1 text-foreground/50">{g.note}</div>}
-                      <div className="mt-1 text-foreground/40">
+                      {g.note && <div className="mt-1 text-[#52525b]">{g.note}</div>}
+                      <div className="mt-1 text-[#71717a]">
                         expires {new Date(g.expires_at).toLocaleDateString()}
                       </div>
 
@@ -1067,14 +1067,14 @@ export default function WishesPage() {
                           ⚠ Spawn Pact to fulfill →
                         </button>
                       ) : g.status === "pending" ? (
-                        <p className="mt-3 text-[11px] text-foreground/40">
+                        <p className="mt-3 text-[11px] text-[#71717a]">
                           waiting for recipient to claim
                         </p>
                       ) : null}
                     </li>
                   ))}
                   {gifts.length === 0 && (
-                    <p className="text-xs text-foreground/40">No gifts sent yet.</p>
+                    <p className="text-xs text-[#71717a]">No gifts sent yet.</p>
                   )}
                 </ul>
               </section>

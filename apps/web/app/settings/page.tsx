@@ -154,7 +154,7 @@ export default function SettingsPage() {
         </div>
 
         {!connected ? (
-          <div className="mt-12 rounded-2xl border border-foreground/10 bg-white/[0.02] p-10 text-center text-sm text-foreground/60">
+          <div className="mt-12 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-10 text-center text-sm text-[#52525b]">
             Connect Phantom (top right) to manage your settings.
           </div>
         ) : (
@@ -172,7 +172,7 @@ export default function SettingsPage() {
                 <a
                   key={s.id}
                   href={`#${s.id}`}
-                  className="rounded-full border border-foreground/15 bg-white/[0.02] px-3 py-1 text-foreground/70 hover:border-foreground/40 hover:text-foreground"
+                  className="rounded-full border border-[#e4e4e7] bg-white/[0.02] px-3 py-1 text-[#27272a] hover:border-[#71717a] hover:text-[#09090b]"
                 >
                   {s.label}
                 </a>
@@ -182,33 +182,33 @@ export default function SettingsPage() {
             {/* Profile */}
             <section
               id="profile"
-              className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+              className="mt-8 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6"
             >
               <h2 className="text-lg font-medium">@handle</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 Your public name. People can send you money via @handle. Lowercase only.
               </p>
               <div className="mt-4 grid gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground/50">@</span>
+                  <span className="text-[#52525b]">@</span>
                   <input
                     value={handleInput}
                     onChange={(e) => setHandleInput(e.target.value)}
                     placeholder="pratiik"
-                    className="flex-1 rounded-lg border border-foreground/15 bg-transparent px-4 py-2 text-base outline-none focus:border-accent"
+                    className="flex-1 rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 text-base outline-none focus:border-accent"
                   />
                 </div>
                 <input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Display name (optional)"
-                  className="rounded-lg border border-foreground/15 bg-transparent px-4 py-2 text-sm outline-none focus:border-accent"
+                  className="rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 text-sm outline-none focus:border-accent"
                 />
                 <input
                   value={snsDomain}
                   onChange={(e) => setSnsDomain(e.target.value)}
                   placeholder="<name>.sol domain (optional)"
-                  className="rounded-lg border border-foreground/15 bg-transparent px-4 py-2 text-sm outline-none focus:border-accent"
+                  className="rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 text-sm outline-none focus:border-accent"
                 />
               </div>
               <button
@@ -219,7 +219,7 @@ export default function SettingsPage() {
                 {currentHandle ? "Update handle" : `Claim @${handleInput || "handle"}`}
               </button>
               {currentHandle && (
-                <p className="mt-3 text-xs text-foreground/40">
+                <p className="mt-3 text-xs text-[#71717a]">
                   Currently @{currentHandle.handle}
                 </p>
               )}
@@ -229,10 +229,10 @@ export default function SettingsPage() {
                 personal preference not a privacy or notification one. */}
             <section
               id="theme"
-              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+              className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6"
             >
               <h2 className="text-lg font-medium">Theme</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 Auto follows your OS setting. Manual overrides persist across
                 sessions on this browser.
               </p>
@@ -245,7 +245,7 @@ export default function SettingsPage() {
                     className={
                       theme === t
                         ? "rounded-full bg-accent px-4 py-1.5 text-xs font-medium text-background"
-                        : "rounded-full border border-foreground/20 px-4 py-1.5 text-xs text-foreground/70 hover:bg-foreground/5"
+                        : "rounded-full border border-[#a1a1aa] px-4 py-1.5 text-xs text-[#27272a] hover:bg-[#f4f4f5]"
                     }
                   >
                     {t}
@@ -257,14 +257,14 @@ export default function SettingsPage() {
             {/* Privacy */}
             <section
               id="privacy"
-              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+              className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6"
             >
               <h2 className="text-lg font-medium">Privacy</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 Per-card privacy toggles, allowlist edits, and revoke live on each card —
                 where the on-chain state lives. The card page is the source of truth.
               </p>
-              <p className="mt-3 text-xs text-foreground/50">
+              <p className="mt-3 text-xs text-[#52525b]">
                 Receipts default to private. Flip <code>public_feed</code> on a receipt
                 to make it visible on the public feed (proofs only — amounts + plaintext
                 purpose remain encrypted unless you explicitly publish them).
@@ -272,13 +272,13 @@ export default function SettingsPage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 <a
                   href="/cards"
-                  className="inline-flex h-10 items-center justify-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
                 >
                   Per-card privacy →
                 </a>
                 <a
                   href="/feed"
-                  className="inline-flex h-10 items-center justify-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
                 >
                   Public feed
                 </a>
@@ -288,10 +288,10 @@ export default function SettingsPage() {
             {/* Notifications */}
             <section
               id="notifications"
-              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+              className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6"
             >
               <h2 className="text-lg font-medium">Notifications</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 Get a browser notification when an agent task completes or someone sends you
                 money. End-to-end encrypted to your device — Settle&apos;s server can&apos;t
                 read the payload.
@@ -386,22 +386,22 @@ export default function SettingsPage() {
             {/* Sessions */}
             <section
               id="sessions"
-              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+              className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6"
             >
               <h2 className="text-lg font-medium">Sessions</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 The wallet you connect IS the session. Settle has no server-side
                 session store — every privileged action is signed by your wallet at
                 the moment you take it. Disconnect Phantom to "log out."
               </p>
-              <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
-                <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+              <div className="mt-4 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
+                <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
                   Active wallet
                 </p>
-                <code className="mt-2 block break-all text-xs text-foreground/70">
+                <code className="mt-2 block break-all text-xs text-[#27272a]">
                   {publicKey?.toBase58()}
                 </code>
-                <p className="mt-2 text-[11px] text-foreground/40">
+                <p className="mt-2 text-[11px] text-[#71717a]">
                   Push subscriptions, claimed handles, and saved settings are bound to
                   this pubkey. Switching wallets shows a fresh state — no migration.
                 </p>
@@ -411,10 +411,10 @@ export default function SettingsPage() {
             {/* Language (F8.11) */}
             <section
               id="language"
-              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+              className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6"
             >
               <h2 className="text-lg font-medium">Language</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 Bundles ship in-app — switching is instant, no reload needed.
                 Untranslated strings fall back to English so the UI never breaks.
               </p>
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                     className={`rounded-full border px-4 py-2 text-xs ${
                       locale === loc
                         ? "border-accent bg-accent/10 text-accent"
-                        : "border-foreground/10 text-foreground/60 hover:border-foreground/30"
+                        : "border-[#e4e4e7] text-[#52525b] hover:border-[#a1a1aa]"
                     }`}
                   >
                     {LOCALE_LABELS[loc]}
@@ -441,17 +441,17 @@ export default function SettingsPage() {
             {/* Developer */}
             <section
               id="developer"
-              className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6"
+              className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6"
             >
               <h2 className="text-lg font-medium">Developer</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 Stuff for integrating Settle into your own app or agent.
               </p>
 
               {/* Sealed-box recipient pubkey (B1.5) */}
-              <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
+              <div className="mt-4 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
                 <div className="flex items-baseline justify-between">
-                  <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+                  <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
                     Sealed-box recipient pubkey
                   </p>
                   <button
@@ -461,15 +461,15 @@ export default function SettingsPage() {
                         .writeText(publicKey.toBase58())
                         .then(() => toast.success("Copied"));
                     }}
-                    className="text-[11px] text-foreground/60 hover:text-foreground"
+                    className="text-[11px] text-[#52525b] hover:text-[#09090b]"
                   >
                     copy
                   </button>
                 </div>
-                <code className="mt-2 block break-all text-xs text-foreground/70">
+                <code className="mt-2 block break-all text-xs text-[#27272a]">
                   {publicKey?.toBase58()}
                 </code>
-                <p className="mt-2 text-[11px] text-foreground/40">
+                <p className="mt-2 text-[11px] text-[#71717a]">
                   Senders use this pubkey to encrypt voice notes + sealed metadata so
                   only you (the wallet holder) can decrypt. Derived deterministically
                   from your Ed25519 wallet pubkey via X25519 — no separate keypair.
@@ -479,21 +479,21 @@ export default function SettingsPage() {
               <div className="mt-4 grid gap-3 text-xs sm:grid-cols-2">
                 <a
                   href="/docs"
-                  className="rounded-xl border border-foreground/10 p-4 hover:border-foreground/30"
+                  className="rounded-xl border border-[#e4e4e7] p-4 hover:border-[#a1a1aa]"
                 >
                   <p className="font-medium">SDK + API docs</p>
-                  <p className="mt-1 text-foreground/50">
+                  <p className="mt-1 text-[#52525b]">
                     @settle/sdk, ix builders, verifyReceipt
                   </p>
                 </a>
                 <a
                   href="https://github.com/anthropics/settle-protocol"
-                  className="rounded-xl border border-foreground/10 p-4 hover:border-foreground/30"
+                  className="rounded-xl border border-[#e4e4e7] p-4 hover:border-[#a1a1aa]"
                   target="_blank"
                   rel="noreferrer"
                 >
                   <p className="font-medium">GitHub →</p>
-                  <p className="mt-1 text-foreground/50">
+                  <p className="mt-1 text-[#52525b]">
                     Source, IDL, Anchor program
                   </p>
                 </a>

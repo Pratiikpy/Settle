@@ -145,9 +145,9 @@ export default async function AdminHealthPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-sm font-semibold text-foreground/70">last 20 executions</h2>
+        <h2 className="text-sm font-semibold text-[#27272a]">last 20 executions</h2>
         <table className="mt-2 w-full text-xs">
-          <thead className="text-foreground/50">
+          <thead className="text-[#52525b]">
             <tr>
               <th className="text-left font-normal">age</th>
               <th className="text-left font-normal">intent</th>
@@ -159,13 +159,13 @@ export default async function AdminHealthPage() {
             {(recentExecs ?? []).map((r) => {
               const ok = r.status === "confirmed" || r.status === "sent";
               return (
-                <tr key={r.execution_id} className="border-t border-foreground/5">
-                  <td className="py-1 text-foreground/60">{fmtAge(ageSeconds(r.created_at))}</td>
+                <tr key={r.execution_id} className="border-t border-[#f4f4f5]">
+                  <td className="py-1 text-[#52525b]">{fmtAge(ageSeconds(r.created_at))}</td>
                   <td className="py-1">{r.intent_kind}</td>
                   <td className={`py-1 ${ok ? "text-emerald-300" : "text-amber-300"}`}>
                     {r.status}
                   </td>
-                  <td className="py-1 text-foreground/40">
+                  <td className="py-1 text-[#71717a]">
                     {r.signature ? `${r.signature.slice(0, 8)}…${r.signature.slice(-4)}` : "—"}
                   </td>
                 </tr>
@@ -173,7 +173,7 @@ export default async function AdminHealthPage() {
             })}
             {!recentExecs?.length && (
               <tr>
-                <td colSpan={4} className="py-4 text-center text-foreground/40">
+                <td colSpan={4} className="py-4 text-center text-[#71717a]">
                   no executions yet
                 </td>
               </tr>
@@ -189,7 +189,7 @@ export default async function AdminHealthPage() {
             {failures.map((f) => (
               <li key={f.execution_id} className="rounded border border-amber-400/20 bg-amber-400/[0.03] p-2">
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">
+                  <span className="text-[#52525b]">
                     {f.intent_kind} · {fmtAge(ageSeconds(f.created_at))} ago
                   </span>
                 </div>
@@ -200,7 +200,7 @@ export default async function AdminHealthPage() {
         </section>
       )}
 
-      <footer className="mt-12 border-t border-foreground/5 pt-4 text-[10px] text-foreground/40">
+      <footer className="mt-12 border-t border-[#f4f4f5] pt-4 text-[10px] text-[#71717a]">
         Server-rendered at {new Date().toISOString()}. Refresh for fresh data.
       </footer>
       </div>
@@ -210,15 +210,15 @@ export default async function AdminHealthPage() {
 
 function Stat({ label, value, ok }: { label: string; value: string; ok?: boolean }) {
   return (
-    <div className="rounded-lg border border-foreground/10 p-3">
-      <div className="text-[10px] uppercase tracking-wide text-foreground/40">{label}</div>
+    <div className="rounded-lg border border-[#e4e4e7] p-3">
+      <div className="text-[10px] uppercase tracking-wide text-[#71717a]">{label}</div>
       <div
         className={`mt-1 text-sm ${
           ok === false
             ? "text-amber-300"
             : ok === true
               ? "text-emerald-300"
-              : "text-foreground"
+              : "text-[#09090b]"
         }`}
       >
         {value}

@@ -99,7 +99,7 @@ export default function MerchantAnalyticsPage() {
         </h1>
 
         {loading && (
-          <p className="mt-6 text-sm text-foreground/50">Loading…</p>
+          <p className="mt-6 text-sm text-[#52525b]">Loading…</p>
         )}
 
         {data && !data.ok && (
@@ -131,7 +131,7 @@ export default function MerchantAnalyticsPage() {
             </section>
 
             {/* Sparkline */}
-            <section className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mt-8 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">
                 Daily volume · last {data.window_days} days
               </h2>
@@ -140,10 +140,10 @@ export default function MerchantAnalyticsPage() {
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               {/* Top counterparties */}
-              <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+              <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
                 <h2 className="text-sm font-medium">Top counterparties</h2>
                 {data.top_counterparties.length === 0 ? (
-                  <p className="mt-3 text-xs text-foreground/40">
+                  <p className="mt-3 text-xs text-[#71717a]">
                     No counterparties yet.
                   </p>
                 ) : (
@@ -151,12 +151,12 @@ export default function MerchantAnalyticsPage() {
                     {data.top_counterparties.map((c) => (
                       <li
                         key={c.card_pubkey}
-                        className="flex items-baseline justify-between gap-3 border-b border-foreground/5 pb-2 last:border-0"
+                        className="flex items-baseline justify-between gap-3 border-b border-[#f4f4f5] pb-2 last:border-0"
                       >
-                        <span className="font-mono truncate text-foreground/75">
+                        <span className="font-mono truncate text-[#09090b]/75">
                           {c.card_pubkey.slice(0, 6)}…{c.card_pubkey.slice(-4)}
                         </span>
-                        <span className="text-foreground/55">
+                        <span className="text-[#52525b]">
                           {c.count} · ${fmtUsdc(c.volume_lamports)}
                         </span>
                       </li>
@@ -166,10 +166,10 @@ export default function MerchantAnalyticsPage() {
               </section>
 
               {/* Top capabilities */}
-              <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+              <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
                 <h2 className="text-sm font-medium">Top capabilities</h2>
                 {data.top_capabilities.length === 0 ? (
-                  <p className="mt-3 text-xs text-foreground/40">
+                  <p className="mt-3 text-xs text-[#71717a]">
                     No capability hashes recorded yet.
                   </p>
                 ) : (
@@ -177,10 +177,10 @@ export default function MerchantAnalyticsPage() {
                     {data.top_capabilities.map((c) => (
                       <li
                         key={c.capability_hash}
-                        className="flex items-center justify-between gap-3 border-b border-foreground/5 pb-2 last:border-0"
+                        className="flex items-center justify-between gap-3 border-b border-[#f4f4f5] pb-2 last:border-0"
                       >
                         <CapabilityBadge hash={c.capability_hash} />
-                        <span className="text-foreground/55">{c.count}</span>
+                        <span className="text-[#52525b]">{c.count}</span>
                       </li>
                     ))}
                   </ul>
@@ -191,13 +191,13 @@ export default function MerchantAnalyticsPage() {
             <div className="mt-10 flex gap-3">
               <Link
                 href={`/at/${params.handle}`}
-                className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
               >
                 ← Profile
               </Link>
               <Link
                 href={`/api/merchants/${params.handle}/analytics`}
-                className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
               >
                 Raw JSON ↗
               </Link>
@@ -211,8 +211,8 @@ export default function MerchantAnalyticsPage() {
 
 function Counter(props: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-foreground/10 bg-white/[0.04] p-5">
-      <p className="text-[10px] uppercase tracking-wide text-foreground/45">
+    <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+      <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
         {props.label}
       </p>
       <p className="mt-2 text-2xl font-semibold tracking-tight">{props.value}</p>
@@ -238,7 +238,7 @@ function Sparkline({ daily }: { daily: DailyPoint[] }) {
           );
         })}
       </div>
-      <div className="mt-2 flex justify-between text-[10px] text-foreground/40">
+      <div className="mt-2 flex justify-between text-[10px] text-[#71717a]">
         <span>{daily[0]?.day ?? ""}</span>
         <span>{daily[daily.length - 1]?.day ?? ""}</span>
       </div>

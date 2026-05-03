@@ -189,13 +189,13 @@ export default function StreamingDashboard() {
       )}
 
       {!connected ? (
-        <div className="mt-6 rounded-2xl border border-foreground/10 bg-foreground/5 p-6 text-sm text-foreground/60">
+        <div className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#f4f4f5] p-6 text-sm text-[#52525b]">
           Connect Phantom to see your active streaming pacts.
         </div>
       ) : loading ? (
-        <div className="mt-6 text-sm text-foreground/60">Loading…</div>
+        <div className="mt-6 text-sm text-[#52525b]">Loading…</div>
       ) : pacts.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-foreground/10 bg-foreground/5 p-6 text-sm text-foreground/60">
+        <div className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#f4f4f5] p-6 text-sm text-[#52525b]">
           No active streaming pacts yet. Open one with the form above.
         </div>
       ) : (
@@ -325,23 +325,23 @@ function OpenStreamForm({
   }
 
   return (
-    <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+    <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
       <div className="flex items-baseline justify-between">
         <h2 className="text-sm font-medium">Open a streaming pact</h2>
         <button
           onClick={() => setOpen(false)}
-          className="text-[11px] text-foreground/50 hover:text-foreground"
+          className="text-[11px] text-[#52525b] hover:text-[#09090b]"
         >
           Cancel
         </button>
       </div>
       <div className="mt-4 grid gap-3 text-sm">
         <div>
-          <label className="block text-xs font-medium text-foreground/60">Parent card</label>
+          <label className="block text-xs font-medium text-[#52525b]">Parent card</label>
           <select
             value={parentCard}
             onChange={(e) => setParentCard(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-accent"
+            className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm outline-none focus:border-accent"
           >
             <option value="">— pick a card —</option>
             {cards
@@ -354,7 +354,7 @@ function OpenStreamForm({
               ))}
           </select>
           {cards.length === 0 && (
-            <p className="mt-1 text-[11px] text-foreground/40">
+            <p className="mt-1 text-[11px] text-[#71717a]">
               No cards yet —{" "}
               <a className="text-accent hover:underline" href="/cards/new">
                 create one first
@@ -365,18 +365,18 @@ function OpenStreamForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-foreground/60">Scope label</label>
+          <label className="block text-xs font-medium text-[#52525b]">Scope label</label>
           <input
             value={scopeLabel}
             onChange={(e) => setScopeLabel(e.target.value)}
             placeholder="research-stream"
-            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-3 py-2 outline-none focus:border-accent"
+            className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 outline-none focus:border-accent"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-foreground/60">
+            <label className="block text-xs font-medium text-[#52525b]">
               Rate ($/min)
             </label>
             <input
@@ -384,14 +384,14 @@ function OpenStreamForm({
               onChange={(e) => setRatePerMinUsd(e.target.value)}
               inputMode="decimal"
               placeholder="0.10"
-              className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-3 py-2 outline-none focus:border-accent"
+              className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 outline-none focus:border-accent"
             />
-            <p className="mt-1 font-mono text-[10px] text-foreground/45">
+            <p className="mt-1 font-mono text-[10px] text-[#71717a]">
               ≈ {ratePerSlotPreview.toString()} lamports/slot
             </p>
           </div>
           <div>
-            <label className="block text-xs font-medium text-foreground/60">
+            <label className="block text-xs font-medium text-[#52525b]">
               Max total ($)
             </label>
             <input
@@ -399,32 +399,32 @@ function OpenStreamForm({
               onChange={(e) => setMaxTotalUsd(e.target.value)}
               inputMode="decimal"
               placeholder="5.00"
-              className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-3 py-2 outline-none focus:border-accent"
+              className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 outline-none focus:border-accent"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-foreground/60">
+          <label className="block text-xs font-medium text-[#52525b]">
             Allowed merchant (must be on parent card)
           </label>
           <input
             value={merchant}
             onChange={(e) => setMerchant(e.target.value)}
             placeholder="merchant pubkey (Solana address)"
-            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-3 py-2 font-mono text-xs outline-none focus:border-accent"
+            className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-xs outline-none focus:border-accent"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-foreground/60">Expiry (days)</label>
+          <label className="block text-xs font-medium text-[#52525b]">Expiry (days)</label>
           <input
             value={expiryDays}
             onChange={(e) => setExpiryDays(Math.max(1, Math.min(365, Number(e.target.value))))}
             type="number"
             min={1}
             max={365}
-            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-3 py-2 outline-none focus:border-accent"
+            className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 outline-none focus:border-accent"
           />
         </div>
       </div>
@@ -436,7 +436,7 @@ function OpenStreamForm({
       >
         {submitting ? "Opening…" : "Open + fund vault"}
       </button>
-      <p className="mt-2 text-[10px] text-foreground/40">
+      <p className="mt-2 text-[10px] text-[#71717a]">
         Vault funded atomically with max-total. Authority can pause/cancel any time;
         cancel returns unspent USDC via close_pact.
       </p>
@@ -519,13 +519,13 @@ function StreamingCard({
   }
 
   return (
-    <article className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+    <article className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-wider text-foreground/50">
+          <div className="text-xs uppercase tracking-wider text-[#52525b]">
             Stream · {pact.scope_label}
           </div>
-          <div className="mt-1 font-mono text-[10px] text-foreground/40">
+          <div className="mt-1 font-mono text-[10px] text-[#71717a]">
             {pact.pact_pubkey.slice(0, 8)}…{pact.pact_pubkey.slice(-6)}
           </div>
         </div>
@@ -542,7 +542,7 @@ function StreamingCard({
           </button>
           <button
             onClick={() => setShowClaim((v) => !v)}
-            className="rounded-full border border-foreground/20 px-3 py-1.5 text-xs font-medium hover:bg-foreground/5"
+            className="rounded-full border border-[#a1a1aa] px-3 py-1.5 text-xs font-medium hover:bg-[#f4f4f5]"
           >
             Claim now
           </button>
@@ -551,48 +551,48 @@ function StreamingCard({
 
       <div className="mt-5">
         <div className="flex items-baseline justify-between">
-          <span className="text-xs text-foreground/50">
+          <span className="text-xs text-[#52525b]">
             {pact.paused ? "Paused" : `Accruing at ${ratePerSec}/sec`}
           </span>
-          <span className="font-mono text-[11px] text-foreground/50">
+          <span className="font-mono text-[11px] text-[#52525b]">
             {progressPct.toFixed(2)}%
           </span>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-foreground/10">
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e4e4e7]">
           <div
             className={`h-full ${pact.paused ? "bg-amber-500/70" : "bg-accent"}`}
             style={{ width: `${Math.min(progressPct, 100)}%` }}
           />
         </div>
         <div className="mt-2 flex items-baseline justify-between text-[11px]">
-          <span className="text-foreground/50">
+          <span className="text-[#52525b]">
             Claimed: <span className="font-mono">{lamportsToUsd(claimed)}</span>
           </span>
-          <span className="text-foreground/50">
+          <span className="text-[#52525b]">
             Live estimate:{" "}
             <span className="font-mono text-accent">{lamportsToUsd(cappedAccrued)}</span>
           </span>
-          <span className="text-foreground/50">
+          <span className="text-[#52525b]">
             Max: <span className="font-mono">{lamportsToUsd(maxTotal)}</span>
           </span>
         </div>
       </div>
 
       {showClaim && (
-        <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3">
+        <div className="mt-4 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-3">
           <div className="grid gap-2">
             <input
               value={claimMerchant}
               onChange={(e) => setClaimMerchant(e.target.value)}
               placeholder="merchant pubkey"
-              className="rounded border border-foreground/10 bg-transparent px-2 py-1.5 font-mono text-[11px] outline-none focus:border-accent"
+              className="rounded border border-[#e4e4e7] bg-transparent px-2 py-1.5 font-mono text-[11px] outline-none focus:border-accent"
             />
             <input
               value={claimPurpose}
               onChange={(e) => setClaimPurpose(e.target.value)}
               placeholder="purpose (short string for the receipt)"
               maxLength={280}
-              className="rounded border border-foreground/10 bg-transparent px-2 py-1.5 text-xs outline-none focus:border-accent"
+              className="rounded border border-[#e4e4e7] bg-transparent px-2 py-1.5 text-xs outline-none focus:border-accent"
             />
             <button
               onClick={() => void fireClaim()}
@@ -601,7 +601,7 @@ function StreamingCard({
             >
               {claiming ? "Claiming…" : "Fire claim_streaming ix"}
             </button>
-            <p className="text-[10px] text-foreground/40">
+            <p className="text-[10px] text-[#71717a]">
               The server (using SETTLE_FACILITATOR_PRIVKEY = card.agent_pubkey) signs +
               submits. Demo path — production agents call this from their own runtime.
             </p>
@@ -609,7 +609,7 @@ function StreamingCard({
         </div>
       )}
 
-      <p className="mt-4 text-[10px] text-foreground/40">
+      <p className="mt-4 text-[10px] text-[#71717a]">
         Live estimate ticks in the browser. The on-chain truth advances on each
         successful claim_streaming.
       </p>

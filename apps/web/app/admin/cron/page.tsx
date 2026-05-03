@@ -138,7 +138,7 @@ export default function AdminCronPage() {
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
             placeholder="Paste the operator secret"
-            className="mt-2 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 font-mono text-sm"
+            className="mt-2 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-sm"
           />
         </section>
 
@@ -165,13 +165,13 @@ export default function AdminCronPage() {
             <button
               onClick={loadRecent}
               disabled={!secret || busy === "recent"}
-              className="rounded-full border border-foreground/20 px-3 py-1 text-[11px] hover:bg-foreground/5 disabled:opacity-50"
+              className="rounded-full border border-[#a1a1aa] px-3 py-1 text-[11px] hover:bg-[#f4f4f5] disabled:opacity-50"
             >
               {busy === "recent" ? "Loading…" : "Refresh"}
             </button>
           </header>
           {recent.length === 0 ? (
-            <p className="text-xs text-foreground/40">
+            <p className="text-xs text-[#71717a]">
               No rows loaded. Click Refresh.
             </p>
           ) : (
@@ -225,7 +225,7 @@ function statusTone(status: string): string {
       return "border-red-400/30 bg-red-400/[0.04] text-red-100";
     case "dry_run_logged":
     default:
-      return "border-foreground/10 bg-white/[0.02] text-foreground/70";
+      return "border-[#e4e4e7] bg-[#fafafa] text-[#27272a]";
   }
 }
 
@@ -243,9 +243,9 @@ function CronCard({
   result: CronResponse | null;
 }) {
   return (
-    <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+    <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
       <h3 className="text-sm font-medium">{title}</h3>
-      <p className="mt-1 text-[11px] text-foreground/50">{description}</p>
+      <p className="mt-1 text-[11px] text-[#52525b]">{description}</p>
       <button
         onClick={onFire}
         disabled={running}
@@ -254,7 +254,7 @@ function CronCard({
         {running ? "Running…" : "Run now"}
       </button>
       {result && (
-        <pre className="mt-3 max-h-60 overflow-auto rounded-lg border border-foreground/10 bg-foreground/[0.02] p-3 text-[10px] text-foreground/70">
+        <pre className="mt-3 max-h-60 overflow-auto rounded-lg border border-[#e4e4e7] bg-[#fafafa] p-3 text-[10px] text-[#27272a]">
           {JSON.stringify(result, null, 2)}
         </pre>
       )}

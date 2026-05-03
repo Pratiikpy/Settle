@@ -135,7 +135,7 @@ const findings = [
 
 function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: string }) {
   const tones: Record<string, string> = {
-    neutral: "border-foreground/15 bg-foreground/5 text-foreground/70",
+    neutral: "border-[#e4e4e7] bg-[#f4f4f5] text-[#27272a]",
     good: "border-accent/30 bg-accent/10 text-accent",
     warn: "border-yellow-400/30 bg-yellow-400/10 text-yellow-300",
     danger: "border-red-400/30 bg-red-400/10 text-red-300",
@@ -179,25 +179,25 @@ export default function ControlCenterPage() {
 
         <section className="grid gap-4 md:grid-cols-4">
           {stats.map((item) => (
-            <div key={item.label} className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <div key={item.label} className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <p className="text-3xl font-semibold">{item.value}</p>
               <p className="mt-1 text-sm font-medium">{item.label}</p>
-              <p className="mt-2 text-xs leading-5 text-foreground/50">{item.detail}</p>
+              <p className="mt-2 text-xs leading-5 text-[#52525b]">{item.detail}</p>
             </div>
           ))}
         </section>
 
-        <section className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+        <section className="mt-8 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold">Operating Rule</h2>
-              <p className="mt-1 text-sm text-foreground/55">
+              <p className="mt-1 text-sm text-[#52525b]">
                 Big is allowed. Random is not.
               </p>
             </div>
             <Badge tone="good">Programmable / verifiable / trusted money</Badge>
           </div>
-          <p className="mt-4 max-w-4xl text-sm leading-6 text-foreground/65">
+          <p className="mt-4 max-w-4xl text-sm leading-6 text-[#09090b]/65">
             Every feature must attach to the product spine: humans and agents move money
             through programmable rules, verifiable receipts, and trust-building reputation
             on Solana. If a feature cannot be traced to that spine, it belongs outside Settle.
@@ -205,64 +205,64 @@ export default function ControlCenterPage() {
         </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
             <h2 className="text-xl font-semibold">System Areas</h2>
             <div className="mt-5 space-y-3">
               {systemAreas.map((area) => (
-                <div key={area.name} className="rounded-xl border border-foreground/10 p-4">
+                <div key={area.name} className="rounded-xl border border-[#e4e4e7] p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-medium">{area.name}</p>
-                      <p className="mt-1 font-mono text-xs text-foreground/45">{area.path}</p>
+                      <p className="mt-1 font-mono text-xs text-[#71717a]">{area.path}</p>
                     </div>
                     <Badge tone={area.status === "missing" ? "danger" : "good"}>{area.status}</Badge>
                   </div>
-                  <p className="mt-3 text-sm leading-5 text-foreground/60">{area.note}</p>
+                  <p className="mt-3 text-sm leading-5 text-[#52525b]">{area.note}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
             <h2 className="text-xl font-semibold">Knowledge Files</h2>
-            <p className="mt-1 text-sm text-foreground/55">
+            <p className="mt-1 text-sm text-[#52525b]">
               Markdown truth lives in Git. This page is the visual index.
             </p>
             <div className="mt-5 grid gap-2">
               {knowledgeFiles.map(([label, path]) => (
                 <div
                   key={path}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-foreground/10 px-3 py-2"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-[#e4e4e7] px-3 py-2"
                 >
                   <span className="text-sm">{label}</span>
-                  <span className="truncate font-mono text-[11px] text-foreground/40">{path}</span>
+                  <span className="truncate font-mono text-[11px] text-[#71717a]">{path}</span>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+        <section className="mt-8 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
           <h2 className="text-xl font-semibold">Feature Traceability Snapshot</h2>
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-foreground/45">
+              <thead className="text-xs uppercase tracking-wide text-[#71717a]">
                 <tr>
-                  <th className="border-b border-foreground/10 pb-3">Feature</th>
-                  <th className="border-b border-foreground/10 pb-3">Status</th>
-                  <th className="border-b border-foreground/10 pb-3">Trace</th>
-                  <th className="border-b border-foreground/10 pb-3">Risk</th>
+                  <th className="border-b border-[#e4e4e7] pb-3">Feature</th>
+                  <th className="border-b border-[#e4e4e7] pb-3">Status</th>
+                  <th className="border-b border-[#e4e4e7] pb-3">Trace</th>
+                  <th className="border-b border-[#e4e4e7] pb-3">Risk</th>
                 </tr>
               </thead>
               <tbody>
                 {featureRows.map((row) => (
-                  <tr key={row.feature} className="border-b border-foreground/5">
+                  <tr key={row.feature} className="border-b border-[#f4f4f5]">
                     <td className="py-4 font-medium">{row.feature}</td>
                     <td className="py-4">
                       <Badge tone={row.status === "priority" ? "warn" : "good"}>{row.status}</Badge>
                     </td>
-                    <td className="py-4 text-foreground/60">{row.trace}</td>
-                    <td className="py-4 text-foreground/55">{row.risk}</td>
+                    <td className="py-4 text-[#52525b]">{row.trace}</td>
+                    <td className="py-4 text-[#52525b]">{row.risk}</td>
                   </tr>
                 ))}
               </tbody>
@@ -271,62 +271,62 @@ export default function ControlCenterPage() {
         </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-3">
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
             <h2 className="text-lg font-semibold">Core Flows</h2>
-            <ul className="mt-4 space-y-3 text-sm text-foreground/65">
+            <ul className="mt-4 space-y-3 text-sm text-[#09090b]/65">
               {flows.map((flow) => (
-                <li key={flow} className="rounded-lg border border-foreground/10 p-3">
+                <li key={flow} className="rounded-lg border border-[#e4e4e7] p-3">
                   {flow}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
             <h2 className="text-lg font-semibold">Human Actions</h2>
-            <ul className="mt-4 space-y-3 text-sm text-foreground/65">
+            <ul className="mt-4 space-y-3 text-sm text-[#09090b]/65">
               {humanActions.map((action) => (
-                <li key={action} className="rounded-lg border border-foreground/10 p-3">
+                <li key={action} className="rounded-lg border border-[#e4e4e7] p-3">
                   {action}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
             <h2 className="text-lg font-semibold">Open Findings</h2>
             <div className="mt-4 space-y-3">
               {findings.map((finding) => (
-                <div key={finding.id} className="rounded-lg border border-foreground/10 p-3">
+                <div key={finding.id} className="rounded-lg border border-[#e4e4e7] p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs text-foreground/45">{finding.id}</span>
+                    <span className="font-mono text-xs text-[#71717a]">{finding.id}</span>
                     <Badge tone={finding.severity === "HIGH" ? "danger" : finding.severity === "MEDIUM" ? "warn" : "neutral"}>
                       {finding.severity}
                     </Badge>
                   </div>
-                  <p className="mt-2 text-sm leading-5 text-foreground/65">{finding.title}</p>
+                  <p className="mt-2 text-sm leading-5 text-[#09090b]/65">{finding.title}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+        <section className="mt-8 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
           <h2 className="text-xl font-semibold">Next Audit Loop</h2>
-          <ol className="mt-4 grid gap-3 text-sm text-foreground/65 md:grid-cols-4">
-            <li className="rounded-xl border border-foreground/10 p-4">1. Update system map when files move.</li>
-            <li className="rounded-xl border border-foreground/10 p-4">2. Update feature matrix when a feature ships.</li>
-            <li className="rounded-xl border border-foreground/10 p-4">3. Add findings before fixes.</li>
-            <li className="rounded-xl border border-foreground/10 p-4">4. Close findings only with verification evidence.</li>
+          <ol className="mt-4 grid gap-3 text-sm text-[#09090b]/65 md:grid-cols-4">
+            <li className="rounded-xl border border-[#e4e4e7] p-4">1. Update system map when files move.</li>
+            <li className="rounded-xl border border-[#e4e4e7] p-4">2. Update feature matrix when a feature ships.</li>
+            <li className="rounded-xl border border-[#e4e4e7] p-4">3. Add findings before fixes.</li>
+            <li className="rounded-xl border border-[#e4e4e7] p-4">4. Close findings only with verification evidence.</li>
           </ol>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/audit" className="rounded-full border border-foreground/15 px-4 py-2 text-sm hover:bg-foreground/5">
+            <Link href="/audit" className="rounded-full border border-[#e4e4e7] px-4 py-2 text-sm hover:bg-[#f4f4f5]">
               Open audit page
             </Link>
-            <Link href="/docs" className="rounded-full border border-foreground/15 px-4 py-2 text-sm hover:bg-foreground/5">
+            <Link href="/docs" className="rounded-full border border-[#e4e4e7] px-4 py-2 text-sm hover:bg-[#f4f4f5]">
               Developer docs
             </Link>
-            <Link href="/dashboard" className="rounded-full border border-foreground/15 px-4 py-2 text-sm hover:bg-foreground/5">
+            <Link href="/dashboard" className="rounded-full border border-[#e4e4e7] px-4 py-2 text-sm hover:bg-[#f4f4f5]">
               Dashboard
             </Link>
           </div>

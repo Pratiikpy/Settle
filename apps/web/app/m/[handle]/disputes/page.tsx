@@ -247,7 +247,7 @@ export default function MerchantDisputesPage() {
           response.
         </p>
 
-        {loading && <p className="mt-8 text-sm text-foreground/50">Loading…</p>}
+        {loading && <p className="mt-8 text-sm text-[#52525b]">Loading…</p>}
 
         {data && !data.ok && (
           <div className="mt-8 rounded-2xl border border-red-500/20 bg-red-500/[0.04] p-5 text-sm text-red-300">
@@ -257,15 +257,15 @@ export default function MerchantDisputesPage() {
 
         {data?.ok && (
           <>
-            <div className="mt-6 flex items-baseline gap-3 text-xs text-foreground/55">
-              <span className="text-base font-medium text-foreground/80">
+            <div className="mt-6 flex items-baseline gap-3 text-xs text-[#52525b]">
+              <span className="text-base font-medium text-[#27272a]">
                 {data.count}
               </span>
               <span>{data.count === 1 ? "dispute" : "disputes"} · last 30 days</span>
             </div>
 
             {data.disputes.length === 0 ? (
-              <div className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-8 text-center text-sm text-foreground/55">
+              <div className="mt-8 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-8 text-center text-sm text-[#52525b]">
                 No disputes — your customers are happy.
               </div>
             ) : (
@@ -281,8 +281,8 @@ export default function MerchantDisputesPage() {
                         isApproved
                           ? "border-emerald-400/30 bg-emerald-400/[0.03]"
                           : isDenied
-                            ? "border-foreground/10 bg-white/[0.02] opacity-70"
-                            : "border-foreground/10 bg-white/[0.02]"
+                            ? "border-[#e4e4e7] bg-[#fafafa] opacity-70"
+                            : "border-[#e4e4e7] bg-[#fafafa]"
                       }`}
                     >
                       <div className="flex items-baseline justify-between gap-3">
@@ -291,7 +291,7 @@ export default function MerchantDisputesPage() {
                           <span className="text-sm font-medium">
                             ${fmtUsdc(d.amount_lamports)} USDC
                           </span>
-                          <span className="text-[10px] uppercase tracking-wide text-foreground/40">
+                          <span className="text-[10px] uppercase tracking-wide text-[#71717a]">
                             {d.receipt_kind ?? "x402_spend"}
                           </span>
                           {isApproved && (
@@ -300,25 +300,25 @@ export default function MerchantDisputesPage() {
                             </span>
                           )}
                           {isDenied && (
-                            <span className="rounded-full border border-foreground/20 bg-foreground/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-foreground/60">
+                            <span className="rounded-full border border-[#a1a1aa] bg-[#f4f4f5] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#52525b]">
                               denied
                             </span>
                           )}
                         </div>
-                        <span className="text-[11px] text-foreground/45">
+                        <span className="text-[11px] text-[#71717a]">
                           {timeAgo(d.created_at)}
                         </span>
                       </div>
                       {d.reason && (
-                        <p className="mt-3 text-sm text-foreground/75">{d.reason}</p>
+                        <p className="mt-3 text-sm text-[#09090b]/75">{d.reason}</p>
                       )}
                       <div className="mt-3 flex items-center justify-between gap-3 text-[11px]">
-                        <span className="font-mono text-foreground/45">
+                        <span className="font-mono text-[#71717a]">
                           from {d.authority_pubkey.slice(0, 6)}…{d.authority_pubkey.slice(-4)}
                         </span>
                         <Link
                           href={`/receipts/${d.request_id}`}
-                          className="text-foreground/60 hover:text-foreground"
+                          className="text-[#52525b] hover:text-[#09090b]"
                         >
                           Open receipt →
                         </Link>
@@ -343,8 +343,8 @@ export default function MerchantDisputesPage() {
                         </div>
                       )}
                       {(isApproved || isDenied) && d.merchant_response && (
-                        <div className="mt-3 rounded-lg bg-foreground/[0.03] p-3 text-[11px] text-foreground/60">
-                          <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                        <div className="mt-3 rounded-lg bg-[#fafafa] p-3 text-[11px] text-[#52525b]">
+                          <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                             Your response
                           </p>
                           <p className="mt-1 whitespace-pre-wrap">{d.merchant_response}</p>
@@ -353,10 +353,10 @@ export default function MerchantDisputesPage() {
 
                       {/* Pending state — show actions. */}
                       {isPending && (
-                        <div className="mt-4 rounded-lg border border-foreground/10 bg-foreground/[0.02] p-3">
+                        <div className="mt-4 rounded-lg border border-[#e4e4e7] bg-[#fafafa] p-3">
                           {drafts[d.id] && (
                             <div className="mb-3">
-                              <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                              <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                                 AI draft
                               </p>
                               <textarea
@@ -368,7 +368,7 @@ export default function MerchantDisputesPage() {
                                   })
                                 }
                                 rows={6}
-                                className="mt-1 w-full rounded border border-foreground/10 bg-transparent p-2 text-xs"
+                                className="mt-1 w-full rounded border border-[#e4e4e7] bg-transparent p-2 text-xs"
                               />
                             </div>
                           )}
@@ -376,7 +376,7 @@ export default function MerchantDisputesPage() {
                             <button
                               onClick={() => draftReply(d)}
                               disabled={busy[`draft-${d.id}`]}
-                              className="rounded-full border border-foreground/20 px-3 py-1.5 text-[11px] hover:bg-foreground/5 disabled:opacity-50"
+                              className="rounded-full border border-[#a1a1aa] px-3 py-1.5 text-[11px] hover:bg-[#f4f4f5] disabled:opacity-50"
                             >
                               {busy[`draft-${d.id}`] ? "Drafting…" : "✎ AI draft"}
                             </button>
@@ -392,7 +392,7 @@ export default function MerchantDisputesPage() {
                             <button
                               onClick={() => deny(d)}
                               disabled={busy[`deny-${d.id}`]}
-                              className="rounded-full border border-foreground/20 px-3 py-1.5 text-[11px] hover:bg-foreground/5 disabled:opacity-50"
+                              className="rounded-full border border-[#a1a1aa] px-3 py-1.5 text-[11px] hover:bg-[#f4f4f5] disabled:opacity-50"
                             >
                               {busy[`deny-${d.id}`] ? "Saving…" : "Deny with response"}
                             </button>
@@ -408,13 +408,13 @@ export default function MerchantDisputesPage() {
             <div className="mt-8 flex gap-3">
               <Link
                 href={`/m/${params.handle}/analytics`}
-                className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
               >
                 ← Analytics
               </Link>
               <Link
                 href={`/m/${params.handle}`}
-                className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
               >
                 Profile
               </Link>

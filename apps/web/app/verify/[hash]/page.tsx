@@ -95,17 +95,17 @@ export default function VerifyByHashPage() {
           every machine.
         </p>
 
-        <div className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-          <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+        <div className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+          <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
             Hash
           </p>
-          <code className="mt-2 block break-all font-mono text-xs text-foreground/70">
+          <code className="mt-2 block break-all font-mono text-xs text-[#27272a]">
             {params.hash}
           </code>
         </div>
 
         {loading && (
-          <p className="mt-6 text-sm text-foreground/50">Looking up…</p>
+          <p className="mt-6 text-sm text-[#52525b]">Looking up…</p>
         )}
 
         {data && !data.ok && (
@@ -114,7 +114,7 @@ export default function VerifyByHashPage() {
             <p className="mt-2 text-xs text-red-200/70">
               {data.message ?? data.error}
             </p>
-            <p className="mt-3 text-[11px] text-foreground/50">
+            <p className="mt-3 text-[11px] text-[#52525b]">
               The hash format is valid 32-byte hex, but no receipt with this
               hash is in Settle's index. The receipt may still exist on-chain
               if it was committed via a non-Settle path.
@@ -129,12 +129,12 @@ export default function VerifyByHashPage() {
                 <p className="text-sm font-medium text-emerald-300">
                   Receipt found
                 </p>
-                <span className="rounded-full border border-foreground/15 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] tracking-wide text-foreground/70">
+                <span className="rounded-full border border-[#e4e4e7] bg-[#fafafa] px-2 py-0.5 font-mono text-[10px] tracking-wide text-[#27272a]">
                   matched on {data.matched_on}
                 </span>
               </div>
               {data.receipt.narration_text && (
-                <p className="mt-3 text-sm leading-relaxed text-foreground/85">
+                <p className="mt-3 text-sm leading-relaxed text-[#27272a]">
                   {data.receipt.narration_text}
                 </p>
               )}
@@ -146,9 +146,9 @@ export default function VerifyByHashPage() {
             </section>
 
             {/* Receipt summary */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
-                <span className="text-foreground/40">decision</span>
+                <span className="text-[#71717a]">decision</span>
                 <span
                   className={
                     data.receipt.decision === "ALLOW"
@@ -158,13 +158,13 @@ export default function VerifyByHashPage() {
                 >
                   {data.receipt.decision}
                 </span>
-                <span className="text-foreground/40">amount</span>
+                <span className="text-[#71717a]">amount</span>
                 <span>
                   {(Number(data.receipt.amount_lamports) / 1e6).toFixed(2)} USDC
                 </span>
-                <span className="text-foreground/40">kind</span>
+                <span className="text-[#71717a]">kind</span>
                 <span className="font-mono">{data.receipt.receipt_kind}</span>
-                <span className="text-foreground/40">merchant</span>
+                <span className="text-[#71717a]">merchant</span>
                 <span className="flex items-center gap-2">
                   <span className="font-mono">
                     {data.receipt.merchant_pubkey.slice(0, 6)}…
@@ -175,21 +175,21 @@ export default function VerifyByHashPage() {
                     variant="compact"
                   />
                 </span>
-                <span className="text-foreground/40">slot</span>
+                <span className="text-[#71717a]">slot</span>
                 <span className="font-mono">{data.receipt.decision_slot}</span>
-                <span className="text-foreground/40">created</span>
+                <span className="text-[#71717a]">created</span>
                 <span>{new Date(data.receipt.created_at).toLocaleString()}</span>
               </div>
             </section>
 
             {/* All 5 hashes */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">Hashes</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 The 5 BLAKE3 hashes that bind this receipt. Run any of them
                 back through this page to re-verify.
               </p>
-              <ul className="mt-3 grid gap-2 text-[11px] font-mono text-foreground/60">
+              <ul className="mt-3 grid gap-2 text-[11px] font-mono text-[#52525b]">
                 {(
                   [
                     ["receipt_hash", data.receipt.hashes.receipt_hash],
@@ -200,7 +200,7 @@ export default function VerifyByHashPage() {
                   ] as Array<[string, string | null]>
                 ).map(([label, value]) => (
                   <li key={label} className="flex items-baseline gap-3">
-                    <span className="w-44 text-foreground/45">{label}</span>
+                    <span className="w-44 text-[#71717a]">{label}</span>
                     {value ? (
                       <Link
                         href={`/verify/${value}`}
@@ -209,7 +209,7 @@ export default function VerifyByHashPage() {
                         {value}
                       </Link>
                     ) : (
-                      <span className="text-foreground/30">(null)</span>
+                      <span className="text-[#a1a1aa]">(null)</span>
                     )}
                   </li>
                 ))}
@@ -219,7 +219,7 @@ export default function VerifyByHashPage() {
             <div className="mt-6 flex gap-3">
               <Link
                 href={`/receipts/${data.receipt.request_id}`}
-                className="inline-flex h-10 items-center justify-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                className="inline-flex h-10 items-center justify-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
               >
                 Open full receipt →
               </Link>
@@ -228,7 +228,7 @@ export default function VerifyByHashPage() {
                   href={`https://solscan.io/tx/${data.receipt.sig_solscan}?cluster=devnet`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex h-10 items-center justify-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
                 >
                   Solscan ↗
                 </a>

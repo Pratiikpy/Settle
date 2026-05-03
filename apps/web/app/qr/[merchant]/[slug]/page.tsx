@@ -86,7 +86,7 @@ export default function QrPage() {
   return (
     <W6AppShell forceSurface="merchant">
       <div style={{ maxWidth: 880 }}>
-        <Link href={`/at/${params.merchant}`} className="text-xs text-foreground/45 hover:text-accent">
+        <Link href={`/at/${params.merchant}`} className="text-xs text-[#71717a] hover:text-accent">
           ← Profile
         </Link>
 
@@ -94,14 +94,14 @@ export default function QrPage() {
           {data?.label ?? "Loading…"}
         </h1>
         {data?.description && (
-          <p className="mt-2 text-sm text-foreground/60">{data.description}</p>
+          <p className="mt-2 text-sm text-[#52525b]">{data.description}</p>
         )}
 
-        <div className="mt-8 rounded-3xl border border-foreground/10 bg-white p-6">
+        <div className="mt-8 rounded-3xl border border-[#e4e4e7] bg-white p-6">
           <canvas ref={canvasRef} className="mx-auto block" />
         </div>
 
-        <p className="mt-4 text-center text-[11px] text-foreground/45">
+        <p className="mt-4 text-center text-[11px] text-[#71717a]">
           Scan with any Solana Pay wallet · price resolves at scan time
         </p>
 
@@ -109,14 +109,14 @@ export default function QrPage() {
           <button
             type="button"
             onClick={downloadPng}
-            className="flex-1 rounded-full border border-foreground/20 py-2 text-xs hover:bg-foreground/5"
+            className="flex-1 rounded-full border border-[#a1a1aa] py-2 text-xs hover:bg-[#f4f4f5]"
           >
             Download PNG
           </button>
           <button
             type="button"
             onClick={copyLink}
-            className="flex-1 rounded-full border border-foreground/20 py-2 text-xs hover:bg-foreground/5"
+            className="flex-1 rounded-full border border-[#a1a1aa] py-2 text-xs hover:bg-[#f4f4f5]"
           >
             Copy link
           </button>
@@ -130,7 +130,7 @@ export default function QrPage() {
           </div>
         )}
 
-        <p className="mt-10 text-[11px] leading-relaxed text-foreground/45">
+        <p className="mt-10 text-[11px] leading-relaxed text-[#71717a]">
           The QR encodes a Solana Pay transaction-request URL pointing at Settle&apos;s
           server. The amount lives in the merchant&apos;s pricelist row, not in the QR
           itself — change the price, the same QR updates everywhere.

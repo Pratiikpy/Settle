@@ -48,7 +48,7 @@ export default function RelayerSettingsPage() {
       <div style={{ maxWidth: 880 }}>
         <header className="mb-8">
           <h1 className="text-3xl font-medium tracking-tight">Relayer</h1>
-          <p className="mt-2 text-sm text-foreground/60">
+          <p className="mt-2 text-sm text-[#52525b]">
             Settle's automated features need a wallet that can sign for you when
             you're offline — to fire a scheduled send, to top up a card, to
             fulfill a gift the recipient just claimed. We expose ours here so
@@ -57,7 +57,7 @@ export default function RelayerSettingsPage() {
         </header>
 
         {!info ? (
-          <p className="text-sm text-foreground/60">Loading…</p>
+          <p className="text-sm text-[#52525b]">Loading…</p>
         ) : !info.configured ? (
           <div className="rounded-2xl border border-amber-400/30 bg-amber-400/5 p-5">
             <p className="text-sm text-amber-300">
@@ -69,12 +69,12 @@ export default function RelayerSettingsPage() {
         ) : (
           <>
             {/* Pubkey */}
-            <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-              <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+            <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+              <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
                 Relayer pubkey
               </p>
               <div className="mt-2 flex items-baseline justify-between gap-3">
-                <code className="break-all text-xs text-foreground/80">
+                <code className="break-all text-xs text-[#27272a]">
                   {info.pubkey}
                 </code>
                 <button
@@ -85,7 +85,7 @@ export default function RelayerSettingsPage() {
                         .then(() => toast.success("Copied"));
                     }
                   }}
-                  className="text-[11px] text-foreground/60 hover:text-foreground"
+                  className="text-[11px] text-[#52525b] hover:text-[#09090b]"
                 >
                   copy
                 </button>
@@ -97,7 +97,7 @@ export default function RelayerSettingsPage() {
               <p className="text-[11px] uppercase tracking-wide text-emerald-400/70">
                 Cards delegated to this relayer can
               </p>
-              <ul className="mt-3 space-y-2 text-xs text-foreground/80">
+              <ul className="mt-3 space-y-2 text-xs text-[#27272a]">
                 {info.capabilities.map((c) => (
                   <li key={c}>+ {c}</li>
                 ))}
@@ -105,11 +105,11 @@ export default function RelayerSettingsPage() {
             </section>
 
             {/* What it cannot do */}
-            <section className="mt-4 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-              <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+            <section className="mt-4 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+              <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
                 What the relayer cannot do
               </p>
-              <ul className="mt-3 space-y-2 text-xs text-foreground/60">
+              <ul className="mt-3 space-y-2 text-xs text-[#52525b]">
                 {info.unsupported.map((u) => (
                   <li key={u}>— {u}</li>
                 ))}
@@ -117,9 +117,9 @@ export default function RelayerSettingsPage() {
             </section>
 
             {/* Delegation CTA */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+            <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
               <h2 className="text-sm font-medium">Delegate by spawning a card</h2>
-              <p className="mt-2 text-xs text-foreground/60">
+              <p className="mt-2 text-xs text-[#52525b]">
                 A Pact card is issued with its <code>agent_pubkey</code> baked
                 in at <code>create_card</code> time. The Anchor program does
                 not expose a rotate-agent ix — once a card is issued, its
@@ -135,7 +135,7 @@ export default function RelayerSettingsPage() {
               >
                 Spawn delegated card →
               </Link>
-              <p className="mt-3 text-[11px] text-foreground/40">
+              <p className="mt-3 text-[11px] text-[#71717a]">
                 You'll review the cap, allowlist, and expiry on the next page
                 before signing. The relayer is bound to the card you sign for
                 — there's no agent rotation later.
@@ -143,9 +143,9 @@ export default function RelayerSettingsPage() {
             </section>
 
             {/* What happens next */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+            <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
               <h2 className="text-sm font-medium">After you delegate</h2>
-              <ol className="mt-3 space-y-2 text-xs text-foreground/60">
+              <ol className="mt-3 space-y-2 text-xs text-[#52525b]">
                 <li>
                   1. Your scheduled sends, auto-refills, and gift fulfillments
                   will start firing on cadence (every 5 min cron tick).

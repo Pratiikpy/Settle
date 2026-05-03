@@ -76,7 +76,7 @@ export function RevokedCardBanner({
           <button
             type="button"
             onClick={onDelete}
-            className="rounded-full border border-foreground/20 px-3 py-1 text-[11px] text-foreground/70 hover:bg-foreground/[0.04]"
+            className="rounded-full border border-[#a1a1aa] px-3 py-1 text-[11px] text-[#27272a] hover:bg-[#fafafa]"
           >
             Delete this {kindLabel}
           </button>

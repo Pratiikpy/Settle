@@ -89,7 +89,7 @@ export default function NewTemplatePage() {
     <W6AppShell forceSurface="agent">
       <div style={{ maxWidth: 880 }}>
         <h1 className="text-3xl font-semibold tracking-tight">Publish an agent template</h1>
-        <p className="mt-2 text-sm text-foreground/60">
+        <p className="mt-2 text-sm text-[#52525b]">
           Open-source recipe. Author signature stays on your wallet — anyone can audit it.
         </p>
 
@@ -195,7 +195,7 @@ export default function NewTemplatePage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-xs font-medium text-foreground/60">{label}</span>
+      <span className="block text-xs font-medium text-[#52525b]">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

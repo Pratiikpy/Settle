@@ -103,21 +103,21 @@ export function TokenPicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-3 py-1.5 text-xs font-medium hover:bg-foreground/10"
+        className="inline-flex items-center gap-2 rounded-full border border-[#a1a1aa] bg-[#f4f4f5] px-3 py-1.5 text-xs font-medium hover:bg-[#e4e4e7]"
       >
         {value.logoURI ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={value.logoURI} alt="" className="h-4 w-4 rounded-full" />
         ) : (
-          <span className="grid h-4 w-4 place-items-center rounded-full bg-foreground/15 text-[8px]">
+          <span className="grid h-4 w-4 place-items-center rounded-full bg-[#e4e4e7] text-[8px]">
             {value.symbol.slice(0, 2)}
           </span>
         )}
         <span>{value.symbol}</span>
         {value.uiAmount && (
-          <span className="text-foreground/50">{value.uiAmount}</span>
+          <span className="text-[#52525b]">{value.uiAmount}</span>
         )}
-        <span className="text-foreground/40">▾</span>
+        <span className="text-[#71717a]">▾</span>
       </button>
 
       {open && (
@@ -127,30 +127,30 @@ export function TokenPicker({
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute right-0 top-full z-20 mt-2 w-80 overflow-hidden rounded-xl border border-foreground/15 bg-background shadow-2xl">
-            <div className="border-b border-foreground/10 p-3">
+          <div className="absolute right-0 top-full z-20 mt-2 w-80 overflow-hidden rounded-xl border border-[#e4e4e7] bg-background shadow-2xl">
+            <div className="border-b border-[#e4e4e7] p-3">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by symbol or paste mint…"
-                className="w-full rounded-md border border-foreground/15 bg-transparent px-3 py-2 text-xs outline-none focus:border-accent"
+                className="w-full rounded-md border border-[#e4e4e7] bg-transparent px-3 py-2 text-xs outline-none focus:border-accent"
                 autoFocus
               />
             </div>
 
             <div className="max-h-72 overflow-y-auto">
               {!publicKey ? (
-                <div className="p-6 text-center text-xs text-foreground/55">
+                <div className="p-6 text-center text-xs text-[#52525b]">
                   Connect Phantom to see your tokens.
                 </div>
               ) : loading ? (
-                <div className="p-6 text-center text-xs text-foreground/55">
+                <div className="p-6 text-center text-xs text-[#52525b]">
                   Loading balances…
                 </div>
               ) : error ? (
                 <div className="p-6 text-center text-xs text-red-500">{error}</div>
               ) : sortedAndFiltered.length === 0 ? (
-                <div className="p-6 text-center text-xs text-foreground/55">
+                <div className="p-6 text-center text-xs text-[#52525b]">
                   No matching tokens. {search && "Try the full mint address?"}
                 </div>
               ) : (
@@ -174,7 +174,7 @@ export function TokenPicker({
                             setOpen(false);
                             setSearch("");
                           }}
-                          className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-xs hover:bg-foreground/5 ${
+                          className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-xs hover:bg-[#f4f4f5] ${
                             isSelected ? "bg-accent/5" : ""
                           }`}
                         >
@@ -187,7 +187,7 @@ export function TokenPicker({
                                 className="h-7 w-7 rounded-full"
                               />
                             ) : (
-                              <div className="grid h-7 w-7 place-items-center rounded-full bg-foreground/10 text-[10px]">
+                              <div className="grid h-7 w-7 place-items-center rounded-full bg-[#e4e4e7] text-[10px]">
                                 {sym.slice(0, 2).toUpperCase()}
                               </div>
                             )}
@@ -201,13 +201,13 @@ export function TokenPicker({
                                 )}
                               </div>
                               {b.name && (
-                                <div className="text-[10px] text-foreground/50">{b.name}</div>
+                                <div className="text-[10px] text-[#52525b]">{b.name}</div>
                               )}
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="font-mono">{b.uiAmount}</div>
-                            <div className="text-[10px] text-foreground/40">
+                            <div className="text-[10px] text-[#71717a]">
                               {b.mint.slice(0, 4)}…{b.mint.slice(-4)}
                             </div>
                           </div>
@@ -219,7 +219,7 @@ export function TokenPicker({
               )}
             </div>
 
-            <div className="border-t border-foreground/10 bg-foreground/5 px-4 py-2 text-[10px] text-foreground/50">
+            <div className="border-t border-[#e4e4e7] bg-[#f4f4f5] px-4 py-2 text-[10px] text-[#52525b]">
               Pay with any token — Jupiter routes the swap on mainnet. USDC sends directly.
             </div>
           </div>

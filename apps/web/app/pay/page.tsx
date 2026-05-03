@@ -68,13 +68,13 @@ useEffect(() => {
           <h1 className="mt-2 text-4xl font-medium tracking-tight">
             Accept Settle payments in 2 lines.
           </h1>
-          <p className="mt-3 text-sm text-foreground/60">
+          <p className="mt-3 text-sm text-[#52525b]">
             One{" "}
-            <code className="rounded bg-foreground/10 px-1.5 py-0.5 text-xs">
+            <code className="rounded bg-[#e4e4e7] px-1.5 py-0.5 text-xs">
               &lt;script&gt;
             </code>
             , one{" "}
-            <code className="rounded bg-foreground/10 px-1.5 py-0.5 text-xs">
+            <code className="rounded bg-[#e4e4e7] px-1.5 py-0.5 text-xs">
               &lt;settle-pay&gt;
             </code>{" "}
             tag, no framework. Every payment leaves a verifiable on-chain
@@ -87,11 +87,11 @@ useEffect(() => {
           <p className="text-[11px] uppercase tracking-wide text-emerald-400/70">
             Live demo
           </p>
-          <p className="mt-2 text-xs text-foreground/60">
+          <p className="mt-2 text-xs text-[#52525b]">
             Click below — opens a popup to pay $0.50 USDC to a demo merchant
             on devnet. Your wallet stays the same; we never see your keys.
           </p>
-          <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
+          <div className="mt-4 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
             {/* Custom element rendered via createElement so JSX does not need
                 to know the custom element's intrinsic type. */}
             {(() => {
@@ -108,27 +108,27 @@ useEffect(() => {
         {/* Snippet */}
         <section className="mb-10">
           <h2 className="text-lg font-medium">Drop into any HTML</h2>
-          <p className="mt-2 text-xs text-foreground/60">
+          <p className="mt-2 text-xs text-[#52525b]">
             No build step. No framework. The custom element handles the
             popup, wallet connect, receipt creation, confirmation.
           </p>
-          <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
+          <div className="mt-4 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
             <div className="mb-2 flex items-baseline justify-between">
-              <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+              <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                 Source
               </p>
               <input
                 value={hostname}
                 onChange={(e) => setHostname(e.target.value)}
-                className="rounded border border-foreground/10 bg-transparent px-2 py-0.5 text-[11px] text-foreground/70"
+                className="rounded border border-[#e4e4e7] bg-transparent px-2 py-0.5 text-[11px] text-[#27272a]"
               />
             </div>
-            <pre className="overflow-auto rounded-lg bg-foreground/[0.04] p-3 text-xs">
+            <pre className="overflow-auto rounded-lg bg-[#fafafa] p-3 text-xs">
               <code>{payHtml}</code>
             </pre>
             <button
               onClick={() => copy(payHtml)}
-              className="mt-3 rounded-full border border-foreground/20 px-3 py-1 text-[11px] hover:bg-foreground/5"
+              className="mt-3 rounded-full border border-[#a1a1aa] px-3 py-1 text-[11px] hover:bg-[#f4f4f5]"
             >
               Copy
             </button>
@@ -138,23 +138,23 @@ useEffect(() => {
         {/* Events */}
         <section className="mb-10">
           <h2 className="text-lg font-medium">Hook into events</h2>
-          <p className="mt-2 text-xs text-foreground/60">
+          <p className="mt-2 text-xs text-[#52525b]">
             Listen on the element to get the receipt details after a
             successful payment. No backend webhook required for client-side
             confirmations.
           </p>
-          <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
-            <pre className="overflow-auto rounded-lg bg-foreground/[0.04] p-3 text-xs">
+          <div className="mt-4 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
+            <pre className="overflow-auto rounded-lg bg-[#fafafa] p-3 text-xs">
               <code>{reactExample}</code>
             </pre>
             <button
               onClick={() => copy(reactExample)}
-              className="mt-3 rounded-full border border-foreground/20 px-3 py-1 text-[11px] hover:bg-foreground/5"
+              className="mt-3 rounded-full border border-[#a1a1aa] px-3 py-1 text-[11px] hover:bg-[#f4f4f5]"
             >
               Copy
             </button>
           </div>
-          <ul className="mt-3 space-y-1 text-[11px] text-foreground/60">
+          <ul className="mt-3 space-y-1 text-[11px] text-[#52525b]">
             <li>
               <code>settle:success</code> — payment confirmed on chain
             </li>
@@ -170,18 +170,18 @@ useEffect(() => {
         {/* Verify */}
         <section className="mb-10">
           <h2 className="text-lg font-medium">Verify any receipt</h2>
-          <p className="mt-2 text-xs text-foreground/60">
+          <p className="mt-2 text-xs text-[#52525b]">
             Use <code>&lt;settle-verify&gt;</code> on a confirmation page to
             prove a receipt is real. Re-derives the 4-hash kernel commit
             client-side and shows ✓ if it matches the on-chain anchor.
           </p>
-          <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
-            <pre className="overflow-auto rounded-lg bg-foreground/[0.04] p-3 text-xs">
+          <div className="mt-4 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
+            <pre className="overflow-auto rounded-lg bg-[#fafafa] p-3 text-xs">
               <code>{verifyHtml}</code>
             </pre>
             <button
               onClick={() => copy(verifyHtml)}
-              className="mt-3 rounded-full border border-foreground/20 px-3 py-1 text-[11px] hover:bg-foreground/5"
+              className="mt-3 rounded-full border border-[#a1a1aa] px-3 py-1 text-[11px] hover:bg-[#f4f4f5]"
             >
               Copy
             </button>
@@ -189,9 +189,9 @@ useEffect(() => {
         </section>
 
         {/* Webhook for server-side */}
-        <section className="mb-10 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+        <section className="mb-10 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
           <h2 className="text-sm font-medium">Want server-side confirmation?</h2>
-          <p className="mt-2 text-xs text-foreground/60">
+          <p className="mt-2 text-xs text-[#52525b]">
             Register a webhook URL with Settle and we POST a
             Stripe-shaped envelope when a receipt addressed to your
             merchant pubkey lands. Signed with HMAC-SHA256 so you can
@@ -199,7 +199,7 @@ useEffect(() => {
           </p>
           <Link
             href="/docs#webhooks"
-            className="mt-3 inline-block rounded-full border border-foreground/20 px-4 py-1.5 text-xs hover:bg-foreground/5"
+            className="mt-3 inline-block rounded-full border border-[#a1a1aa] px-4 py-1.5 text-xs hover:bg-[#f4f4f5]"
           >
             Webhook docs →
           </Link>
@@ -209,13 +209,13 @@ useEffect(() => {
         <nav className="flex flex-wrap gap-2 text-[11px]">
           <Link
             href="/docs"
-            className="rounded-full border border-foreground/15 px-3 py-1.5 text-foreground/60 hover:bg-foreground/5"
+            className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[#52525b] hover:bg-[#f4f4f5]"
           >
             API docs
           </Link>
           <Link
             href="/stats"
-            className="rounded-full border border-foreground/15 px-3 py-1.5 text-foreground/60 hover:bg-foreground/5"
+            className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[#52525b] hover:bg-[#f4f4f5]"
           >
             Network stats
           </Link>
@@ -223,7 +223,7 @@ useEffect(() => {
             href="https://github.com/settle-protocol"
             target="_blank"
             rel="noreferrer"
-            className="rounded-full border border-foreground/15 px-3 py-1.5 text-foreground/60 hover:bg-foreground/5"
+            className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[#52525b] hover:bg-[#f4f4f5]"
           >
             GitHub ↗
           </Link>

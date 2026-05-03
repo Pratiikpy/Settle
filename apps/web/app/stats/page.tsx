@@ -84,7 +84,7 @@ export default function StatsPage() {
         </div>
 
         {loading && (
-          <p className="mt-8 text-sm text-foreground/50">Loading…</p>
+          <p className="mt-8 text-sm text-[#52525b]">Loading…</p>
         )}
 
         {err && (
@@ -152,16 +152,16 @@ export default function StatsPage() {
             </section>
 
             {/* Top capabilities */}
-            <section className="mt-10 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mt-10 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">Top capabilities · 7d</h2>
               {data.top_capabilities_week.length === 0 ? (
-                <p className="mt-3 text-xs text-foreground/40">
+                <p className="mt-3 text-xs text-[#71717a]">
                   No capability hashes recorded yet.
                 </p>
               ) : (
                 <table className="mt-4 w-full border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-foreground/10 text-left text-[10px] uppercase tracking-wide text-foreground/45">
+                    <tr className="border-b border-[#e4e4e7] text-left text-[10px] uppercase tracking-wide text-[#71717a]">
                       <th className="py-2 pr-3">capability</th>
                       <th className="py-2 px-3 text-right">calls</th>
                       <th className="py-2 pl-3 text-right">volume</th>
@@ -169,25 +169,25 @@ export default function StatsPage() {
                   </thead>
                   <tbody>
                     {data.top_capabilities_week.map((c) => (
-                      <tr key={c.capability_hash} className="border-b border-foreground/5">
+                      <tr key={c.capability_hash} className="border-b border-[#f4f4f5]">
                         <td className="py-2 pr-3">
                           {c.alias ? (
-                            <span className="font-medium text-foreground/85">
+                            <span className="font-medium text-[#27272a]">
                               {c.alias}
                             </span>
                           ) : (
                             <Link
                               href={`/capabilities?h=${c.capability_hash}`}
-                              className="font-mono text-foreground/55 hover:text-foreground"
+                              className="font-mono text-[#52525b] hover:text-[#09090b]"
                             >
                               {c.capability_hash.slice(0, 12)}…
                             </Link>
                           )}
                         </td>
-                        <td className="py-2 px-3 text-right font-mono text-foreground/65">
+                        <td className="py-2 px-3 text-right font-mono text-[#09090b]/65">
                           {c.count}
                         </td>
-                        <td className="py-2 pl-3 text-right font-mono text-foreground/65">
+                        <td className="py-2 pl-3 text-right font-mono text-[#09090b]/65">
                           ${fmtUsdc(c.volume_lamports)}
                         </td>
                       </tr>
@@ -197,12 +197,12 @@ export default function StatsPage() {
               )}
             </section>
 
-            <p className="mt-8 text-[10px] text-foreground/40">
+            <p className="mt-8 text-[10px] text-[#71717a]">
               Generated {new Date(data.generated_at).toLocaleTimeString()}{" "}
               · {data.cached ? "served from 60s cache" : "fresh query"} ·{" "}
               <Link
                 href="/api/stats"
-                className="hover:text-foreground"
+                className="hover:text-[#09090b]"
               >
                 /api/stats
               </Link>
@@ -252,10 +252,10 @@ function Histogram({
   const total = Object.values(items).reduce((a, b) => a + b, 0);
   const sorted = Object.entries(items).sort((a, b) => b[1] - a[1]);
   return (
-    <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+    <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
       <h3 className="text-sm font-medium">{title}</h3>
       {total === 0 ? (
-        <p className="mt-3 text-xs text-foreground/40">No data yet.</p>
+        <p className="mt-3 text-xs text-[#71717a]">No data yet.</p>
       ) : (
         <ul className="mt-4 space-y-2">
           {sorted.map(([k, v]) => {
@@ -263,12 +263,12 @@ function Histogram({
             return (
               <li key={k} className="text-xs">
                 <div className="flex items-baseline justify-between">
-                  <span className="font-mono text-foreground/75">{k}</span>
-                  <span className="text-foreground/55">
+                  <span className="font-mono text-[#09090b]/75">{k}</span>
+                  <span className="text-[#52525b]">
                     {v} · {pct.toFixed(1)}%
                   </span>
                 </div>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-foreground/10">
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#e4e4e7]">
                   <div
                     className="h-full bg-accent"
                     style={{ width: `${pct}%` }}

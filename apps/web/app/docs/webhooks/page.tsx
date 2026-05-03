@@ -15,11 +15,11 @@ export default function WebhooksDocsPage() {
   return (
     <W6AppShell forceSurface="developer">
       <div style={{ maxWidth: 880 }}>
-        <div className="text-xs text-foreground/40">Phase 2 · Settle Protocol</div>
+        <div className="text-xs text-[#71717a]">Phase 2 · Settle Protocol</div>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">
           Webhooks + Idempotency
         </h1>
-        <p className="mt-2 text-sm text-foreground/60 max-w-xl">
+        <p className="mt-2 text-sm text-[#52525b] max-w-xl">
           Stripe-shaped event envelope, HMAC-SHA256 signatures, and
           per-key idempotency on every payment endpoint. Drop into any
           webhook-shaped backend with no Settle-specific glue.
@@ -32,7 +32,7 @@ export default function WebhooksDocsPage() {
           </p>
           <table className="mt-4 w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-foreground/10 text-left text-xs uppercase tracking-wide text-foreground/50">
+              <tr className="border-b border-[#e4e4e7] text-left text-xs uppercase tracking-wide text-[#52525b]">
                 <th className="py-2">event_type</th>
                 <th>fires when</th>
               </tr>
@@ -44,7 +44,7 @@ export default function WebhooksDocsPage() {
               <Row name="pact.disputed" desc="Delivery escrow disputed by the buyer; vault refunds." />
             </tbody>
           </table>
-          <p className="mt-3 text-xs text-foreground/50">
+          <p className="mt-3 text-xs text-[#52525b]">
             Receipts of every kind also appear in the payload&apos;s{" "}
             <code>data.kind</code>, so consumers who want fine-grained filtering
             can branch on that without us inventing N more event types.
@@ -52,7 +52,7 @@ export default function WebhooksDocsPage() {
         </Section>
 
         <Section title="Envelope shape">
-          <pre className="overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
+          <pre className="overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-[#27272a]">
             <code>{`{
   "api_version": "settle.v1",
   "id": "evt_<request_id>",
@@ -101,7 +101,7 @@ export default function WebhooksDocsPage() {
         </Section>
 
         <Section title="Verifying the signature">
-          <pre className="overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
+          <pre className="overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-[#27272a]">
             <code>{`import crypto from "node:crypto";
 
 function verify(rawBody: string, signatureHeader: string, secret: string): boolean {
@@ -116,7 +116,7 @@ function verify(rawBody: string, signatureHeader: string, secret: string): boole
   );
 }`}</code>
           </pre>
-          <p className="mt-3 text-xs text-foreground/50">
+          <p className="mt-3 text-xs text-[#52525b]">
             Always verify against the RAW body bytes — re-serializing JSON can
             change whitespace and break the comparison.
           </p>
@@ -146,7 +146,7 @@ function verify(rawBody: string, signatureHeader: string, secret: string): boole
               <code>POST /api/receipts/[id]/refund</code>
             </li>
           </ul>
-          <pre className="mt-4 overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
+          <pre className="mt-4 overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-[#27272a]">
             <code>{`fetch("/api/send/build", {
   method: "POST",
   headers: {
@@ -156,7 +156,7 @@ function verify(rawBody: string, signatureHeader: string, secret: string): boole
   body: JSON.stringify({ from, to, amount }),
 });`}</code>
           </pre>
-          <p className="mt-3 text-xs text-foreground/50">
+          <p className="mt-3 text-xs text-[#52525b]">
             Key constraints: 1–200 chars of <code>[A-Za-z0-9_-:.]</code>. Same
             key + different request body = same response (the response is
             cached, not re-derived). Old keys auto-purge after 24h.
@@ -183,13 +183,13 @@ function verify(rawBody: string, signatureHeader: string, secret: string): boole
         <div className="mt-12 flex gap-3">
           <Link
             href="/docs"
-            className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+            className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
           >
             ← Docs
           </Link>
           <Link
             href="/docs/verify-component"
-            className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+            className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
           >
             &lt;settle-verify&gt; →
           </Link>
@@ -201,9 +201,9 @@ function verify(rawBody: string, signatureHeader: string, secret: string): boole
 
 function Row({ name, desc }: { name: string; desc: string }) {
   return (
-    <tr className="border-b border-foreground/5">
-      <td className="py-2 font-mono text-foreground/85">{name}</td>
-      <td className="text-foreground/60">{desc}</td>
+    <tr className="border-b border-[#f4f4f5]">
+      <td className="py-2 font-mono text-[#27272a]">{name}</td>
+      <td className="text-[#52525b]">{desc}</td>
     </tr>
   );
 }
@@ -212,7 +212,7 @@ function Section(props: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-10">
       <h2 className="text-xl font-medium tracking-tight">{props.title}</h2>
-      <div className="prose prose-invert mt-4 max-w-none text-sm text-foreground/75 leading-relaxed">
+      <div className="prose prose-invert mt-4 max-w-none text-sm text-[#09090b]/75 leading-relaxed">
         {props.children}
       </div>
     </section>

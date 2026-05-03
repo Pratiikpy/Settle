@@ -222,7 +222,7 @@ export function CommandPalette() {
 
       <div
         ref={containerRef}
-        className="relative w-[min(92vw,560px)] overflow-hidden rounded-2xl border border-foreground/15 bg-background shadow-2xl"
+        className="relative w-[min(92vw,560px)] overflow-hidden rounded-2xl border border-[#e4e4e7] bg-background shadow-2xl"
         role="dialog"
         aria-modal="true"
       >
@@ -235,12 +235,12 @@ export function CommandPalette() {
           }}
           onKeyDown={onKeyDown}
           placeholder="Type a command, paste a hash, paste a pubkey…"
-          className="w-full border-b border-foreground/10 bg-transparent px-5 py-4 text-base outline-none placeholder:text-foreground/30"
+          className="w-full border-b border-[#e4e4e7] bg-transparent px-5 py-4 text-base outline-none placeholder:text-[#a1a1aa]"
         />
 
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {actions.length === 0 ? (
-            <p className="px-3 py-6 text-center text-xs text-foreground/40">
+            <p className="px-3 py-6 text-center text-xs text-[#71717a]">
               No matches. Try "send", "verify", a pubkey, or a hash.
             </p>
           ) : (
@@ -257,8 +257,8 @@ export function CommandPalette() {
                     className={
                       "flex w-full items-baseline justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition " +
                       (i === safeIdx
-                        ? "bg-foreground/10 text-foreground"
-                        : "text-foreground/80 hover:bg-foreground/5")
+                        ? "bg-[#e4e4e7] text-[#09090b]"
+                        : "text-[#27272a] hover:bg-[#f4f4f5]")
                     }
                   >
                     <span className="flex items-baseline gap-2">
@@ -268,13 +268,13 @@ export function CommandPalette() {
                         </span>
                       )}
                       {a.group === "recent" && (
-                        <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-foreground/50">
+                        <span className="rounded-full bg-[#e4e4e7] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#52525b]">
                           recent
                         </span>
                       )}
                       <span>{a.label}</span>
                     </span>
-                    <span className="text-[11px] text-foreground/40">{a.hint}</span>
+                    <span className="text-[11px] text-[#71717a]">{a.hint}</span>
                   </button>
                 </li>
               ))}
@@ -282,7 +282,7 @@ export function CommandPalette() {
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-foreground/10 px-4 py-2 text-[10px] text-foreground/40">
+        <div className="flex items-center justify-between border-t border-[#e4e4e7] px-4 py-2 text-[10px] text-[#71717a]">
           <span>↑↓ navigate · ⏎ open · esc close</span>
           <span className="font-mono">⌘K</span>
         </div>

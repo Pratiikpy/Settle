@@ -267,10 +267,10 @@ export default function OnboardingPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-8"
+            className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-8"
           >
             <h2 className="text-xl font-medium">Connect your wallet</h2>
-            <p className="mt-2 text-sm text-foreground/60">
+            <p className="mt-2 text-sm text-[#52525b]">
               Phantom is the smoothest. Your wallet stays in your control — Settle never sees
               your private keys.
             </p>
@@ -287,10 +287,10 @@ export default function OnboardingPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-8"
+            className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-8"
           >
             <h2 className="text-xl font-medium">Get devnet funds</h2>
-            <p className="mt-2 text-sm text-foreground/60">
+            <p className="mt-2 text-sm text-[#52525b]">
               We&apos;ll airdrop 0.5 SOL (for tx fees) + 25 test-USDC to your wallet so you
               can pay for things on devnet.
             </p>
@@ -301,7 +301,7 @@ export default function OnboardingPage() {
             >
               {funded ? "Funded ✓" : funding ? "Airdropping…" : "Get funds"}
             </button>
-            <p className="mt-3 text-xs text-foreground/40">
+            <p className="mt-3 text-xs text-[#71717a]">
               Devnet only · One airdrop per wallet per 24h
             </p>
 
@@ -319,7 +319,7 @@ export default function OnboardingPage() {
                   manual paths and you&apos;ll be ready in under a minute.
                 </p>
                 <div className="mt-3 grid gap-2 text-[11px]">
-                  <div className="flex items-baseline justify-between gap-3 rounded-lg bg-foreground/[0.04] p-2 font-mono">
+                  <div className="flex items-baseline justify-between gap-3 rounded-lg bg-[#fafafa] p-2 font-mono">
                     <span className="break-all">{publicKey.toBase58()}</span>
                     <button
                       onClick={() => {
@@ -327,7 +327,7 @@ export default function OnboardingPage() {
                           .writeText(publicKey.toBase58())
                           .then(() => toast.success("Address copied"));
                       }}
-                      className="shrink-0 rounded-full border border-foreground/20 px-2 py-0.5 text-[10px] hover:bg-foreground/10"
+                      className="shrink-0 rounded-full border border-[#a1a1aa] px-2 py-0.5 text-[10px] hover:bg-[#e4e4e7]"
                     >
                       copy
                     </button>
@@ -336,7 +336,7 @@ export default function OnboardingPage() {
                     href="https://faucet.solana.com/"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex h-9 items-center justify-center rounded-full border border-foreground/20 px-4 text-xs hover:bg-foreground/5"
+                    className="inline-flex h-9 items-center justify-center rounded-full border border-[#a1a1aa] px-4 text-xs hover:bg-[#f4f4f5]"
                   >
                     Step 1 — get devnet SOL on faucet.solana.com →
                   </a>
@@ -344,7 +344,7 @@ export default function OnboardingPage() {
                     href="https://faucet.circle.com/"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex h-9 items-center justify-center rounded-full border border-foreground/20 px-4 text-xs hover:bg-foreground/5"
+                    className="inline-flex h-9 items-center justify-center rounded-full border border-[#a1a1aa] px-4 text-xs hover:bg-[#f4f4f5]"
                   >
                     Step 2 — get devnet USDC on faucet.circle.com →
                   </a>
@@ -373,28 +373,28 @@ export default function OnboardingPage() {
             exit={{ opacity: 0, y: -10 }}
             className="grid gap-6 lg:grid-cols-[1fr,280px]"
           >
-            <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-8">
+            <div className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-8">
               <h2 className="text-xl font-medium">Create your card</h2>
-              <p className="mt-2 text-sm text-foreground/60">
+              <p className="mt-2 text-sm text-[#52525b]">
                 Your AgentCard scopes how much AI agents can spend on your behalf. We&apos;ll
                 set sensible defaults — you can edit anytime.
               </p>
 
               <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-lg border border-foreground/10 p-3">
-                  <div className="text-xs text-foreground/50">Daily cap</div>
+                <div className="rounded-lg border border-[#e4e4e7] p-3">
+                  <div className="text-xs text-[#52525b]">Daily cap</div>
                   <div className="mt-0.5 font-mono">$25.00</div>
                 </div>
-                <div className="rounded-lg border border-foreground/10 p-3">
-                  <div className="text-xs text-foreground/50">Per-call max</div>
+                <div className="rounded-lg border border-[#e4e4e7] p-3">
+                  <div className="text-xs text-[#52525b]">Per-call max</div>
                   <div className="mt-0.5 font-mono">$1.00</div>
                 </div>
-                <div className="rounded-lg border border-foreground/10 p-3">
-                  <div className="text-xs text-foreground/50">Allowlist</div>
+                <div className="rounded-lg border border-[#e4e4e7] p-3">
+                  <div className="text-xs text-[#52525b]">Allowlist</div>
                   <div className="mt-0.5 text-xs">3 demo merchants</div>
                 </div>
-                <div className="rounded-lg border border-foreground/10 p-3">
-                  <div className="text-xs text-foreground/50">Expires</div>
+                <div className="rounded-lg border border-[#e4e4e7] p-3">
+                  <div className="text-xs text-[#52525b]">Expires</div>
                   <div className="mt-0.5 text-xs">30 days</div>
                 </div>
               </div>
@@ -409,7 +409,7 @@ export default function OnboardingPage() {
             </div>
 
             <div>
-              <div className="text-xs font-medium uppercase tracking-wider text-foreground/50">
+              <div className="text-xs font-medium uppercase tracking-wider text-[#52525b]">
                 Preview
               </div>
               <div className="mt-3">
@@ -434,24 +434,24 @@ export default function OnboardingPage() {
             className="rounded-2xl border border-accent/30 bg-accent/5 p-8"
           >
             <h2 className="text-xl font-medium text-accent">✓ You&apos;re ready</h2>
-            <p className="mt-2 text-sm text-foreground/70">
+            <p className="mt-2 text-sm text-[#27272a]">
               Your AgentCard is live on Solana devnet. Save the agent secret below — it lets you
               run the demo agent locally.
             </p>
 
             <div className="mt-6 space-y-3 text-xs">
               <div>
-                <div className="text-foreground/50">Card PDA</div>
+                <div className="text-[#52525b]">Card PDA</div>
                 <code className="mt-1 block break-all font-mono">{createdCard.cardPubkey}</code>
               </div>
               <div>
-                <div className="text-foreground/50">Agent secret (sensitive)</div>
-                <code className="mt-1 block break-all font-mono text-foreground/40">
+                <div className="text-[#52525b]">Agent secret (sensitive)</div>
+                <code className="mt-1 block break-all font-mono text-[#71717a]">
                   {createdCard.agentSecret.slice(0, 16)}…
                 </code>
                 <button
                   onClick={copyAgentSecret}
-                  className="mt-2 rounded-full border border-foreground/20 px-4 py-1.5 text-xs hover:bg-foreground/5"
+                  className="mt-2 rounded-full border border-[#a1a1aa] px-4 py-1.5 text-xs hover:bg-[#f4f4f5]"
                 >
                   Copy full secret
                 </button>
@@ -469,7 +469,7 @@ export default function OnboardingPage() {
                 href={getSolscanUrl(createdCard.sig)}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-foreground/20 px-6 py-2 text-sm hover:bg-foreground/5"
+                className="rounded-full border border-[#a1a1aa] px-6 py-2 text-sm hover:bg-[#f4f4f5]"
               >
                 Solscan ↗
               </a>

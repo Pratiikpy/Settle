@@ -117,14 +117,14 @@ export function HandlePayCta({
   return (
     <div className={`mt-5 rounded-2xl border border-accent/30 bg-gradient-to-br ${accent} p-5`}>
       <div className="flex items-baseline justify-between">
-        <div className="text-xs uppercase tracking-wider text-foreground/55">
+        <div className="text-xs uppercase tracking-wider text-[#52525b]">
           {requestedNote ? "Pay request" : "Pay"}
         </div>
-        <span className="text-[10px] text-foreground/40">to {displayName}</span>
+        <span className="text-[10px] text-[#71717a]">to {displayName}</span>
       </div>
       <div className="mt-2 text-4xl font-semibold tracking-tight">${amount.toFixed(2)}</div>
       {requestedNote && (
-        <p className="mt-2 line-clamp-2 text-sm text-foreground/70">&ldquo;{requestedNote}&rdquo;</p>
+        <p className="mt-2 line-clamp-2 text-sm text-[#27272a]">&ldquo;{requestedNote}&rdquo;</p>
       )}
       <button
         type="button"
@@ -142,7 +142,7 @@ export function HandlePayCta({
                 : "Sending…"
             : `Send $${amount.toFixed(2)}`}
       </button>
-      <p className="mt-2 text-[11px] text-foreground/40">
+      <p className="mt-2 text-[11px] text-[#71717a]">
         USDC · Solana Pay reference embedded · settles in &lt;1s
       </p>
       <TrustGesture state={gesture} />

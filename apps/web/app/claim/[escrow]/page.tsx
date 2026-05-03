@@ -167,7 +167,7 @@ export default function ClaimPage() {
         <h1 className="text-3xl font-semibold tracking-tight">
           {previewAmount ? `$${previewAmount} is yours` : "Claim USDC"}
         </h1>
-        <p className="mt-2 text-sm text-foreground/60">
+        <p className="mt-2 text-sm text-[#52525b]">
           {previewAmount
             ? "Connect Phantom to receive it. Settles in under a second."
             : "Someone sent you money via a Settle link. Connect your wallet to claim."}
@@ -176,15 +176,15 @@ export default function ClaimPage() {
         {/* Hero amount card — appears when balance is known, before wallet connect */}
         {previewAmount && status !== "done" && (
           <div className="mt-8 rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-400/15 to-accent/10 p-8 text-center">
-            <div className="text-[11px] uppercase tracking-wider text-foreground/55">Pending</div>
+            <div className="text-[11px] uppercase tracking-wider text-[#52525b]">Pending</div>
             <div className="mt-2 text-5xl font-semibold tracking-tight">${previewAmount}</div>
-            <div className="mt-1 text-[11px] text-foreground/45">USDC</div>
+            <div className="mt-1 text-[11px] text-[#71717a]">USDC</div>
           </div>
         )}
 
-        <div className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
-          <div className="text-[10px] uppercase tracking-wider text-foreground/45">Escrow</div>
-          <code className="mt-1 block break-all text-xs text-foreground/70">{params.escrow}</code>
+        <div className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
+          <div className="text-[10px] uppercase tracking-wider text-[#71717a]">Escrow</div>
+          <code className="mt-1 block break-all text-xs text-[#27272a]">{params.escrow}</code>
 
           {escrowEmpty && status !== "done" && (
             <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
@@ -228,7 +228,7 @@ export default function ClaimPage() {
             </button>
           )}
         </div>
-        <p className="mt-4 text-[11px] text-foreground/40">
+        <p className="mt-4 text-[11px] text-[#71717a]">
           The claim secret lives in the URL fragment (#) and never reaches Settle&apos;s servers.
           Anyone with this URL can claim — keep it private.
         </p>

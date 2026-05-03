@@ -34,7 +34,7 @@ export default function VerifyComponentDocs() {
         >
           &lt;settle-verify&gt;
         </h1>
-        <p className="mt-2 text-sm text-foreground/60 max-w-xl">
+        <p className="mt-2 text-sm text-[#52525b] max-w-xl">
           Embeddable receipt-verification widget. Paste two lines into any
           HTML page; show a Settle receipt's verification with no signup,
           no API key, no React build step.
@@ -42,11 +42,11 @@ export default function VerifyComponentDocs() {
 
         {/* Install */}
         <Section title="Install">
-          <pre className="block rounded-xl bg-black/30 p-4 text-xs text-foreground/80 overflow-x-auto">
+          <pre className="block rounded-xl bg-black/30 p-4 text-xs text-[#27272a] overflow-x-auto">
             <code>{`<script src="https://settle.so/verify.js"></script>
 <settle-verify hash="<32-byte-hex>"></settle-verify>`}</code>
           </pre>
-          <p className="mt-3 text-sm text-foreground/60">
+          <p className="mt-3 text-sm text-[#52525b]">
             That&apos;s it. The custom element fetches{" "}
             <code className="text-xs">/api/verify/&lt;hash&gt;</code>, renders
             a Settle-styled card, and isolates its CSS via shadow DOM so it
@@ -65,7 +65,7 @@ export default function VerifyComponentDocs() {
           <div className="mt-4 grid gap-4">
             {/* By receipt-id (pulls from /api/receipts/[id]) */}
             <div>
-              <p className="mb-2 text-[11px] uppercase tracking-wide text-foreground/50">
+              <p className="mb-2 text-[11px] uppercase tracking-wide text-[#52525b]">
                 By receipt-id
               </p>
               <settle-verify receipt-id="11111111-2222-3333-4444-555555555555" />
@@ -73,7 +73,7 @@ export default function VerifyComponentDocs() {
 
             {/* Compact variant */}
             <div>
-              <p className="mb-2 text-[11px] uppercase tracking-wide text-foreground/50">
+              <p className="mb-2 text-[11px] uppercase tracking-wide text-[#52525b]">
                 Compact variant
               </p>
               <settle-verify
@@ -88,25 +88,25 @@ export default function VerifyComponentDocs() {
         <Section title="Attributes">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b border-foreground/10 text-left text-xs uppercase tracking-wide text-foreground/50">
+              <tr className="border-b border-[#e4e4e7] text-left text-xs uppercase tracking-wide text-[#52525b]">
                 <th className="py-2">attr</th>
                 <th>type</th>
                 <th>description</th>
               </tr>
             </thead>
             <tbody className="text-xs">
-              <tr className="border-b border-foreground/5">
-                <td className="py-2 font-mono text-foreground/85">hash</td>
+              <tr className="border-b border-[#f4f4f5]">
+                <td className="py-2 font-mono text-[#27272a]">hash</td>
                 <td>32-byte hex</td>
                 <td>Looks up by any of the 5 commit-chain hashes.</td>
               </tr>
-              <tr className="border-b border-foreground/5">
-                <td className="py-2 font-mono text-foreground/85">receipt-id</td>
+              <tr className="border-b border-[#f4f4f5]">
+                <td className="py-2 font-mono text-[#27272a]">receipt-id</td>
                 <td>UUID v4</td>
                 <td>Looks up by the receipt&apos;s primary key.</td>
               </tr>
-              <tr className="border-b border-foreground/5">
-                <td className="py-2 font-mono text-foreground/85">endpoint</td>
+              <tr className="border-b border-[#f4f4f5]">
+                <td className="py-2 font-mono text-[#27272a]">endpoint</td>
                 <td>URL</td>
                 <td>
                   Override the API host. Default = same origin (so the script
@@ -114,7 +114,7 @@ export default function VerifyComponentDocs() {
                 </td>
               </tr>
               <tr>
-                <td className="py-2 font-mono text-foreground/85">variant</td>
+                <td className="py-2 font-mono text-[#27272a]">variant</td>
                 <td>"compact"</td>
                 <td>Single-line summary. Default = full card.</td>
               </tr>
@@ -150,7 +150,7 @@ export default function VerifyComponentDocs() {
         <div className="mt-12 flex gap-3">
           <Link
             href="/docs"
-            className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+            className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
           >
             ← Back to docs
           </Link>
@@ -158,7 +158,7 @@ export default function VerifyComponentDocs() {
             href="/verify.js"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+            className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
           >
             View source: /verify.js ↗
           </a>
@@ -172,7 +172,7 @@ function Section(props: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-10">
       <h2 className="text-xl font-medium tracking-tight">{props.title}</h2>
-      <div className="prose prose-invert mt-4 max-w-none text-sm text-foreground/75 leading-relaxed">
+      <div className="prose prose-invert mt-4 max-w-none text-sm text-[#09090b]/75 leading-relaxed">
         {props.children}
       </div>
     </section>

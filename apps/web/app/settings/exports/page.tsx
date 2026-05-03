@@ -68,13 +68,13 @@ export default function ExportsPage() {
 
       <div className="mt-6 space-y-5">
         <div>
-          <label className="block text-xs font-medium text-foreground/70">
+          <label className="block text-xs font-medium text-[#27272a]">
             Year
           </label>
           <select
             value={year}
             onChange={(e) => setYear(Number.parseInt(e.target.value, 10))}
-            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
           >
             {YEARS.map((y) => (
               <option key={y} value={y}>
@@ -85,7 +85,7 @@ export default function ExportsPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-foreground/70">
+          <label className="block text-xs font-medium text-[#27272a]">
             Jurisdiction template
           </label>
           <select
@@ -93,20 +93,20 @@ export default function ExportsPage() {
             onChange={(e) =>
               setJurisdiction(e.target.value as typeof jurisdiction)
             }
-            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
           >
             <option value="generic">Generic</option>
             <option value="us">US — Schedule C</option>
             <option value="eu">EU — VAT</option>
             <option value="in">India — GST</option>
           </select>
-          <p className="mt-1 text-[11px] text-foreground/50">
+          <p className="mt-1 text-[11px] text-[#52525b]">
             Affects PDF formatting only. CSV + JSON contain all fields regardless.
           </p>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-foreground/70">
+          <label className="block text-xs font-medium text-[#27272a]">
             Format
           </label>
           <div className="mt-2 flex gap-2">
@@ -118,7 +118,7 @@ export default function ExportsPage() {
                 className={`rounded-full border px-3 py-1 text-xs ${
                   format === f
                     ? "border-accent bg-accent/[0.1] text-accent"
-                    : "border-foreground/15 text-foreground/60"
+                    : "border-[#e4e4e7] text-[#52525b]"
                 }`}
               >
                 {f.toUpperCase()}
@@ -126,7 +126,7 @@ export default function ExportsPage() {
             ))}
           </div>
           {format === "pdf" && (
-            <p className="mt-1 text-[11px] text-foreground/50">
+            <p className="mt-1 text-[11px] text-[#52525b]">
               Opens a print-styled HTML page; use your browser&apos;s
               &ldquo;Print to PDF&rdquo; for the file.
             </p>
@@ -146,7 +146,7 @@ export default function ExportsPage() {
         </a>
       </div>
 
-      <p className="mt-8 text-[11px] text-foreground/40">
+      <p className="mt-8 text-[11px] text-[#71717a]">
           Each receipt commits 4 BLAKE3 hashes on-chain. The export includes those
           hashes alongside the row data so the export itself is verifiable —
           anyone can recompute the chain and confirm integrity via Settle&apos;s

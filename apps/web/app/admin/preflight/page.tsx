@@ -96,11 +96,11 @@ export default function PreflightPage() {
         </header>
 
         {!connected ? (
-          <p className="text-sm text-foreground/60">
+          <p className="text-sm text-[#52525b]">
             Connect a wallet to load preflight checks.
           </p>
         ) : loading ? (
-          <p className="text-sm text-foreground/60">Probing checks…</p>
+          <p className="text-sm text-[#52525b]">Probing checks…</p>
         ) : !data ? (
           <p className="text-sm text-red-300">Preflight endpoint failed.</p>
         ) : (
@@ -141,7 +141,7 @@ export default function PreflightPage() {
                       {c.status}
                     </span>
                   </div>
-                  <p className="mt-2 text-foreground/70">{c.hint}</p>
+                  <p className="mt-2 text-[#27272a]">{c.hint}</p>
                 </li>
               ))}
             </ul>

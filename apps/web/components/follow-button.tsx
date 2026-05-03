@@ -102,7 +102,7 @@ export function FollowButton({
           : "Follow";
 
   const className = isFollowing
-    ? "border border-foreground/15 bg-foreground/5 text-foreground/70 hover:bg-foreground/10"
+    ? "border border-[#e4e4e7] bg-[#f4f4f5] text-[#27272a] hover:bg-[#e4e4e7]"
     : "bg-accent text-background hover:bg-accent/90";
 
   const sizing =

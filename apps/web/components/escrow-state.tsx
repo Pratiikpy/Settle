@@ -137,8 +137,8 @@ export function EscrowState(props: EscrowProps) {
   }
   if (refunded) {
     return (
-      <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5 text-sm">
-        <div className="text-xs uppercase tracking-wider text-foreground/45">Refunded</div>
+      <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5 text-sm">
+        <div className="text-xs uppercase tracking-wider text-[#71717a]">Refunded</div>
         <div className="mt-1">
           {lamportsToUsd(props.amountLamports)} refunded to buyer (dispute resolved).
         </div>
@@ -162,20 +162,20 @@ export function EscrowState(props: EscrowProps) {
       <div className="mt-1 text-2xl font-semibold tracking-tight">
         {lamportsToUsd(props.amountLamports)}
       </div>
-      <p className="mt-2 text-xs text-foreground/60">
+      <p className="mt-2 text-xs text-[#52525b]">
         Held in the Pact Vault PDA. Funds release only when buyer confirms or the
         deadline passes — and only to the merchant pinned at open.
       </p>
 
       <div className="mt-4 grid grid-cols-2 gap-3 text-[11px]">
         <div>
-          <div className="text-foreground/40">Confirm deadline</div>
+          <div className="text-[#71717a]">Confirm deadline</div>
           <div className="font-mono">
             {past_confirm ? "passed" : `+${slotsToConfirm} slots`}
           </div>
         </div>
         <div>
-          <div className="text-foreground/40">Dispute deadline</div>
+          <div className="text-[#71717a]">Dispute deadline</div>
           <div className="font-mono">
             {past_dispute ? "closed" : `+${slotsToDispute} slots`}
           </div>
@@ -198,7 +198,7 @@ export function EscrowState(props: EscrowProps) {
                 type="button"
                 onClick={() => void callAction("dispute")}
                 disabled={busy !== "none"}
-                className="w-full rounded-full border border-foreground/20 py-3 text-sm font-medium hover:bg-foreground/5 disabled:opacity-50"
+                className="w-full rounded-full border border-[#a1a1aa] py-3 text-sm font-medium hover:bg-[#f4f4f5] disabled:opacity-50"
               >
                 {busy === "dispute" ? "Disputing…" : "Dispute (refund)"}
               </button>
@@ -214,7 +214,7 @@ export function EscrowState(props: EscrowProps) {
             {busy === "release" ? "Releasing…" : "Permissionless release"}
           </button>
         ) : (
-          <div className="text-center text-xs text-foreground/45">
+          <div className="text-center text-xs text-[#71717a]">
             Only the buyer can confirm or dispute until the confirm deadline passes.
           </div>
         )}

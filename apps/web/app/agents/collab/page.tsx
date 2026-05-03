@@ -116,35 +116,35 @@ export default function CollabHubPage() {
   return (
     <W6AppShell forceSurface="agent">
       <div style={{ maxWidth: 880 }}>
-        <div className="text-xs uppercase tracking-wider text-foreground/55">Collabs</div>
+        <div className="text-xs uppercase tracking-wider text-[#52525b]">Collabs</div>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">Two-tap split payment</h1>
-        <p className="mt-2 text-sm text-foreground/60">
+        <p className="mt-2 text-sm text-[#52525b]">
           You + a co-creator. One link. Every payment splits atomically across both
           wallets in a single Solana tx.
         </p>
 
         {!connected ? (
-          <div className="mt-10 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6 text-sm text-foreground/60">
+          <div className="mt-10 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6 text-sm text-[#52525b]">
             Connect Phantom to create a collab.
           </div>
         ) : (
-          <section className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          <section className="mt-8 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
             <h2 className="text-sm font-medium">Create a new collab</h2>
             <div className="mt-4 grid gap-3 text-sm">
               <input
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="Label, e.g. 'Pixar tee — 50/50'"
-                className="rounded-lg border border-foreground/15 bg-transparent px-4 py-2 outline-none focus:border-accent"
+                className="rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 outline-none focus:border-accent"
               />
               <input
                 value={creatorB}
                 onChange={(e) => setCreatorB(e.target.value)}
                 placeholder="Creator B pubkey (Solana address)"
-                className="rounded-lg border border-foreground/15 bg-transparent px-4 py-2 font-mono text-xs outline-none focus:border-accent"
+                className="rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 font-mono text-xs outline-none focus:border-accent"
               />
               <div>
-                <div className="flex items-baseline justify-between text-xs text-foreground/60">
+                <div className="flex items-baseline justify-between text-xs text-[#52525b]">
                   <span>Your share</span>
                   <span className="font-mono">
                     {ratioA}% / {100 - ratioA}%
@@ -166,7 +166,7 @@ export default function CollabHubPage() {
                 placeholder="Description (optional)"
                 rows={2}
                 maxLength={280}
-                className="rounded-lg border border-foreground/15 bg-transparent px-4 py-2 text-sm outline-none focus:border-accent"
+                className="rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 text-sm outline-none focus:border-accent"
               />
             </div>
             <button
@@ -182,9 +182,9 @@ export default function CollabHubPage() {
 
         <h2 className="mt-12 text-sm font-medium">Your collabs</h2>
         {loading ? (
-          <div className="mt-3 h-20 animate-pulse rounded-2xl border border-foreground/10 bg-white/[0.02]" />
+          <div className="mt-3 h-20 animate-pulse rounded-2xl border border-[#e4e4e7] bg-[#fafafa]" />
         ) : collabs.length === 0 ? (
-          <div className="mt-3 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5 text-sm text-foreground/60">
+          <div className="mt-3 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5 text-sm text-[#52525b]">
             None yet.
           </div>
         ) : (
@@ -195,11 +195,11 @@ export default function CollabHubPage() {
                 <li key={c.id}>
                   <Link
                     href={`/collab/${c.id}`}
-                    className="flex items-center justify-between rounded-xl border border-foreground/10 p-4 hover:bg-foreground/[0.03]"
+                    className="flex items-center justify-between rounded-xl border border-[#e4e4e7] p-4 hover:bg-[#fafafa]"
                   >
                     <div>
                       <div className="text-sm font-medium">{c.label}</div>
-                      <div className="mt-0.5 text-[11px] text-foreground/40">
+                      <div className="mt-0.5 text-[11px] text-[#71717a]">
                         {ratioAPct}% / {100 - ratioAPct}% with{" "}
                         {c.creator_b_pubkey.slice(0, 6)}…
                       </div>

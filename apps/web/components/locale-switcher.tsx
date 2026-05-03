@@ -33,7 +33,7 @@ export function LocaleSwitcher({
   const { locale, setLocale } = useTranslate();
   return (
     <div
-      className={`inline-flex items-center gap-0.5 rounded-full border border-foreground/10 bg-foreground/[0.02] p-0.5 ${className}`}
+      className={`inline-flex items-center gap-0.5 rounded-full border border-[#e4e4e7] bg-[#fafafa] p-0.5 ${className}`}
       role="group"
       aria-label="Language"
     >
@@ -45,7 +45,7 @@ export function LocaleSwitcher({
           className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide transition-colors ${
             locale === l
               ? "bg-accent text-background"
-              : "text-foreground/50 hover:text-foreground"
+              : "text-[#52525b] hover:text-[#09090b]"
           }`}
         >
           {LABELS[l]}

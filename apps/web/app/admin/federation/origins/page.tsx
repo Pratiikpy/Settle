@@ -140,7 +140,7 @@ export default function FederationOriginsPage() {
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
             placeholder="Paste the operator secret"
-            className="mt-2 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 font-mono text-sm"
+            className="mt-2 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-sm"
           />
           <button
             onClick={() => load(secret)}
@@ -165,13 +165,13 @@ export default function FederationOriginsPage() {
                 className={`rounded-2xl border p-4 text-xs ${
                   o.trusted
                     ? "border-emerald-400/30 bg-emerald-400/[0.03]"
-                    : "border-foreground/10 bg-white/[0.02]"
+                    : "border-[#e4e4e7] bg-[#fafafa]"
                 }`}
               >
                 <div className="flex items-baseline justify-between gap-3">
                   <div>
                     <strong>{o.label}</strong>
-                    <p className="mt-1 text-[10px] text-foreground/50">
+                    <p className="mt-1 text-[10px] text-[#52525b]">
                       <code>{o.origin_id}</code>
                     </p>
                   </div>
@@ -179,7 +179,7 @@ export default function FederationOriginsPage() {
                     className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${
                       o.trusted
                         ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
-                        : "border-foreground/20 bg-foreground/5 text-foreground/60"
+                        : "border-[#a1a1aa] bg-[#f4f4f5] text-[#52525b]"
                     }`}
                   >
                     {o.trusted ? "trusted" : "untrusted"}
@@ -204,12 +204,12 @@ export default function FederationOriginsPage() {
                   />
                 </div>
 
-                <div className="mt-3 text-[10px] text-foreground/50">
+                <div className="mt-3 text-[10px] text-[#52525b]">
                   attestation pubkey:{" "}
                   <code className="break-all">{o.attestation_pubkey}</code>
                 </div>
                 {o.notes && (
-                  <p className="mt-2 text-[11px] text-foreground/60">
+                  <p className="mt-2 text-[11px] text-[#52525b]">
                     {o.notes}
                   </p>
                 )}
@@ -219,7 +219,7 @@ export default function FederationOriginsPage() {
                   disabled={busy[o.origin_id]}
                   className={`mt-3 rounded-full px-3 py-1 text-[11px] disabled:opacity-50 ${
                     o.trusted
-                      ? "border border-foreground/20 hover:bg-foreground/5"
+                      ? "border border-[#a1a1aa] hover:bg-[#f4f4f5]"
                       : "bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/25"
                   }`}
                 >
@@ -249,11 +249,11 @@ function Pill({
 }) {
   const cls = {
     emerald: "border-emerald-400/30 text-emerald-200",
-    neutral: "border-foreground/15 text-foreground/60",
+    neutral: "border-[#e4e4e7] text-[#52525b]",
     red: "border-red-400/30 text-red-200",
   }[tone];
   return (
-    <div className={`rounded-lg border bg-white/[0.02] p-2 ${cls}`}>
+    <div className={`rounded-lg border bg-[#fafafa] p-2 ${cls}`}>
       <p className="text-[10px] uppercase tracking-wide opacity-60">{label}</p>
       <p className="mt-1 text-sm">{value.toLocaleString()}</p>
     </div>

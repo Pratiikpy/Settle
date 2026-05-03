@@ -108,7 +108,7 @@ export function ScreenshotDropzone({
       className={`flex cursor-pointer items-center gap-3 rounded-xl border border-dashed p-3 text-xs transition ${
         dragging
           ? "border-accent bg-accent/10"
-          : "border-foreground/20 bg-foreground/[0.02] hover:bg-foreground/[0.04]"
+          : "border-[#a1a1aa] bg-[#fafafa] hover:bg-[#fafafa]"
       }`}
     >
       <input
@@ -123,14 +123,14 @@ export function ScreenshotDropzone({
         }}
       />
       <div className="flex-1">
-        <div className="font-medium text-foreground/80">
+        <div className="font-medium text-[#27272a]">
           {busy ? "Decoding…" : "Tap-to-pay from screenshot"}
         </div>
-        <div className="mt-0.5 text-[11px] text-foreground/50">
+        <div className="mt-0.5 text-[11px] text-[#52525b]">
           Drop a Solana Pay QR image, paste from clipboard, or click to pick a file.
         </div>
       </div>
-      <span className="text-[10px] uppercase tracking-wider text-foreground/40">
+      <span className="text-[10px] uppercase tracking-wider text-[#71717a]">
         F19
       </span>
     </div>

@@ -128,7 +128,7 @@ export default function MerchantVerifyDomainPage() {
           >
             Verify your domain
           </h1>
-          <p className="mt-2 text-sm text-foreground/60">
+          <p className="mt-2 text-sm text-[#52525b]">
             Add a DNS TXT record at <code>_settle.&lt;your-domain&gt;</code>{" "}
             to prove control. After verification you can register webhooks
             and capabilities under this handle.
@@ -136,24 +136,24 @@ export default function MerchantVerifyDomainPage() {
         </header>
 
         {!connected ? (
-          <p className="text-sm text-foreground/60">
+          <p className="text-sm text-[#52525b]">
             Connect the wallet that owns @{params.handle}.
           </p>
         ) : (
           <>
             {/* Step 1: domain entry */}
-            <section className="mb-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mb-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">1. Domain</h2>
               <input
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder="your-merchant.example.com"
-                className="mt-3 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 font-mono text-sm"
+                className="mt-3 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-sm"
               />
               <button
                 onClick={init}
                 disabled={busy || !domain}
-                className="mt-3 rounded-full border border-foreground/20 px-4 py-1.5 text-xs hover:bg-foreground/5 disabled:opacity-50"
+                className="mt-3 rounded-full border border-[#a1a1aa] px-4 py-1.5 text-xs hover:bg-[#f4f4f5] disabled:opacity-50"
               >
                 {busy ? "Issuing token…" : "Issue verification token"}
               </button>
@@ -163,45 +163,45 @@ export default function MerchantVerifyDomainPage() {
             {txtRecord && (
               <section className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/[0.04] p-5">
                 <h2 className="text-sm font-medium">2. Add this TXT record</h2>
-                <p className="mt-2 text-[11px] text-foreground/60">
+                <p className="mt-2 text-[11px] text-[#52525b]">
                   Token expires{" "}
                   {new Date(txtRecord.expires_at).toLocaleString()}.
                 </p>
                 <div className="mt-4 space-y-3">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                    <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                       Record name
                     </p>
                     <div className="mt-1 flex items-center gap-2">
-                      <code className="flex-1 break-all rounded-lg bg-foreground/[0.04] px-3 py-2 font-mono text-xs">
+                      <code className="flex-1 break-all rounded-lg bg-[#fafafa] px-3 py-2 font-mono text-xs">
                         {txtRecord.txt_record_name}
                       </code>
                       <button
                         onClick={() => copy(txtRecord.txt_record_name)}
-                        className="rounded-full border border-foreground/20 px-3 py-1 text-[11px]"
+                        className="rounded-full border border-[#a1a1aa] px-3 py-1 text-[11px]"
                       >
                         copy
                       </button>
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                    <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                       Record value
                     </p>
                     <div className="mt-1 flex items-center gap-2">
-                      <code className="flex-1 break-all rounded-lg bg-foreground/[0.04] px-3 py-2 font-mono text-xs">
+                      <code className="flex-1 break-all rounded-lg bg-[#fafafa] px-3 py-2 font-mono text-xs">
                         {txtRecord.txt_record_value}
                       </code>
                       <button
                         onClick={() => copy(txtRecord.txt_record_value)}
-                        className="rounded-full border border-foreground/20 px-3 py-1 text-[11px]"
+                        className="rounded-full border border-[#a1a1aa] px-3 py-1 text-[11px]"
                       >
                         copy
                       </button>
                     </div>
                   </div>
                 </div>
-                <p className="mt-4 text-[11px] text-foreground/50">
+                <p className="mt-4 text-[11px] text-[#52525b]">
                   Most DNS providers (Cloudflare, Route53, Namecheap) propagate
                   TXT changes within 1-5 minutes.
                 </p>
@@ -210,9 +210,9 @@ export default function MerchantVerifyDomainPage() {
 
             {/* Step 3: check */}
             {txtRecord && (
-              <section className="mb-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+              <section className="mb-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
                 <h2 className="text-sm font-medium">3. Verify</h2>
-                <p className="mt-2 text-xs text-foreground/60">
+                <p className="mt-2 text-xs text-[#52525b]">
                   We fetch the TXT record and compare. On match, we mark you
                   verified for this domain.
                 </p>
@@ -232,20 +232,20 @@ export default function MerchantVerifyDomainPage() {
                 <p className="text-sm font-medium text-emerald-200">
                   ✓ Verified
                 </p>
-                <p className="mt-2 text-xs text-foreground/70">
+                <p className="mt-2 text-xs text-[#27272a]">
                   {verified.domain} is now bound to your merchant pubkey.
                   You can register webhooks + capabilities.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2 text-[11px]">
                   <Link
                     href={`/m/${params.handle}/webhook`}
-                    className="rounded-full border border-foreground/20 px-3 py-1.5 text-foreground/70 hover:bg-foreground/5"
+                    className="rounded-full border border-[#a1a1aa] px-3 py-1.5 text-[#27272a] hover:bg-[#f4f4f5]"
                   >
                     Register webhook →
                   </Link>
                   <Link
                     href={`/m/${params.handle}/capabilities`}
-                    className="rounded-full border border-foreground/20 px-3 py-1.5 text-foreground/70 hover:bg-foreground/5"
+                    className="rounded-full border border-[#a1a1aa] px-3 py-1.5 text-[#27272a] hover:bg-[#f4f4f5]"
                   >
                     Publish capabilities →
                   </Link>

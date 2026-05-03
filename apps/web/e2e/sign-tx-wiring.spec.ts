@@ -44,7 +44,7 @@ test.describe("Layer B — signTransaction wiring", () => {
     });
 
     const recipientInput = page
-      .locator("input[placeholder='@elena']")
+      .locator("input[placeholder='@handle']")
       .first();
     await expect(recipientInput).toBeVisible({ timeout: 15_000 });
     await recipientInput.fill("Hrjjwhe1kS6qi9bmhxra7JgPggfGJa62mDnn2koyMijB");
@@ -55,7 +55,10 @@ test.describe("Layer B — signTransaction wiring", () => {
     await expect(amountInput).toBeVisible({ timeout: 5_000 });
     await amountInput.fill("0.01");
 
-    const submitBtn = page.locator("form button[type='submit']").first();
+    // Wave 6: send page uses an onClick button (no <form>), copy starts with "Pay …".
+    const submitBtn = page
+      .locator("button.w6-btn-primary", { hasText: /^(Pay |Sent|Signing|Confirming)/ })
+      .first();
     await expect(submitBtn).toBeVisible({ timeout: 10_000 });
     await submitBtn.click();
     await page.waitForTimeout(2_000);

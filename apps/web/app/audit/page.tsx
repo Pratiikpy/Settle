@@ -64,8 +64,8 @@ interface AuditResponse {
 }
 
 const STATUS_BADGE: Record<ExecutionRow["status"], string> = {
-  dry_run_logged: "border-foreground/20 bg-foreground/5 text-foreground/70",
-  pending: "border-foreground/20 bg-foreground/5 text-foreground/70",
+  dry_run_logged: "border-[#a1a1aa] bg-[#f4f4f5] text-[#27272a]",
+  pending: "border-[#a1a1aa] bg-[#f4f4f5] text-[#27272a]",
   sent: "border-amber-400/40 bg-amber-400/10 text-amber-200",
   confirmed: "border-emerald-400/40 bg-emerald-400/10 text-emerald-200",
   failed: "border-red-400/40 bg-red-400/10 text-red-200",
@@ -122,7 +122,7 @@ export default function AuditPage() {
             <h1 className="w6-heading" style={{ fontSize: 32, lineHeight: 1.1, margin: 0 }}>
               {t("audit.title")}
             </h1>
-            <p className="mt-2 text-sm text-foreground/60">
+            <p className="mt-2 text-sm text-[#52525b]">
               {t("audit.subtitle")}
             </p>
           </div>
@@ -130,15 +130,15 @@ export default function AuditPage() {
         </header>
 
         {!connected ? (
-          <p className="text-sm text-foreground/60">
+          <p className="text-sm text-[#52525b]">
             Connect your wallet to see your audit log.
           </p>
         ) : loading ? (
-          <p className="text-sm text-foreground/60">Loading…</p>
+          <p className="text-sm text-[#52525b]">Loading…</p>
         ) : !data || data.executions.length === 0 ? (
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-8 text-center">
-            <p className="text-sm text-foreground/60">No fires yet.</p>
-            <p className="mt-2 text-xs text-foreground/40">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-8 text-center">
+            <p className="text-sm text-[#52525b]">No fires yet.</p>
+            <p className="mt-2 text-xs text-[#71717a]">
               Create a scheduled send on{" "}
               <Link href="/wishes" className="text-accent hover:underline">
                 /wishes
@@ -177,22 +177,22 @@ export default function AuditPage() {
             {Array.from(grouped.entries()).map(([kind, rows]) => (
               <section
                 key={kind}
-                className="mb-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5"
+                className="mb-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5"
               >
                 <header className="mb-3 flex items-baseline justify-between">
                   <h2 className="text-sm font-medium">
                     {KIND_LABEL[kind] ?? kind}{" "}
-                    <span className="text-foreground/40">· {rows.length}</span>
+                    <span className="text-[#71717a]">· {rows.length}</span>
                   </h2>
                 </header>
                 <ul className="space-y-2">
                   {rows.map((r) => (
                     <li
                       key={r.execution_id}
-                      className="rounded-xl border border-foreground/5 bg-foreground/[0.02] p-3 text-xs"
+                      className="rounded-xl border border-[#f4f4f5] bg-[#fafafa] p-3 text-xs"
                     >
                       <div className="flex items-baseline justify-between gap-3">
-                        <div className="text-foreground/70">
+                        <div className="text-[#27272a]">
                           {r.plan_json.amount_lamports && (
                             <strong>
                               {formatUsdc(r.plan_json.amount_lamports)}
@@ -202,7 +202,7 @@ export default function AuditPage() {
                             <>
                               {" "}
                               →{" "}
-                              <code className="text-foreground/50">
+                              <code className="text-[#52525b]">
                                 {r.plan_json.dest_pubkey.slice(0, 6)}…
                                 {r.plan_json.dest_pubkey.slice(-4)}
                               </code>
@@ -217,7 +217,7 @@ export default function AuditPage() {
                       </div>
 
                       {r.plan_json.why && (
-                        <p className="mt-1 text-foreground/40">
+                        <p className="mt-1 text-[#71717a]">
                           {r.plan_json.why}
                         </p>
                       )}
@@ -258,7 +258,7 @@ export default function AuditPage() {
                             Solscan ↗
                           </a>
                           {r.plan_json.kernel_hashes?.context_hash && (
-                            <code className="text-foreground/40">
+                            <code className="text-[#71717a]">
                               ctx{" "}
                               {r.plan_json.kernel_hashes.context_hash.slice(
                                 0,
@@ -270,7 +270,7 @@ export default function AuditPage() {
                         </div>
                       )}
 
-                      <p className="mt-2 text-[10px] text-foreground/30">
+                      <p className="mt-2 text-[10px] text-[#a1a1aa]">
                         {new Date(r.created_at).toLocaleString()}
                         {r.confirmed_at &&
                           ` · confirmed ${new Date(r.confirmed_at).toLocaleTimeString()}`}
@@ -299,14 +299,14 @@ function Stat({
   tone: "neutral" | "amber" | "emerald" | "red";
 }) {
   const toneCls = {
-    neutral: "border-foreground/10 text-foreground/70",
+    neutral: "border-[#e4e4e7] text-[#27272a]",
     amber: "border-amber-400/30 text-amber-200",
     emerald: "border-emerald-400/30 text-emerald-200",
     red: "border-red-400/30 text-red-200",
   }[tone];
   return (
     <div className={`rounded-2xl border bg-white/[0.02] p-4 ${toneCls}`}>
-      <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+      <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
         {label}
       </p>
       <p className="mt-1 text-base">{value}</p>

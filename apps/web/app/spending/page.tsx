@@ -109,7 +109,7 @@ export default function SpendingPage() {
         <select
           value={days}
           onChange={(e) => setDays(Number(e.target.value))}
-          className="rounded-lg border border-foreground/15 bg-transparent px-3 py-1.5 text-xs"
+          className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-1.5 text-xs"
         >
           <option value={7}>Last 7 days</option>
           <option value={30}>Last 30 days</option>
@@ -119,16 +119,16 @@ export default function SpendingPage() {
       </div>
 
       {!connected ? (
-        <div className="mt-12 rounded-2xl border border-foreground/10 bg-white/[0.02] p-10 text-center text-sm text-foreground/60">
+        <div className="mt-12 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-10 text-center text-sm text-[#52525b]">
           Connect Phantom (top right) to see your spending.
         </div>
       ) : loading ? (
         <div className="mt-12 grid gap-4">
-          <div className="h-32 animate-pulse rounded-2xl border border-foreground/10 bg-white/[0.02]" />
-          <div className="h-48 animate-pulse rounded-2xl border border-foreground/10 bg-white/[0.02]" />
+          <div className="h-32 animate-pulse rounded-2xl border border-[#e4e4e7] bg-white/[0.02]" />
+          <div className="h-48 animate-pulse rounded-2xl border border-[#e4e4e7] bg-white/[0.02]" />
         </div>
       ) : !insights || parseFloat(insights.total_usdc) === 0 ? (
-        <div className="mt-12 rounded-2xl border border-foreground/10 bg-white/[0.02] p-10 text-center text-sm text-foreground/60">
+        <div className="mt-12 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-10 text-center text-sm text-[#52525b]">
           No spending in the selected window. Hire an agent or send a payment to start.
         </div>
       ) : (
@@ -137,8 +137,8 @@ export default function SpendingPage() {
               forecast endpoint returned a summary AND there's something
               meaningful to show (skip on brand-new wallets). */}
           {forecast?.ok && forecast.summary && Number(forecast.summary.total30d_lamports) > 0 && (
-            <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
-              <h2 className="text-sm font-medium uppercase tracking-wider text-foreground/50">
+            <div className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6">
+              <h2 className="text-sm font-medium uppercase tracking-wider text-[#52525b]">
                 Burn-rate forecast
               </h2>
               <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -173,7 +173,7 @@ export default function SpendingPage() {
                           ? "rounded-xl border border-red-500/30 bg-red-500/[0.05] p-3 text-red-300"
                           : a.severity === "warn"
                             ? "rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-3 text-amber-300"
-                            : "rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3 text-foreground/70"
+                            : "rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-3 text-[#27272a]"
                       }
                     >
                       <span className="font-mono text-[10px] uppercase tracking-wide opacity-70">
@@ -188,22 +188,22 @@ export default function SpendingPage() {
           )}
 
           {/* F29.4 — Run-on-demand fraud scan. */}
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6">
             <div className="flex items-baseline justify-between">
-              <h2 className="text-sm font-medium uppercase tracking-wider text-foreground/50">
+              <h2 className="text-sm font-medium uppercase tracking-wider text-[#52525b]">
                 Anomaly scan
               </h2>
               <button
                 type="button"
                 onClick={() => void runFraudScan()}
                 disabled={fraudLoading}
-                className="rounded-full bg-foreground/10 px-4 py-1 text-xs font-medium hover:bg-foreground/20 disabled:opacity-50"
+                className="rounded-full bg-[#e4e4e7] px-4 py-1 text-xs font-medium hover:bg-[#a1a1aa] disabled:opacity-50"
               >
                 {fraudLoading ? "scanning…" : "Run scan"}
               </button>
             </div>
             {fraudFlags.length === 0 && !fraudLoading && (
-              <p className="mt-3 text-xs text-foreground/50">
+              <p className="mt-3 text-xs text-[#52525b]">
                 Click "Run scan" to check the last 30 days for spend spikes,
                 novel merchants, deny clusters, and off-hours bursts.
               </p>
@@ -213,17 +213,17 @@ export default function SpendingPage() {
                 {fraudFlags.map((f, i) => (
                   <li
                     key={`${f.rule}-${i}`}
-                    className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3"
+                    className="rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-3"
                   >
                     <div className="flex items-baseline justify-between">
                       <span className="font-mono text-[10px] uppercase tracking-wide text-amber-300">
                         {f.rule}
                       </span>
-                      <span className="text-foreground/55">
+                      <span className="text-[#52525b]">
                         score {(f.score * 100).toFixed(0)}/100
                       </span>
                     </div>
-                    <pre className="mt-2 overflow-x-auto text-[10px] text-foreground/55">
+                    <pre className="mt-2 overflow-x-auto text-[10px] text-[#52525b]">
                       {JSON.stringify(f.context, null, 2)}
                     </pre>
                   </li>
@@ -233,14 +233,14 @@ export default function SpendingPage() {
           </div>
 
           {/* Total */}
-          <div className="rounded-2xl border border-foreground/10 bg-card-gradient p-8 card-surface">
-            <div className="text-xs font-medium uppercase tracking-wider text-foreground/50">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-card-gradient p-8 card-surface">
+            <div className="text-xs font-medium uppercase tracking-wider text-[#52525b]">
               Total
             </div>
             <div className="mt-2 text-5xl font-semibold tracking-tight">
               ${insights.total_usdc}
             </div>
-            <div className="mt-1 text-xs text-foreground/40">
+            <div className="mt-1 text-xs text-[#71717a]">
               over the last {insights.since_days} days
             </div>
           </div>
@@ -252,12 +252,12 @@ export default function SpendingPage() {
               {Object.entries(insights.by_category).map(([cat, amount]) => {
                 const pct = (parseFloat(amount) / parseFloat(insights.total_usdc)) * 100;
                 return (
-                  <div key={cat} className="rounded-xl border border-foreground/10 p-4">
+                  <div key={cat} className="rounded-xl border border-[#e4e4e7] p-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="capitalize">{cat}</span>
                       <span className="font-mono">${amount}</span>
                     </div>
-                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-foreground/5">
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#f4f4f5]">
                       <div
                         className="h-full bg-accent"
                         style={{ width: `${pct.toFixed(1)}%` }}
@@ -272,7 +272,7 @@ export default function SpendingPage() {
           {/* Daily series — simple bar chart */}
           <div>
             <h2 className="text-lg font-medium">Daily</h2>
-            <div className="mt-4 flex h-32 items-end gap-1 rounded-xl border border-foreground/10 p-3">
+            <div className="mt-4 flex h-32 items-end gap-1 rounded-xl border border-[#e4e4e7] p-3">
               {insights.daily_series.map((d) => {
                 const pct = (parseFloat(d.amount_usdc) / maxDailyAmount) * 100;
                 return (
@@ -285,7 +285,7 @@ export default function SpendingPage() {
                 );
               })}
             </div>
-            <div className="mt-2 flex justify-between text-[10px] text-foreground/40">
+            <div className="mt-2 flex justify-between text-[10px] text-[#71717a]">
               <span>{insights.daily_series[0]?.date ?? ""}</span>
               <span>{insights.daily_series[insights.daily_series.length - 1]?.date ?? ""}</span>
             </div>
@@ -298,17 +298,17 @@ export default function SpendingPage() {
               {insights.by_merchant.slice(0, 10).map((m) => (
                 <div
                   key={m.pubkey}
-                  className="flex items-center justify-between rounded-xl border border-foreground/10 p-4"
+                  className="flex items-center justify-between rounded-xl border border-[#e4e4e7] p-4"
                 >
                   <div>
                     <div className="text-sm font-medium">{m.name}</div>
-                    <div className="text-[10px] text-foreground/40 font-mono">
+                    <div className="text-[10px] text-[#71717a] font-mono">
                       {m.pubkey.slice(0, 6)}…{m.pubkey.slice(-4)}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-mono text-sm">${m.amount_usdc}</div>
-                    <div className="text-[10px] text-foreground/40">{m.count} payments</div>
+                    <div className="text-[10px] text-[#71717a]">{m.count} payments</div>
                   </div>
                 </div>
               ))}
@@ -329,7 +329,7 @@ export default function SpendingPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-wide text-foreground/45">
+      <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
         {label}
       </p>
       <p className="mt-1 text-lg font-semibold tracking-tight">{value}</p>

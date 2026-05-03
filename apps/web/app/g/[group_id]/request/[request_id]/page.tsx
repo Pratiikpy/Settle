@@ -160,7 +160,7 @@ export default function GroupRequestSharePage() {
 
   if (loading) {
     return (
-      <main className="mx-auto w-full max-w-2xl px-4 py-12 text-sm text-foreground/60">
+      <main className="mx-auto w-full max-w-2xl px-4 py-12 text-sm text-[#52525b]">
         Loading…
       </main>
     );
@@ -171,7 +171,7 @@ export default function GroupRequestSharePage() {
     <W6AppShell forceSurface="consumer">
       <div style={{ maxWidth: 880 }}>
           <h1 className="text-2xl font-medium">Request not found</h1>
-          <p className="mt-2 text-sm text-foreground/60">
+          <p className="mt-2 text-sm text-[#52525b]">
             The request may have been cancelled or the link is wrong.
           </p>
           <Link
@@ -210,9 +210,9 @@ export default function GroupRequestSharePage() {
             </code>
           </h1>
           {request.note && (
-            <p className="mt-2 text-sm text-foreground/60">{request.note}</p>
+            <p className="mt-2 text-sm text-[#52525b]">{request.note}</p>
           )}
-          <p className="mt-3 text-[11px] text-foreground/50">
+          <p className="mt-3 text-[11px] text-[#52525b]">
             Requested {new Date(request.created_at).toLocaleString()} by{" "}
             <code className="font-mono">
               {request.requester_pubkey.slice(0, 6)}…
@@ -227,7 +227,7 @@ export default function GroupRequestSharePage() {
               ? "border-emerald-400/30 bg-emerald-400/[0.04]"
               : isQuorumMet
                 ? "border-amber-400/30 bg-amber-400/[0.04]"
-                : "border-foreground/10 bg-white/[0.02]"
+                : "border-[#e4e4e7] bg-[#fafafa]"
           }`}
         >
           <div className="flex items-baseline justify-between">
@@ -235,7 +235,7 @@ export default function GroupRequestSharePage() {
               Status:{" "}
               <span className="uppercase tracking-wide">{request.status}</span>
             </strong>
-            <span className="text-[11px] text-foreground/50">
+            <span className="text-[11px] text-[#52525b]">
               {request.approvals} approvals · {request.denials} denials · need{" "}
               {group.quorum}
             </span>
@@ -254,7 +254,7 @@ export default function GroupRequestSharePage() {
 
         {/* Voting controls */}
         {!connected ? (
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5 text-sm text-foreground/60">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5 text-sm text-[#52525b]">
             Connect your wallet to see voting controls. If you&apos;re a member
             of {group.label}, you&apos;ll be able to approve/deny here.
           </div>
@@ -268,13 +268,13 @@ export default function GroupRequestSharePage() {
             of this group. Only voters can sign attestations.
           </div>
         ) : myVote ? (
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5 text-sm">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5 text-sm">
             You voted{" "}
             <strong
               className={
                 myVote.decision === "approve"
                   ? "text-emerald-300"
-                  : "text-foreground/70"
+                  : "text-[#27272a]"
               }
             >
               {myVote.decision}
@@ -282,11 +282,11 @@ export default function GroupRequestSharePage() {
             .
           </div>
         ) : isPending ? (
-          <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-            <p className="text-[11px] text-foreground/60">
+          <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+            <p className="text-[11px] text-[#52525b]">
               Your vote signs a canonical attestation:
             </p>
-            <code className="mt-2 block break-all rounded bg-foreground/[0.04] p-2 font-mono text-[10px] text-foreground/60">
+            <code className="mt-2 block break-all rounded bg-[#fafafa] p-2 font-mono text-[10px] text-[#52525b]">
               settle:group-spend:{group.group_id}:{request.request_id}:
               {request.amount_lamports}:{request.dest_pubkey}:&lt;decision&gt;
             </code>
@@ -301,14 +301,14 @@ export default function GroupRequestSharePage() {
               <button
                 onClick={() => vote("deny")}
                 disabled={busy}
-                className="rounded-full border border-foreground/20 px-4 py-2 text-xs hover:bg-foreground/5 disabled:opacity-50"
+                className="rounded-full border border-[#a1a1aa] px-4 py-2 text-xs hover:bg-[#f4f4f5] disabled:opacity-50"
               >
                 Deny
               </button>
             </div>
           </section>
         ) : (
-          <p className="text-sm text-foreground/60">
+          <p className="text-sm text-[#52525b]">
             This request is no longer open for voting.
           </p>
         )}
@@ -317,13 +317,13 @@ export default function GroupRequestSharePage() {
         <div className="mt-8 flex flex-wrap gap-2 text-[11px]">
           <button
             onClick={copyShareLink}
-            className="rounded-full border border-foreground/15 px-3 py-1.5 text-foreground/60 hover:bg-foreground/5"
+            className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[#52525b] hover:bg-[#f4f4f5]"
           >
             Copy share link
           </button>
           <Link
             href="/groups"
-            className="rounded-full border border-foreground/15 px-3 py-1.5 text-foreground/60 hover:bg-foreground/5"
+            className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[#52525b] hover:bg-[#f4f4f5]"
           >
             All groups →
           </Link>

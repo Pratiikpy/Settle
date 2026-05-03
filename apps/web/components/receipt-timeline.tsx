@@ -101,29 +101,29 @@ export function ReceiptTimeline({ r }: { r: ReceiptForTimeline }) {
           : null;
 
   return (
-    <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+    <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
       <div className="flex items-baseline justify-between">
         <h2 className="text-sm font-medium">Forensic timeline</h2>
-        <span className="text-[10px] uppercase tracking-wider text-foreground/40">
+        <span className="text-[10px] uppercase tracking-wider text-[#71717a]">
           slot {r.decision_slot}
         </span>
       </div>
-      <p className="mt-1 text-[11px] text-foreground/45">
+      <p className="mt-1 text-[11px] text-[#71717a]">
         Server-clock-consistent timing captured by the x402 proxy in the same
         process. Pre-P10 receipts (NULL timing) skip the relevant rows honestly.
       </p>
 
-      <ol className="mt-5 space-y-4 border-l border-foreground/10 pl-4">
+      <ol className="mt-5 space-y-4 border-l border-[#e4e4e7] pl-4">
         {/* 1. Request initiated */}
         <li>
           <div className="flex items-baseline justify-between gap-3">
             <div className="text-sm font-medium">🕐 Request initiated</div>
-            <div className="font-mono text-[10px] text-foreground/45">
+            <div className="font-mono text-[10px] text-[#71717a]">
               {fmtTime(t0)}
             </div>
           </div>
-          <div className="mt-1 text-[11px] text-foreground/65">
-            <span className="text-foreground/45">Card</span>{" "}
+          <div className="mt-1 text-[11px] text-[#09090b]/65">
+            <span className="text-[#71717a]">Card</span>{" "}
             <span className="font-mono">{r.card_pubkey.slice(0, 6)}…{r.card_pubkey.slice(-4)}</span>{" "}
             requested capability{" "}
             <span className="font-mono">{r.capability_hash ? shortHash(r.capability_hash) : "—"}</span>{" "}
@@ -151,11 +151,11 @@ export function ReceiptTimeline({ r }: { r: ReceiptForTimeline }) {
                 {r.decision}
               </span>
             </div>
-            <div className="font-mono text-[10px] text-foreground/45">
+            <div className="font-mono text-[10px] text-[#71717a]">
               {policyDelta ?? ""}
             </div>
           </div>
-          <div className="mt-1 text-[11px] text-foreground/65">
+          <div className="mt-1 text-[11px] text-[#09090b]/65">
             policy v{r.policy_version}
             {!isAllow && r.deny_code !== null && (
               <span className="ml-2 text-red-400">deny_code = {r.deny_code}</span>
@@ -174,12 +174,12 @@ export function ReceiptTimeline({ r }: { r: ReceiptForTimeline }) {
           <li>
             <div className="flex items-baseline justify-between gap-3">
               <div className="text-sm font-medium">⚡ On-chain commit</div>
-              <div className="font-mono text-[10px] text-foreground/45">
+              <div className="font-mono text-[10px] text-[#71717a]">
                 slot {r.decision_slot}
               </div>
             </div>
-            <div className="mt-1 text-[11px] text-foreground/65">
-              <span className="text-foreground/45">PolicyDecisionEvent emitted.</span>{" "}
+            <div className="mt-1 text-[11px] text-[#09090b]/65">
+              <span className="text-[#71717a]">PolicyDecisionEvent emitted.</span>{" "}
               {r.sig_solscan ? (
                 <a
                   href={getSolscanUrl(r.sig_solscan)}
@@ -190,7 +190,7 @@ export function ReceiptTimeline({ r }: { r: ReceiptForTimeline }) {
                   tx {r.sig_solscan.slice(0, 8)}…{r.sig_solscan.slice(-6)} ↗
                 </a>
               ) : (
-                <span className="font-mono text-foreground/40">no signature</span>
+                <span className="font-mono text-[#71717a]">no signature</span>
               )}
               {submissionLabel && (
                 <>
@@ -199,7 +199,7 @@ export function ReceiptTimeline({ r }: { r: ReceiptForTimeline }) {
                     className={
                       r.submission_method === "helius_sender_jito"
                         ? "text-emerald-400"
-                        : "text-foreground/55"
+                        : "text-[#52525b]"
                     }
                   >
                     {submissionLabel}
@@ -215,11 +215,11 @@ export function ReceiptTimeline({ r }: { r: ReceiptForTimeline }) {
           <li>
             <div className="flex items-baseline justify-between gap-3">
               <div className="text-sm font-medium">🌐 Merchant called</div>
-              <div className="font-mono text-[10px] text-foreground/45">
+              <div className="font-mono text-[10px] text-[#71717a]">
                 {fmtTime(tUpStart)}
               </div>
             </div>
-            <div className="mt-1 text-[11px] text-foreground/65">
+            <div className="mt-1 text-[11px] text-[#09090b]/65">
               <span className="font-mono">{r.target_method} {r.target_path}</span>
             </div>
           </li>
@@ -230,14 +230,14 @@ export function ReceiptTimeline({ r }: { r: ReceiptForTimeline }) {
           <li>
             <div className="flex items-baseline justify-between gap-3">
               <div className="text-sm font-medium">✓ Merchant returned</div>
-              <div className="font-mono text-[10px] text-foreground/45">
+              <div className="font-mono text-[10px] text-[#71717a]">
                 {upstreamDelta ?? ""}
               </div>
             </div>
-            <div className="mt-1 text-[11px] text-foreground/65">
+            <div className="mt-1 text-[11px] text-[#09090b]/65">
               {fmtTime(tUpEnd)}
               {upstreamDelta && (
-                <span className="ml-2 text-foreground/45">
+                <span className="ml-2 text-[#71717a]">
                   (upstream-only latency)
                 </span>
               )}
@@ -256,11 +256,11 @@ export function ReceiptTimeline({ r }: { r: ReceiptForTimeline }) {
             <HashRow label="purpose_text_hash" value={r.purpose_text_hash} />
             <HashRow label="capability_hash" value={r.capability_hash} />
           </div>
-          <details className="mt-3 text-[11px] text-foreground/55">
-            <summary className="cursor-pointer hover:text-foreground/80">
+          <details className="mt-3 text-[11px] text-[#52525b]">
+            <summary className="cursor-pointer hover:text-[#27272a]">
               Verify this chain yourself with @settle/sdk →
             </summary>
-            <pre className="mt-2 overflow-auto rounded-lg bg-black/30 p-3 text-[10px] leading-relaxed text-foreground/75">
+            <pre className="mt-2 overflow-auto rounded-lg bg-black/30 p-3 text-[10px] leading-relaxed text-[#09090b]/75">
               <code>{`import { verifyReceipt } from "@settle/sdk";
 
 const { ok } = verifyReceipt({
@@ -286,9 +286,9 @@ console.log(ok); // true iff the four BLAKE3 hashes recompute to the on-chain co
           <li>
             <div className="flex items-baseline justify-between gap-3">
               <div className="text-sm font-medium">⏱ End-to-end</div>
-              <div className="font-mono text-[10px] text-foreground/45">{totalDelta}</div>
+              <div className="font-mono text-[10px] text-[#71717a]">{totalDelta}</div>
             </div>
-            <div className="mt-1 text-[11px] text-foreground/55">
+            <div className="mt-1 text-[11px] text-[#52525b]">
               From proxy entry to receipt persistence. Server-clock anchored
               (P10 timing columns) — clock-drift-safe.
             </div>
@@ -296,7 +296,7 @@ console.log(ok); // true iff the four BLAKE3 hashes recompute to the on-chain co
         )}
       </ol>
 
-      <p className="mt-5 text-[10px] text-foreground/40">
+      <p className="mt-5 text-[10px] text-[#71717a]">
         Want the panel-only layout?{" "}
         <Link
           href={`/receipts/${r.request_id}?view=raw`}
@@ -313,8 +313,8 @@ console.log(ok); // true iff the four BLAKE3 hashes recompute to the on-chain co
 function HashRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="w-44 shrink-0 text-foreground/45">{label}</span>
-      <span className="truncate font-mono text-foreground/75" title={value ?? "null"}>
+      <span className="w-44 shrink-0 text-[#71717a]">{label}</span>
+      <span className="truncate font-mono text-[#09090b]/75" title={value ?? "null"}>
         {value ? `${value.slice(0, 14)}…${value.slice(-8)}` : "null"}
       </span>
     </div>

@@ -177,7 +177,7 @@ export default function MerchantCapabilitiesPage() {
           >
             Capabilities
           </h1>
-          <p className="mt-2 text-sm text-foreground/60">
+          <p className="mt-2 text-sm text-[#52525b]">
             Publish your tool specs (domain · method · path · amount · version)
             so users can pin them in their agent cards. The hash is the
             allowlist primitive — pinning yours means an agent can ONLY pay
@@ -186,11 +186,11 @@ export default function MerchantCapabilitiesPage() {
         </header>
 
         {!connected ? (
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6 text-sm text-foreground/60">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6 text-sm text-[#52525b]">
             Connect the wallet that owns @{params.handle} to publish.
           </div>
         ) : merchantPubkey === null ? (
-          <p className="text-sm text-foreground/60">Resolving handle…</p>
+          <p className="text-sm text-[#52525b]">Resolving handle…</p>
         ) : !isMerchantWallet ? (
           <div className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.04] p-4 text-xs text-amber-200">
             You're connected as{" "}
@@ -206,23 +206,23 @@ export default function MerchantCapabilitiesPage() {
         ) : (
           <>
             {/* Form */}
-            <section className="mb-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mb-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">New capability</h2>
               <div className="mt-4 grid gap-3">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                  <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                     Domain
                   </p>
                   <input
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
                     placeholder="translate.example.com"
-                    className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 font-mono text-sm"
+                    className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-sm"
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                    <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                       Method
                     </p>
                     <select
@@ -230,7 +230,7 @@ export default function MerchantCapabilitiesPage() {
                       onChange={(e) =>
                         setMethod(e.target.value as typeof method)
                       }
-                      className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-2 py-2 font-mono text-sm"
+                      className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-2 py-2 font-mono text-sm"
                     >
                       <option>GET</option>
                       <option>POST</option>
@@ -240,31 +240,31 @@ export default function MerchantCapabilitiesPage() {
                     </select>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                    <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                       Path
                     </p>
                     <input
                       value={path}
                       onChange={(e) => setPath(e.target.value)}
                       placeholder="/v1/translate"
-                      className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 font-mono text-sm"
+                      className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-sm"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                    <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                       Amount USDC
                     </p>
                     <input
                       value={amountUsdc}
                       onChange={(e) => setAmountUsdc(e.target.value)}
                       inputMode="decimal"
-                      className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 font-mono text-sm"
+                      className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-sm"
                     />
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                    <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                       Version
                     </p>
                     <input
@@ -272,30 +272,30 @@ export default function MerchantCapabilitiesPage() {
                       min={1}
                       value={version}
                       onChange={(e) => setVersion(parseInt(e.target.value, 10) || 1)}
-                      className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 font-mono text-sm"
+                      className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-sm"
                     />
                   </div>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                  <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                     Alias (human name)
                   </p>
                   <input
                     value={alias}
                     onChange={(e) => setAlias(e.target.value)}
                     placeholder="Translate EN→FR"
-                    className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                  <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                     Description (optional)
                   </p>
                   <input
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Translates English to French via DeepL."
-                    className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                   />
                 </div>
 
@@ -308,13 +308,13 @@ export default function MerchantCapabilitiesPage() {
                     <code className="mt-1 block break-all font-mono text-[11px] text-emerald-200">
                       {previewHash}
                     </code>
-                    <p className="mt-2 text-[10px] text-foreground/50">
+                    <p className="mt-2 text-[10px] text-[#52525b]">
                       Server recomputes from the spec on submit. Verified ✓
                       flag flips on match.
                     </p>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-foreground/40">
+                  <p className="text-[11px] text-[#71717a]">
                     Fill in domain, path, alias, and amount to preview the
                     hash.
                   </p>
@@ -337,13 +337,13 @@ export default function MerchantCapabilitiesPage() {
                   Published {domain && `for ${domain}`}
                 </h2>
                 {loading && (
-                  <span className="text-[11px] text-foreground/40">
+                  <span className="text-[11px] text-[#71717a]">
                     loading…
                   </span>
                 )}
               </header>
               {entries.length === 0 ? (
-                <p className="text-xs text-foreground/40">
+                <p className="text-xs text-[#71717a]">
                   Nothing published yet — your first entry seeds the registry.
                 </p>
               ) : (
@@ -354,7 +354,7 @@ export default function MerchantCapabilitiesPage() {
                       className={`rounded-xl border p-3 text-xs ${
                         e.verified
                           ? "border-emerald-400/30 bg-emerald-400/[0.03]"
-                          : "border-foreground/10 bg-white/[0.02]"
+                          : "border-[#e4e4e7] bg-[#fafafa]"
                       }`}
                     >
                       <div className="flex items-baseline justify-between gap-3">
@@ -364,18 +364,18 @@ export default function MerchantCapabilitiesPage() {
                             ✓ verified
                           </span>
                         ) : (
-                          <span className="rounded-full border border-foreground/15 bg-foreground/5 px-2 py-0.5 text-[9px] uppercase tracking-wide text-foreground/60">
+                          <span className="rounded-full border border-[#e4e4e7] bg-[#f4f4f5] px-2 py-0.5 text-[9px] uppercase tracking-wide text-[#52525b]">
                             unverified
                           </span>
                         )}
                       </div>
                       {e.description && (
-                        <p className="mt-1 text-foreground/60">
+                        <p className="mt-1 text-[#52525b]">
                           {e.description}
                         </p>
                       )}
                       {e.spec_domain && (
-                        <p className="mt-2 font-mono text-[10px] text-foreground/50">
+                        <p className="mt-2 font-mono text-[10px] text-[#52525b]">
                           {e.spec_method} {e.spec_domain}
                           {e.spec_path}{" "}
                           {e.spec_amount_lamports && (
@@ -390,7 +390,7 @@ export default function MerchantCapabilitiesPage() {
                           · v{e.spec_version}
                         </p>
                       )}
-                      <code className="mt-2 block break-all font-mono text-[10px] text-foreground/40">
+                      <code className="mt-2 block break-all font-mono text-[10px] text-[#71717a]">
                         {e.capability_hash}
                       </code>
                     </li>

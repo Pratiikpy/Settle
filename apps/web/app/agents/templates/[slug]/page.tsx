@@ -44,7 +44,7 @@ export default async function TemplateDetailPage({
       <div style={{ maxWidth: 880 }}>
         <Link
           href="/agents/templates"
-          className="text-xs text-foreground/50 hover:text-foreground"
+          className="text-xs text-[#52525b] hover:text-[#09090b]"
         >
           ← Marketplace
         </Link>
@@ -54,9 +54,9 @@ export default async function TemplateDetailPage({
           </span>
           <div className="flex-1">
             <h1 className="text-3xl font-semibold tracking-tight">{t.title}</h1>
-            <div className="mt-1 text-xs text-foreground/45">
+            <div className="mt-1 text-xs text-[#71717a]">
               by{" "}
-              <code className="text-foreground/60">
+              <code className="text-[#52525b]">
                 {t.author_pubkey.slice(0, 6)}…{t.author_pubkey.slice(-4)}
               </code>
               {" · "}
@@ -66,7 +66,7 @@ export default async function TemplateDetailPage({
           </div>
         </div>
 
-        <p className="mt-6 text-sm text-foreground/75">{t.description}</p>
+        <p className="mt-6 text-sm text-[#09090b]/75">{t.description}</p>
 
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Stat label="Cap" value={`$${Number(t.cap_usdc).toFixed(2)}`} />
@@ -80,12 +80,12 @@ export default async function TemplateDetailPage({
 
         {t.merchant_allowlist.length > 0 && (
           <section className="mt-8">
-            <h2 className="text-sm font-medium text-foreground/80">Allowlisted merchants</h2>
+            <h2 className="text-sm font-medium text-[#27272a]">Allowlisted merchants</h2>
             <div className="mt-3 grid gap-2">
               {t.merchant_allowlist.map((m) => (
                 <code
                   key={m}
-                  className="block rounded-lg border border-foreground/10 bg-white/[0.02] px-3 py-2 text-xs text-foreground/70"
+                  className="block rounded-lg border border-[#e4e4e7] bg-[#fafafa] px-3 py-2 text-xs text-[#27272a]"
                 >
                   {m}
                 </code>
@@ -96,8 +96,8 @@ export default async function TemplateDetailPage({
 
         {t.default_purpose && (
           <section className="mt-8">
-            <h2 className="text-sm font-medium text-foreground/80">Default purpose</h2>
-            <p className="mt-2 text-sm text-foreground/65">{t.default_purpose}</p>
+            <h2 className="text-sm font-medium text-[#27272a]">Default purpose</h2>
+            <p className="mt-2 text-sm text-[#09090b]/65">{t.default_purpose}</p>
           </section>
         )}
 
@@ -105,7 +105,7 @@ export default async function TemplateDetailPage({
           <TemplateHireButton slug={t.slug} />
         </div>
 
-        <p className="mt-3 text-xs text-foreground/45">
+        <p className="mt-3 text-xs text-[#71717a]">
           Hiring builds an <code>open_pact</code> instruction signed by your wallet. Hard caps
           are enforced on-chain.
         </p>
@@ -116,8 +116,8 @@ export default async function TemplateDetailPage({
 
 function Stat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="rounded-xl border border-foreground/10 bg-white/[0.02] p-4">
-      <div className="text-[10px] uppercase tracking-wider text-foreground/45">{label}</div>
+    <div className="rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
+      <div className="text-[10px] uppercase tracking-wider text-[#71717a]">{label}</div>
       <div className={mono ? "mt-1 font-mono text-sm" : "mt-1 text-sm font-medium"}>{value}</div>
     </div>
   );

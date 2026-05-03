@@ -212,8 +212,8 @@ export default function VoiceSendPage() {
         </header>
 
         {/* Voice */}
-        <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
-          <p className="text-[11px] uppercase tracking-wide text-foreground/40">Voice</p>
+        <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
+          <p className="text-[11px] uppercase tracking-wide text-[#71717a]">Voice</p>
           <div className="mt-3 flex items-center gap-3">
             {!recording ? (
               <button
@@ -232,31 +232,31 @@ export default function VoiceSendPage() {
               </button>
             )}
             {busy && busyLabel && (
-              <span className="text-xs text-foreground/50">{busyLabel}</span>
+              <span className="text-xs text-[#52525b]">{busyLabel}</span>
             )}
           </div>
           {transcript && (
-            <p className="mt-4 text-xs text-foreground/70">
-              <span className="text-foreground/40">Transcript:</span> {transcript}
+            <p className="mt-4 text-xs text-[#27272a]">
+              <span className="text-[#71717a]">Transcript:</span> {transcript}
             </p>
           )}
         </section>
 
         {/* Text fallback */}
-        <section className="mt-4 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
-          <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+        <section className="mt-4 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
+          <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
             Or just type
           </p>
           <input
             value={textIntent}
             onChange={(e) => setTextIntent(e.target.value)}
             placeholder='e.g. "send alice 5 USDC for coffee"'
-            className="mt-3 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+            className="mt-3 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
           />
           <button
             onClick={() => textIntent && parseIntent(textIntent)}
             disabled={busy || !textIntent}
-            className="mt-3 rounded-full border border-foreground/20 px-4 py-2 text-xs disabled:opacity-50"
+            className="mt-3 rounded-full border border-[#a1a1aa] px-4 py-2 text-xs disabled:opacity-50"
           >
             Parse →
           </button>
@@ -264,12 +264,12 @@ export default function VoiceSendPage() {
 
         {/* Confirmation */}
         {intent && (
-          <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+          <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
             <div className="flex items-baseline justify-between">
-              <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+              <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
                 We heard
               </p>
-              <span className="text-[11px] text-foreground/40">via {provider}</span>
+              <span className="text-[11px] text-[#71717a]">via {provider}</span>
             </div>
             {intent.action === "unknown" ? (
               <p className="mt-3 text-sm text-amber-400">
@@ -320,9 +320,9 @@ export default function VoiceSendPage() {
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3">
-      <p className="text-[10px] uppercase tracking-wide text-foreground/40">{label}</p>
-      <p className="mt-1 text-foreground/80">{value}</p>
+    <div className="rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-3">
+      <p className="text-[10px] uppercase tracking-wide text-[#71717a]">{label}</p>
+      <p className="mt-1 text-[#27272a]">{value}</p>
     </div>
   );
 }

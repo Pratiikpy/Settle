@@ -156,7 +156,7 @@ export default function MerchantWebhookPage() {
           >
             Webhook configuration
           </h1>
-          <p className="mt-2 text-sm text-foreground/60">
+          <p className="mt-2 text-sm text-[#52525b]">
             Register a URL where Settle posts a Stripe-shaped envelope every
             time a receipt addressed to your merchant pubkey lands. The
             signing secret lets you verify each delivery — same model as
@@ -165,17 +165,17 @@ export default function MerchantWebhookPage() {
         </header>
 
         {!connected ? (
-          <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6 text-sm text-foreground/60">
+          <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6 text-sm text-[#52525b]">
             Connect the wallet that owns @{params.handle} to manage your
             webhook.
           </div>
         ) : loading ? (
-          <p className="text-sm text-foreground/60">Authenticating…</p>
+          <p className="text-sm text-[#52525b]">Authenticating…</p>
         ) : error ? (
           <div className="rounded-2xl border border-red-400/30 bg-red-400/[0.04] p-4 text-xs text-red-200">
             {error}
             {error.includes("not_a_verified_merchant") && (
-              <p className="mt-2 text-foreground/60">
+              <p className="mt-2 text-[#52525b]">
                 Webhook registration is gated to verified merchants. Verify
                 your domain via DNS TXT or contact the operator.
               </p>
@@ -189,10 +189,10 @@ export default function MerchantWebhookPage() {
                 <p className="text-[11px] uppercase tracking-wide text-emerald-400/70">
                   Webhook active
                 </p>
-                <code className="mt-2 block break-all text-xs text-foreground/80">
+                <code className="mt-2 block break-all text-xs text-[#27272a]">
                   {state.webhook_url}
                 </code>
-                <div className="mt-3 grid gap-1 text-[11px] text-foreground/60">
+                <div className="mt-3 grid gap-1 text-[11px] text-[#52525b]">
                   {state.last_delivered_at ? (
                     <p>
                       ✓ last delivered{" "}
@@ -219,20 +219,20 @@ export default function MerchantWebhookPage() {
             )}
 
             {/* Form */}
-            <section className="mb-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mb-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">URL</h2>
               <input
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 placeholder="https://your-merchant.example.com/webhooks/settle"
-                className="mt-3 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 font-mono text-sm"
+                className="mt-3 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 font-mono text-sm"
               />
-              <p className="mt-2 text-[11px] text-foreground/40">
+              <p className="mt-2 text-[11px] text-[#71717a]">
                 HTTPS only. The endpoint must respond 2xx within 10 seconds.
                 We retry 5× with exponential backoff before marking failed.
               </p>
 
-              <label className="mt-4 flex items-center gap-2 text-xs text-foreground/70">
+              <label className="mt-4 flex items-center gap-2 text-xs text-[#27272a]">
                 <input
                   type="checkbox"
                   checked={rotateOnSave}
@@ -241,11 +241,11 @@ export default function MerchantWebhookPage() {
                 <span>
                   Rotate signing secret on save{" "}
                   {state?.webhook_configured ? (
-                    <span className="text-foreground/40">
+                    <span className="text-[#71717a]">
                       (existing receivers must update)
                     </span>
                   ) : (
-                    <span className="text-foreground/40">
+                    <span className="text-[#71717a]">
                       (first save always rotates)
                     </span>
                   )}
@@ -278,7 +278,7 @@ export default function MerchantWebhookPage() {
                 <p className="text-[11px] uppercase tracking-wide text-emerald-300">
                   ⚠ Signing secret — shown ONCE
                 </p>
-                <code className="mt-2 block break-all rounded-lg bg-foreground/[0.06] p-3 font-mono text-xs">
+                <code className="mt-2 block break-all rounded-lg bg-[#e4e4e7] p-3 font-mono text-xs">
                   {revealedSecret}
                 </code>
                 <button
@@ -291,7 +291,7 @@ export default function MerchantWebhookPage() {
                 >
                   Copy secret
                 </button>
-                <p className="mt-3 text-[11px] text-foreground/60">
+                <p className="mt-3 text-[11px] text-[#52525b]">
                   Save this in your env (e.g.{" "}
                   <code>SETTLE_WEBHOOK_SECRET</code>). Future GETs will not
                   return it. If you lose it, save the URL again with rotate
@@ -301,14 +301,14 @@ export default function MerchantWebhookPage() {
             )}
 
             {/* Verification recipe */}
-            <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">Verifying deliveries</h2>
-              <p className="mt-2 text-xs text-foreground/60">
+              <p className="mt-2 text-xs text-[#52525b]">
                 Every webhook POST has an{" "}
                 <code>X-Settle-Signature</code> header — HMAC-SHA256 over the
                 raw body, hex-encoded. Recompute on your side, compare.
               </p>
-              <pre className="mt-3 overflow-auto rounded-lg bg-foreground/[0.04] p-3 text-[11px]">
+              <pre className="mt-3 overflow-auto rounded-lg bg-[#fafafa] p-3 text-[11px]">
                 {`import { verifyWebhookSignature } from "@settle/sdk";
 
 const sig = req.headers["x-settle-signature"];

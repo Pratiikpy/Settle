@@ -21,7 +21,7 @@ export const WalletButton: ComponentType = dynamic(
     loading: () => (
       <button
         type="button"
-        className="h-11 rounded-md bg-foreground/10 px-4 text-sm text-foreground/40"
+        className="h-11 rounded-md bg-[#e4e4e7] px-4 text-sm text-[#71717a]"
         disabled
       >
         Connect wallet

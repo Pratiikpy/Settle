@@ -50,14 +50,14 @@ export function VerifiableBuildBadge({ className }: { className?: string }) {
         ? "border-amber-400/30 text-amber-300"
         : state === "fail"
           ? "border-red-400/30 text-red-300"
-          : "border-foreground/15 text-foreground/50";
+          : "border-[#e4e4e7] text-[#52525b]";
 
   return (
     <Link
       href="/verify-build"
       title="Click to see the on-chain bytecode hash side-by-side with the source-of-truth hash."
       className={[
-        "inline-flex items-center gap-2 rounded-full border bg-white/[0.02] px-3 py-1 text-[10px] uppercase tracking-wide hover:bg-white/[0.06]",
+        "inline-flex items-center gap-2 rounded-full border bg-[#fafafa] px-3 py-1 text-[10px] uppercase tracking-wide hover:bg-white/[0.06]",
         tone,
         className ?? "",
       ].join(" ")}
@@ -72,7 +72,7 @@ export function VerifiableBuildBadge({ className }: { className?: string }) {
               : "build · offline"}
       </span>
       {commit && (
-        <span className="font-mono lowercase text-foreground/40">
+        <span className="font-mono lowercase text-[#71717a]">
           {commit}
         </span>
       )}

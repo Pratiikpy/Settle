@@ -51,7 +51,7 @@ export default async function ProofPage({ params }: PageProps) {
     return (
       <main className="mx-auto max-w-3xl p-8">
         <h1 className="text-xl">⚠ Service unavailable</h1>
-        <p className="mt-2 text-sm text-foreground/60">Supabase not configured.</p>
+        <p className="mt-2 text-sm text-[#52525b]">Supabase not configured.</p>
       </main>
     );
   }
@@ -129,7 +129,7 @@ export default async function ProofPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto max-w-3xl p-6 font-sans">
-      <header className="border-b border-foreground/10 pb-6">
+      <header className="border-b border-[#e4e4e7] pb-6">
         <div className="flex items-start gap-4">
           {handleRow.avatar_url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -143,8 +143,8 @@ export default async function ProofPage({ params }: PageProps) {
             <h1 className="text-2xl font-semibold">
               {handleRow.display_name || `@${handle}`}
             </h1>
-            <p className="text-sm text-foreground/60">@{handle}</p>
-            <p className="mt-1 text-xs text-foreground/40">
+            <p className="text-sm text-[#52525b]">@{handle}</p>
+            <p className="mt-1 text-xs text-[#71717a]">
               Joined {fmtDate(handleRow.created_at as string)}
             </p>
           </div>
@@ -153,10 +153,10 @@ export default async function ProofPage({ params }: PageProps) {
               <div className="text-3xl font-semibold">
                 {Math.round((ts.score as number) ?? 0)}
               </div>
-              <div className="text-[10px] uppercase tracking-wider text-foreground/50">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b]">
                 trust score
               </div>
-              <div className="mt-1 text-[10px] text-foreground/60">{ts.tier as string}</div>
+              <div className="mt-1 text-[10px] text-[#52525b]">{ts.tier as string}</div>
             </div>
           )}
         </div>
@@ -192,25 +192,61 @@ export default async function ProofPage({ params }: PageProps) {
         </section>
       )}
 
+      {ts && (
+        <section className="mt-6 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4 text-xs leading-relaxed text-[#27272a]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#52525b]">
+            How this number is calculated
+          </h2>
+          <p className="mt-2">
+            Score = <code className="font-mono">100 × (0.4·allow_rate + 0.3·inverse_dispute_rate + 0.2·log10(receipts_allowed+1)/3 + 0.1·log10(unique_counterparties+1)/2)</code>.
+            All inputs are kernel-anchored, so the score can&rsquo;t be inflated by self-paid receipts or off-chain claims.
+          </p>
+          <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4">
+            <li>
+              <span className="text-[#71717a]">allow rate</span>{" "}
+              <strong>{Math.round((ts.allow_rate as number) * 100)}%</strong>
+            </li>
+            <li>
+              <span className="text-[#71717a]">inv. dispute</span>{" "}
+              <strong>
+                {Math.round(((ts.inverse_dispute_rate as number) ?? 1) * 100)}%
+              </strong>
+            </li>
+            <li>
+              <span className="text-[#71717a]">allowed</span>{" "}
+              <strong>{String(ts.receipts_allowed ?? 0)}</strong>
+            </li>
+            <li>
+              <span className="text-[#71717a]">denied</span>{" "}
+              <strong>{String(ts.receipts_denied ?? 0)}</strong>
+            </li>
+          </ul>
+          <p className="mt-3 text-[10px] text-[#71717a]">
+            Updated {fmtDate(ts.last_computed_at as string)}. Tier auto-promotes once
+            thresholds clear (bronze → silver → gold → platinum).
+          </p>
+        </section>
+      )}
+
       {topCaps.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-sm font-semibold text-foreground/70">
+          <h2 className="text-sm font-semibold text-[#27272a]">
             top capabilities
           </h2>
           <ul className="mt-2 space-y-1 text-sm">
             {topCaps.map(([hash, count]) => (
               <li
                 key={hash}
-                className="flex items-center justify-between rounded border border-foreground/10 px-3 py-2"
+                className="flex items-center justify-between rounded border border-[#e4e4e7] px-3 py-2"
               >
                 <span>
                   {capAliases[hash] || (
-                    <code className="font-mono text-xs text-foreground/60">
+                    <code className="font-mono text-xs text-[#52525b]">
                       {hash}…
                     </code>
                   )}
                 </span>
-                <span className="text-foreground/50">{count}</span>
+                <span className="text-[#52525b]">{count}</span>
               </li>
             ))}
           </ul>
@@ -218,11 +254,11 @@ export default async function ProofPage({ params }: PageProps) {
       )}
 
       <section className="mt-8">
-        <h2 className="text-sm font-semibold text-foreground/70">
+        <h2 className="text-sm font-semibold text-[#27272a]">
           public receipts ({publicReceipts?.length ?? 0})
         </h2>
         {!publicReceipts?.length && (
-          <p className="mt-2 text-xs text-foreground/40">
+          <p className="mt-2 text-xs text-[#71717a]">
             No public receipts yet. (Receipts default to private; opt in per-card.)
           </p>
         )}
@@ -230,22 +266,22 @@ export default async function ProofPage({ params }: PageProps) {
           {(publicReceipts ?? []).map((r) => (
             <li
               key={r.request_id as string}
-              className="rounded border border-foreground/10 p-2"
+              className="rounded border border-[#e4e4e7] p-2"
             >
               <div className="flex justify-between">
                 <Link
                   href={`/receipts/${r.request_id}`}
-                  className="font-mono text-foreground/70 underline-offset-2 hover:underline"
+                  className="font-mono text-[#27272a] underline-offset-2 hover:underline"
                 >
                   {(r.request_id as string).slice(0, 8)}…
                 </Link>
                 <span>{fmtUsdc(r.amount_lamports as string)}</span>
-                <span className="text-foreground/40">
+                <span className="text-[#71717a]">
                   {fmtDate(r.created_at as string)}
                 </span>
               </div>
               {r.narration_text && (
-                <p className="mt-1 text-foreground/60">
+                <p className="mt-1 text-[#52525b]">
                   {(r.narration_text as string).slice(0, 200)}
                 </p>
               )}
@@ -254,7 +290,7 @@ export default async function ProofPage({ params }: PageProps) {
         </ul>
       </section>
 
-      <footer className="mt-12 border-t border-foreground/10 pt-4 text-[10px] text-foreground/40">
+      <footer className="mt-12 border-t border-[#e4e4e7] pt-4 text-[10px] text-[#71717a]">
         Public proof page. Anyone can view this without a wallet. Trust
         score recomputes every 5 minutes — last refreshed{" "}
         {ts?.last_computed_at
@@ -268,8 +304,8 @@ export default async function ProofPage({ params }: PageProps) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded border border-foreground/10 p-2">
-      <div className="text-[10px] uppercase tracking-wide text-foreground/40">
+    <div className="rounded border border-[#e4e4e7] p-2">
+      <div className="text-[10px] uppercase tracking-wide text-[#71717a]">
         {label}
       </div>
       <div className="mt-1 text-sm">{value}</div>

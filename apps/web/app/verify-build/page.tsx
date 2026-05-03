@@ -52,11 +52,11 @@ export default function VerifyBuildPage() {
   return (
     <W6AppShell forceSurface="operator">
       <div style={{ maxWidth: 880 }}>
-        <div className="text-xs text-foreground/40">F9.1 · Verifiable build</div>
+        <div className="text-xs text-[#71717a]">F9.1 · Verifiable build</div>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">
           Trust the code, not the claim
         </h1>
-        <p className="mt-2 text-sm text-foreground/60 max-w-xl">
+        <p className="mt-2 text-sm text-[#52525b] max-w-xl">
           The Settle program runs on devnet at a fixed program ID. This page
           shows the SHA-256 of the on-chain bytecode side-by-side with the
           hash committed to git at the source-of-truth commit. If they
@@ -65,7 +65,7 @@ export default function VerifyBuildPage() {
         </p>
 
         {loading && (
-          <p className="mt-8 text-sm text-foreground/50">Reading on-chain account…</p>
+          <p className="mt-8 text-sm text-[#52525b]">Reading on-chain account…</p>
         )}
 
         {data && data.ok && data.on_chain && (
@@ -78,7 +78,7 @@ export default function VerifyBuildPage() {
                   ? "border-emerald-400/30 bg-emerald-400/[0.05]"
                   : data.matches === false
                     ? "border-amber-400/30 bg-amber-400/[0.05]"
-                    : "border-foreground/15 bg-foreground/[0.02]")
+                    : "border-[#e4e4e7] bg-[#fafafa]")
               }
             >
               <p className="text-sm font-medium">
@@ -88,7 +88,7 @@ export default function VerifyBuildPage() {
                     ? "⚠ Hashes differ — investigate"
                     : "ℹ No build-info.json committed yet"}
               </p>
-              <p className="mt-1 text-xs text-foreground/60">
+              <p className="mt-1 text-xs text-[#52525b]">
                 {data.matches
                   ? "The program running on devnet is byte-identical to the .so produced by building the repo at the commit below."
                   : data.matches === false
@@ -99,14 +99,14 @@ export default function VerifyBuildPage() {
 
             {/* Side-by-side hashes */}
             <section className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-                <p className="text-[11px] uppercase tracking-wide text-foreground/50">
+              <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+                <p className="text-[11px] uppercase tracking-wide text-[#52525b]">
                   on-chain (devnet)
                 </p>
-                <p className="mt-3 break-all font-mono text-xs text-foreground/85">
+                <p className="mt-3 break-all font-mono text-xs text-[#27272a]">
                   {data.on_chain.sha256}
                 </p>
-                <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-foreground/50">
+                <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-[#52525b]">
                   <span>raw bytes</span>
                   <span className="font-mono">{data.on_chain.raw_code_bytes}</span>
                   <span>trimmed</span>
@@ -114,16 +114,16 @@ export default function VerifyBuildPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-                <p className="text-[11px] uppercase tracking-wide text-foreground/50">
+              <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+                <p className="text-[11px] uppercase tracking-wide text-[#52525b]">
                   claimed (build-info.json)
                 </p>
                 {data.claimed ? (
                   <>
-                    <p className="mt-3 break-all font-mono text-xs text-foreground/85">
+                    <p className="mt-3 break-all font-mono text-xs text-[#27272a]">
                       {data.claimed.sha256}
                     </p>
-                    <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-foreground/50">
+                    <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-[#52525b]">
                       <span>size</span>
                       <span className="font-mono">
                         {data.claimed.size_bytes} bytes
@@ -144,7 +144,7 @@ export default function VerifyBuildPage() {
                     </div>
                   </>
                 ) : (
-                  <p className="mt-3 text-xs text-foreground/40">
+                  <p className="mt-3 text-xs text-[#71717a]">
                     No build-info.json committed yet.
                   </p>
                 )}
@@ -152,31 +152,31 @@ export default function VerifyBuildPage() {
             </section>
 
             {/* Authority + program details */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">Program details</h2>
               <div className="mt-3 grid grid-cols-[140px,1fr] gap-y-2 text-xs">
-                <span className="text-foreground/50">program id</span>
-                <code className="break-all font-mono text-foreground/80">
+                <span className="text-[#52525b]">program id</span>
+                <code className="break-all font-mono text-[#27272a]">
                   {data.program_id}
                 </code>
-                <span className="text-foreground/50">program data</span>
-                <code className="break-all font-mono text-foreground/80">
+                <span className="text-[#52525b]">program data</span>
+                <code className="break-all font-mono text-[#27272a]">
                   {data.program_data_address}
                 </code>
-                <span className="text-foreground/50">upgrade authority</span>
-                <code className="break-all font-mono text-foreground/80">
+                <span className="text-[#52525b]">upgrade authority</span>
+                <code className="break-all font-mono text-[#27272a]">
                   {data.upgrade_authority ?? "(immutable)"}
                 </code>
               </div>
             </section>
 
             {/* How to reproduce */}
-            <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+            <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
               <h2 className="text-sm font-medium">Reproduce it yourself</h2>
-              <p className="mt-1 text-xs text-foreground/50">
+              <p className="mt-1 text-xs text-[#52525b]">
                 Four commands. ~15 seconds on a modern machine.
               </p>
-              <pre className="mt-3 overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-foreground/80">
+              <pre className="mt-3 overflow-x-auto rounded-xl bg-black/30 p-4 text-xs text-[#27272a]">
                 <code>{`git clone https://github.com/anthropics/settle-protocol.git
 cd settle-protocol
 git checkout ${data.claimed?.commit ?? "<commit>"}
@@ -200,7 +200,7 @@ sha256sum programs/settle-agent-card/target/deploy/settle_agent_card.so
         <div className="mt-12 flex gap-3">
           <Link
             href="/docs"
-            className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+            className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
           >
             ← Docs
           </Link>
@@ -208,7 +208,7 @@ sha256sum programs/settle-agent-card/target/deploy/settle_agent_card.so
             href="https://github.com/anthropics/settle-protocol"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-10 items-center rounded-full border border-foreground/20 px-5 text-xs hover:bg-foreground/5"
+            className="inline-flex h-10 items-center rounded-full border border-[#a1a1aa] px-5 text-xs hover:bg-[#f4f4f5]"
           >
             GitHub ↗
           </a>

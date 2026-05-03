@@ -110,7 +110,7 @@ export default function SplitBillCreatePage() {
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="What's this for? e.g. Friday dinner"
-                className="rounded-lg border border-foreground/15 bg-transparent px-4 py-2 outline-none focus:border-accent"
+                className="rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 outline-none focus:border-accent"
               />
               <div className="grid grid-cols-2 gap-3">
                 <input
@@ -118,7 +118,7 @@ export default function SplitBillCreatePage() {
                   onChange={(e) => setTotalUsd(e.target.value)}
                   placeholder="Total ($)"
                   inputMode="decimal"
-                  className="rounded-lg border border-foreground/15 bg-transparent px-4 py-2 outline-none focus:border-accent"
+                  className="rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 outline-none focus:border-accent"
                 />
                 <input
                   type="number"
@@ -126,12 +126,12 @@ export default function SplitBillCreatePage() {
                   max={50}
                   value={nPayers}
                   onChange={(e) => setNPayers(Math.max(2, Math.min(50, Number(e.target.value))))}
-                  className="rounded-lg border border-foreground/15 bg-transparent px-4 py-2 outline-none focus:border-accent"
+                  className="rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-2 outline-none focus:border-accent"
                 />
               </div>
               {perPayer !== null && (
-                <div className="text-xs text-foreground/50">
-                  Each payer sends <span className="font-mono text-foreground/80">${perPayer.toFixed(2)}</span>{" "}
+                <div className="text-xs text-[#52525b]">
+                  Each payer sends <span className="font-mono text-[#27272a]">${perPayer.toFixed(2)}</span>{" "}
                   (last payer absorbs any rounding).
                 </div>
               )}

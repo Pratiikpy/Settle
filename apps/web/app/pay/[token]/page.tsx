@@ -129,7 +129,7 @@ export default function PayLinkPage() {
     return (
       <main className="mx-auto max-w-md px-6 py-24 text-center">
         <h1 className="text-2xl font-semibold">Link not found</h1>
-        <p className="mt-3 text-sm text-foreground/60">
+        <p className="mt-3 text-sm text-[#52525b]">
           This payment link doesn&apos;t exist.
         </p>
       </main>
@@ -138,7 +138,7 @@ export default function PayLinkPage() {
   if (!preview) {
     return (
       <main className="mx-auto max-w-md px-6 py-16">
-        <div className="h-32 animate-pulse rounded-2xl border border-foreground/10 bg-white/[0.02]" />
+        <div className="h-32 animate-pulse rounded-2xl border border-[#e4e4e7] bg-[#fafafa]" />
       </main>
     );
   }
@@ -149,12 +149,12 @@ export default function PayLinkPage() {
         <main className="mx-auto max-w-md px-6 py-16 text-center">
           <div className="text-6xl">✓</div>
           <h1 className="mt-4 text-2xl font-semibold">Paid ${preview.amount_usdc.toFixed(2)}</h1>
-          <p className="mt-3 text-sm text-foreground/60">Your receipt is on-chain.</p>
+          <p className="mt-3 text-sm text-[#52525b]">Your receipt is on-chain.</p>
           <a
             href={getSolscanUrl(paidSig)}
             target="_blank"
             rel="noreferrer"
-            className="mt-6 inline-flex h-11 items-center justify-center rounded-full border border-foreground/20 px-6 text-xs hover:bg-foreground/5"
+            className="mt-6 inline-flex h-11 items-center justify-center rounded-full border border-[#a1a1aa] px-6 text-xs hover:bg-[#f4f4f5]"
           >
             View on Solscan ↗
           </a>
@@ -166,18 +166,18 @@ export default function PayLinkPage() {
   return (
     <>
       <main className="mx-auto max-w-md px-6 py-12">
-        <div className="rounded-3xl border border-foreground/10 card-surface p-8">
-          <div className="text-xs uppercase tracking-wider text-foreground/45">
+        <div className="rounded-3xl border border-[#e4e4e7] card-surface p-8">
+          <div className="text-xs uppercase tracking-wider text-[#71717a]">
             Pay-once link
           </div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">{preview.title}</h1>
           {preview.description && (
-            <p className="mt-3 text-sm text-foreground/65">{preview.description}</p>
+            <p className="mt-3 text-sm text-[#09090b]/65">{preview.description}</p>
           )}
           <div className="mt-6 text-5xl font-semibold tracking-tight">
             ${preview.amount_usdc.toFixed(2)}
           </div>
-          <div className="mt-2 text-[11px] text-foreground/45">
+          <div className="mt-2 text-[11px] text-[#71717a]">
             to <code>{preview.creator_pubkey.slice(0, 8)}…{preview.creator_pubkey.slice(-4)}</code>
           </div>
 
@@ -212,7 +212,7 @@ export default function PayLinkPage() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-[11px] text-foreground/40">
+        <p className="mt-6 text-center text-[11px] text-[#71717a]">
           One-time-use · USDC · settles in &lt;1s · receipt on-chain
         </p>
 

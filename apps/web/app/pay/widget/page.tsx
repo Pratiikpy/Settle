@@ -163,7 +163,7 @@ export default function PayWidgetPage() {
     return (
       <main className="mx-auto max-w-md px-6 py-16 text-center">
         <h1 className="text-2xl font-semibold">Invalid pay request</h1>
-        <p className="mt-3 text-sm text-foreground/60">
+        <p className="mt-3 text-sm text-[#52525b]">
           The pay popup was opened with bad parameters. Need:{" "}
           <code>merchant</code> (base58 pubkey) and <code>amount</code> (positive USDC decimal).
         </p>
@@ -173,33 +173,33 @@ export default function PayWidgetPage() {
 
   return (
     <main className="mx-auto max-w-md px-6 py-12">
-      <div className="rounded-3xl border border-foreground/10 bg-white/[0.03] p-6">
-        <div className="text-[10px] uppercase tracking-wide text-foreground/40">
+      <div className="rounded-3xl border border-[#e4e4e7] bg-white/[0.03] p-6">
+        <div className="text-[10px] uppercase tracking-wide text-[#71717a]">
           Pay with Settle
         </div>
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-4xl font-semibold tracking-tight">${amount}</span>
-          <span className="text-sm text-foreground/50">USDC</span>
+          <span className="text-sm text-[#52525b]">USDC</span>
         </div>
 
         <div className="mt-5 grid grid-cols-[80px,1fr] gap-y-3 text-xs">
-          <span className="text-foreground/45">to</span>
+          <span className="text-[#71717a]">to</span>
           <div className="flex items-center gap-2">
-            <code className="font-mono text-foreground/85">
+            <code className="font-mono text-[#27272a]">
               {merchant.slice(0, 8)}…{merchant.slice(-6)}
             </code>
             <TrustScoreBadge pubkey={merchant} variant="compact" />
           </div>
           {note && (
             <>
-              <span className="text-foreground/45">note</span>
-              <span className="text-foreground/85">{note}</span>
+              <span className="text-[#71717a]">note</span>
+              <span className="text-[#27272a]">{note}</span>
             </>
           )}
         </div>
 
         {!connected ? (
-          <div className="mt-6 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4 text-center text-xs text-foreground/60">
+          <div className="mt-6 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4 text-center text-xs text-[#52525b]">
             Connect Phantom (top right) to continue.
           </div>
         ) : status === "success" ? (
@@ -227,13 +227,13 @@ export default function PayWidgetPage() {
           </p>
         )}
 
-        <p className="mt-5 text-[10px] text-foreground/40">
+        <p className="mt-5 text-[10px] text-[#71717a]">
           Every payment commits a 4-hash on-chain receipt. The host page
           receives a verifiable signature back via postMessage.
         </p>
       </div>
 
-      <div className="mt-4 text-center text-[10px] text-foreground/40">
+      <div className="mt-4 text-center text-[10px] text-[#71717a]">
         Settle Protocol · {process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? "devnet"}
       </div>
     </main>

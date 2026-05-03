@@ -276,7 +276,7 @@ export default function AllowancesPage() {
         </header>
 
         {!connected ? (
-          <p className="text-sm text-foreground/60">Connect wallet to begin.</p>
+          <p className="text-sm text-[#52525b]">Connect wallet to begin.</p>
         ) : (
           <>
             <nav
@@ -344,7 +344,7 @@ export default function AllowancesPage() {
                     <select
                       value={selectedCard}
                       onChange={(e) => setSelectedCard(e.target.value)}
-                      className="mt-2 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                      className="mt-2 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                     >
                       {delegatedCards.map((c) => (
                         <option key={c.card_pubkey} value={c.card_pubkey}>
@@ -357,47 +357,47 @@ export default function AllowancesPage() {
                   </div>
                 )}
 
-                <section className="mb-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+                <section className="mb-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
                   <h2 className="text-sm font-medium">New allowance</h2>
                   <div className="mt-3 grid gap-3">
                     <input
                       placeholder="Kid pubkey"
                       value={kid}
                       onChange={(e) => setKid(e.target.value)}
-                      className="rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                      className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                     />
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                        <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                           Weekly USDC
                         </p>
                         <input
                           value={weeklyUsdc}
                           onChange={(e) => setWeeklyUsdc(e.target.value)}
                           inputMode="decimal"
-                          className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                          className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                         />
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                        <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                           Daily cap
                         </p>
                         <input
                           value={dailyCapUsdc}
                           onChange={(e) => setDailyCapUsdc(e.target.value)}
                           inputMode="decimal"
-                          className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                          className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                         />
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase tracking-wide text-foreground/40">
+                        <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                           Time UTC
                         </p>
                         <input
                           type="time"
                           value={time}
                           onChange={(e) => setTime(e.target.value)}
-                          className="mt-1 w-full rounded-lg border border-foreground/10 bg-transparent px-3 py-2 text-sm"
+                          className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                         />
                       </div>
                     </div>
@@ -409,7 +409,7 @@ export default function AllowancesPage() {
                       {busy ? "Creating…" : "Create allowance"}
                     </button>
                   </div>
-                  <p className="mt-2 text-[11px] text-foreground/40">
+                  <p className="mt-2 text-[11px] text-[#71717a]">
                     A weekly scheduled_send fires every Sunday. After creating,
                     spawn a Pact on{" "}
                     <Link href="/wishes" className="text-accent hover:underline">
@@ -423,26 +423,26 @@ export default function AllowancesPage() {
                   {paying.map((a) => (
                     <li
                       key={a.allowance_id}
-                      className="rounded-xl border border-foreground/10 bg-white/[0.02] p-4 text-xs"
+                      className="rounded-xl border border-[#e4e4e7] bg-white/[0.02] p-4 text-xs"
                     >
                       <div className="flex items-baseline justify-between">
                         <div>
                           <strong>
                             {formatUsdc(a.weekly_lamports)}/week
                           </strong>{" "}
-                          → <code className="text-foreground/60">
+                          → <code className="text-[#52525b]">
                             {a.kid_pubkey.slice(0, 6)}…{a.kid_pubkey.slice(-4)}
                           </code>
                         </div>
                         <button
                           onClick={() => deleteAllowance(a)}
                           disabled={busy}
-                          className="text-foreground/40 hover:text-red-400 disabled:opacity-50"
+                          className="text-[#71717a] hover:text-red-400 disabled:opacity-50"
                         >
                           delete
                         </button>
                       </div>
-                      <div className="mt-1 text-foreground/50">
+                      <div className="mt-1 text-[#52525b]">
                         daily cap {formatUsdc(a.daily_cap_lamports)}{" "}
                         {a.last_funded_at && (
                           <>
@@ -452,7 +452,7 @@ export default function AllowancesPage() {
                         )}
                       </div>
                       {a.schedule_id && (
-                        <p className="mt-2 text-[10px] text-foreground/40">
+                        <p className="mt-2 text-[10px] text-[#71717a]">
                           schedule {a.schedule_id.slice(0, 8)}… · check
                           firings on{" "}
                           <Link
@@ -466,7 +466,7 @@ export default function AllowancesPage() {
                     </li>
                   ))}
                   {paying.length === 0 && (
-                    <p className="text-xs text-foreground/40">
+                    <p className="text-xs text-[#71717a]">
                       No allowances yet.
                     </p>
                   )}
@@ -486,23 +486,23 @@ export default function AllowancesPage() {
                       <div>
                         <strong>{formatUsdc(a.weekly_lamports)}/week</strong>{" "}
                         from{" "}
-                        <code className="text-foreground/60">
+                        <code className="text-[#52525b]">
                           {a.parent_pubkey.slice(0, 6)}…{a.parent_pubkey.slice(-4)}
                         </code>
                       </div>
                       <span
                         className={`text-[10px] uppercase tracking-wide ${
-                          a.enabled ? "text-emerald-300" : "text-foreground/40"
+                          a.enabled ? "text-emerald-300" : "text-[#71717a]"
                         }`}
                       >
                         {a.enabled ? "active" : "paused"}
                       </span>
                     </div>
-                    <div className="mt-1 text-foreground/50">
+                    <div className="mt-1 text-[#52525b]">
                       daily spend cap {formatUsdc(a.daily_cap_lamports)}
                     </div>
                     {a.last_funded_at && (
-                      <p className="mt-1 text-[10px] text-foreground/40">
+                      <p className="mt-1 text-[10px] text-[#71717a]">
                         last funded{" "}
                         {new Date(a.last_funded_at).toLocaleString()}
                       </p>
@@ -538,7 +538,7 @@ export default function AllowancesPage() {
                   </li>
                 ))}
                 {receiving.length === 0 && (
-                  <p className="text-xs text-foreground/40">
+                  <p className="text-xs text-[#71717a]">
                     No incoming allowances.
                   </p>
                 )}

@@ -83,9 +83,9 @@ export function PythPriceTicker({
   if (!price) {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 text-[11px] text-foreground/40 ${className ?? ""}`}
+        className={`inline-flex items-center gap-1.5 text-[11px] text-[#71717a] ${className ?? ""}`}
       >
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-foreground/30" />
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#a1a1aa]" />
         <span>{error ? `Pyth offline: ${error}` : "Loading SOL/USD…"}</span>
       </span>
     );
@@ -106,14 +106,14 @@ export function PythPriceTicker({
           stale ? "bg-amber-400" : "animate-pulse bg-emerald-400"
         }`}
       />
-      <span className="font-mono text-foreground/85">
+      <span className="font-mono text-[#27272a]">
         ${price.usd.toFixed(2)}
       </span>
-      <span className="text-foreground/45">
+      <span className="text-[#71717a]">
         SOL/USD · {stale ? `stale ${ageDisplay}` : `${ageDisplay} ago`}
       </span>
       {showSource && (
-        <span className="text-foreground/35">· {price.source}</span>
+        <span className="text-[#09090b]/35">· {price.source}</span>
       )}
     </span>
   );

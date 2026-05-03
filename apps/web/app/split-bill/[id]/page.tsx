@@ -172,33 +172,33 @@ export default function SplitBillPage() {
   return (
     <W6AppShell forceSurface="consumer">
       <div style={{ maxWidth: 880 }}>
-        <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
-          <div className="text-xs uppercase tracking-wider text-foreground/45">Split bill</div>
+        <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
+          <div className="text-xs uppercase tracking-wider text-[#71717a]">Split bill</div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{bill.label}</h1>
           <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
             <div>
-              <div className="text-foreground/40">Target</div>
+              <div className="text-[#71717a]">Target</div>
               <div className="mt-1 text-base font-medium">
                 {lamportsToUsd(bill.target_total_lamports)}
               </div>
             </div>
             <div>
-              <div className="text-foreground/40">Your share</div>
+              <div className="text-[#71717a]">Your share</div>
               <div className="mt-1 text-base font-medium">
                 {lamportsToUsd(bill.per_payer_lamports)}
               </div>
             </div>
             <div>
-              <div className="text-foreground/40">Paid</div>
+              <div className="text-[#71717a]">Paid</div>
               <div className="mt-1 text-base font-medium">
                 {payments.length} / {bill.n_payers}
               </div>
             </div>
             <div>
-              <div className="text-foreground/40">Status</div>
+              <div className="text-[#71717a]">Status</div>
               <div
                 className={`mt-1 text-base font-medium ${
-                  bill.completed_at ? "text-emerald-400" : "text-foreground/70"
+                  bill.completed_at ? "text-emerald-400" : "text-[#27272a]"
                 }`}
               >
                 {bill.completed_at ? "Settled" : "Open"}
@@ -207,13 +207,13 @@ export default function SplitBillPage() {
           </div>
 
           <div className="mt-5">
-            <div className="h-2 overflow-hidden rounded-full bg-foreground/10">
+            <div className="h-2 overflow-hidden rounded-full bg-[#e4e4e7]">
               <div
                 className="h-full bg-accent"
                 style={{ width: `${Math.min(paidPct, 100)}%` }}
               />
             </div>
-            <div className="mt-1 text-[11px] text-foreground/40">
+            <div className="mt-1 text-[11px] text-[#71717a]">
               {lamportsToUsd(totalPaidLamports.toString())} collected so far
             </div>
           </div>
@@ -241,7 +241,7 @@ export default function SplitBillPage() {
         </div>
 
         {payments.length > 0 && (
-          <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
             <h2 className="text-sm font-medium">Payers</h2>
             <ul className="mt-3 space-y-2 text-xs">
               {payments.map((p) => (
@@ -249,7 +249,7 @@ export default function SplitBillPage() {
                   key={p.payer_pubkey}
                   className="flex items-center justify-between"
                 >
-                  <span className="font-mono text-foreground/70">
+                  <span className="font-mono text-[#27272a]">
                     {p.payer_pubkey.slice(0, 6)}…{p.payer_pubkey.slice(-4)}
                   </span>
                   {p.sig_solscan && (
@@ -257,7 +257,7 @@ export default function SplitBillPage() {
                       href={getSolscanUrl(p.sig_solscan)}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-foreground/40 hover:text-accent"
+                      className="text-[#71717a] hover:text-accent"
                     >
                       ↗
                     </a>

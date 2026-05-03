@@ -228,11 +228,11 @@ export function CapabilityHeatmap() {
   const totalVolumeInWindow = cells.reduce((s, c) => s + c.totalLamports, 0n);
 
   return (
-    <section className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+    <section className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
       <div className="flex items-baseline justify-between gap-3">
         <div>
           <h2 className="text-sm font-medium">Live capability market</h2>
-          <p className="mt-0.5 text-[11px] text-foreground/45">
+          <p className="mt-0.5 text-[11px] text-[#71717a]">
             ALLOW receipts in the last 60 s. Each cell is a capability hash; cell
             brightness is the count.{" "}
             {simulate ? (
@@ -242,11 +242,11 @@ export function CapabilityHeatmap() {
             ) : null}
           </p>
         </div>
-        <div className="text-right text-[11px] text-foreground/50">
-          <div className="font-mono text-foreground/85">
+        <div className="text-right text-[11px] text-[#52525b]">
+          <div className="font-mono text-[#27272a]">
             {totalEventsInWindow} ALLOW
           </div>
-          <div className="text-foreground/45">
+          <div className="text-[#71717a]">
             {cells.length} capabilities ·{" "}
             <span className="font-mono">{lamportsToUsd(totalVolumeInWindow)}</span>
           </div>
@@ -254,13 +254,13 @@ export function CapabilityHeatmap() {
       </div>
 
       {cells.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-foreground/15 p-8 text-center text-[12px] text-foreground/55">
+        <div className="mt-6 rounded-xl border border-dashed border-[#e4e4e7] p-8 text-center text-[12px] text-[#52525b]">
           {simulate
             ? "Simulator warming up… events should land in 1–2 seconds."
             : "No ALLOW receipts in the last 60 s yet. Open this page on the right side of your screen and fire some agent traffic — the grid will light up in real time."}
           {!simulate && (
-            <div className="mt-3 text-[11px] text-foreground/40">
-              Demo rehearsal? Append <code className="rounded bg-foreground/10 px-1 py-0.5">?simulate=1</code> to the URL.
+            <div className="mt-3 text-[11px] text-[#71717a]">
+              Demo rehearsal? Append <code className="rounded bg-[#e4e4e7] px-1 py-0.5">?simulate=1</code> to the URL.
             </div>
           )}
         </div>
@@ -300,22 +300,22 @@ function HeatmapCell({ cell, maxCount }: { cell: CellData; maxCount: number }) {
     >
       <Link
         href={`/leaderboard/${cell.capabilityHashHex}`}
-        className="block rounded-xl border border-foreground/10 p-3 transition hover:border-foreground/30"
+        className="block rounded-xl border border-[#e4e4e7] p-3 transition hover:border-[#a1a1aa]"
         style={{
           backgroundColor: `rgba(20, 241, 149, ${intensity * 0.18})`,
         }}
         title={`Capability ${cell.capabilityHashHex} · ${cell.count} ALLOW · ${cell.merchants.size} merchant${cell.merchants.size === 1 ? "" : "s"} · ${lamportsToUsd(cell.totalLamports)} in window`}
       >
-        <div className="font-mono text-[10px] text-foreground/60">
+        <div className="font-mono text-[10px] text-[#52525b]">
           {cell.capabilityHashHex.slice(0, 6)}…{cell.capabilityHashHex.slice(-6)}
         </div>
         <div className="mt-2 flex items-baseline justify-between gap-2">
           <div className="text-2xl font-semibold leading-none">{cell.count}</div>
-          <div className="text-[10px] text-foreground/40">{Math.round(ageMs / 1000)}s ago</div>
+          <div className="text-[10px] text-[#71717a]">{Math.round(ageMs / 1000)}s ago</div>
         </div>
-        <div className="mt-2 text-[10px] text-foreground/55">
+        <div className="mt-2 text-[10px] text-[#52525b]">
           <span className="font-mono">{lamportsToUsd(cell.totalLamports)}</span>
-          <span className="ml-1.5 text-foreground/40">
+          <span className="ml-1.5 text-[#71717a]">
             · {cell.merchants.size} merchant{cell.merchants.size === 1 ? "" : "s"}
           </span>
         </div>

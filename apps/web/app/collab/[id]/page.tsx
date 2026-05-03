@@ -97,7 +97,7 @@ export default function CollabPayPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-md px-6 py-16 text-center text-sm text-foreground/60">
+      <main className="mx-auto max-w-md px-6 py-16 text-center text-sm text-[#52525b]">
         Loading collab…
       </main>
     );
@@ -106,7 +106,7 @@ export default function CollabPayPage() {
     return (
       <main className="mx-auto max-w-md px-6 py-16 text-center">
         <h1 className="text-xl font-semibold">Collab unavailable</h1>
-        <p className="mt-3 text-sm text-foreground/60">{error ?? "not_found"}</p>
+        <p className="mt-3 text-sm text-[#52525b]">{error ?? "not_found"}</p>
       </main>
     );
   }
@@ -117,21 +117,21 @@ export default function CollabPayPage() {
   return (
     <W6AppShell forceSurface="consumer">
       <div style={{ maxWidth: 880 }}>
-        <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
-          <div className="text-xs uppercase tracking-wider text-foreground/45">Collab</div>
+        <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
+          <div className="text-xs uppercase tracking-wider text-[#71717a]">Collab</div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{collab.label}</h1>
           {collab.description && (
-            <p className="mt-2 text-sm text-foreground/60">{collab.description}</p>
+            <p className="mt-2 text-sm text-[#52525b]">{collab.description}</p>
           )}
           <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
-            <div className="rounded-xl border border-foreground/10 p-3">
-              <div className="text-foreground/40">Creator A · {ratioAPct}%</div>
+            <div className="rounded-xl border border-[#e4e4e7] p-3">
+              <div className="text-[#71717a]">Creator A · {ratioAPct}%</div>
               <div className="mt-1 truncate font-mono text-[11px]">
                 {collab.creator_a_pubkey.slice(0, 6)}…{collab.creator_a_pubkey.slice(-4)}
               </div>
             </div>
-            <div className="rounded-xl border border-foreground/10 p-3">
-              <div className="text-foreground/40">Creator B · {ratioBPct}%</div>
+            <div className="rounded-xl border border-[#e4e4e7] p-3">
+              <div className="text-[#71717a]">Creator B · {ratioBPct}%</div>
               <div className="mt-1 truncate font-mono text-[11px]">
                 {collab.creator_b_pubkey.slice(0, 6)}…{collab.creator_b_pubkey.slice(-4)}
               </div>
@@ -139,13 +139,13 @@ export default function CollabPayPage() {
           </div>
 
           <div className="mt-6">
-            <label className="block text-xs font-medium text-foreground/60">Amount (USDC)</label>
+            <label className="block text-xs font-medium text-[#52525b]">Amount (USDC)</label>
             <input
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="10.00"
               inputMode="decimal"
-              className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+              className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
             />
           </div>
           <button
@@ -155,7 +155,7 @@ export default function CollabPayPage() {
           >
             {!connected ? "Connect Phantom to pay" : busy ? "Paying…" : "Pay both atomically"}
           </button>
-          <p className="mt-2 text-[10px] text-foreground/40">
+          <p className="mt-2 text-[10px] text-[#71717a]">
             One Solana tx, two TransferChecked ixs. All-or-nothing.
           </p>
         </div>

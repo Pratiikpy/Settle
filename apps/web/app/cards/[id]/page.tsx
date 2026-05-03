@@ -514,7 +514,7 @@ export default function CardDetailPage() {
           <div className="mb-3 flex items-end justify-between gap-4">
             <h2 className="text-lg font-medium">Pacts</h2>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-foreground/40">
+              <span className="text-xs text-[#71717a]">
                 {pacts.filter((p) => !p.closed).length} open · {pacts.length} total
               </span>
               {/* C58 — bulk close. Only show when ≥2 open pacts so the
@@ -549,22 +549,22 @@ export default function CardDetailPage() {
                   key={p.pact_pubkey}
                   className={`rounded-2xl border p-4 text-xs ${
                     p.closed
-                      ? "border-foreground/10 bg-foreground/[0.02] opacity-60"
-                      : "border-foreground/15 bg-white/[0.02]"
+                      ? "border-[#e4e4e7] bg-[#fafafa] opacity-60"
+                      : "border-[#e4e4e7] bg-white/[0.02]"
                   }`}
                 >
                   <div className="flex items-baseline justify-between gap-3">
                     <div>
                       <div className="font-medium">
                         {p.scope_label}{" "}
-                        <span className="text-foreground/40">· {p.mode}</span>
+                        <span className="text-[#71717a]">· {p.mode}</span>
                       </div>
-                      <code className="mt-1 block break-all text-[10px] text-foreground/50">
+                      <code className="mt-1 block break-all text-[10px] text-[#52525b]">
                         {p.pact_pubkey}
                       </code>
                     </div>
                     {p.closed ? (
-                      <span className="rounded-full border border-foreground/20 bg-foreground/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-foreground/60">
+                      <span className="rounded-full border border-[#a1a1aa] bg-[#f4f4f5] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#52525b]">
                         closed
                       </span>
                     ) : p.paused ? (
@@ -580,16 +580,16 @@ export default function CardDetailPage() {
 
                   {cap !== null && (
                     <>
-                      <div className="mt-3 flex items-baseline justify-between text-foreground/70">
+                      <div className="mt-3 flex items-baseline justify-between text-[#27272a]">
                         <span>
                           ${spent?.toFixed(2) ?? "0.00"} / ${cap.toFixed(2)}{" "}
                           USDC
                         </span>
-                        <span className="text-foreground/40">
+                        <span className="text-[#71717a]">
                           {fillPct.toFixed(0)}%
                         </span>
                       </div>
-                      <div className="mt-1 h-1 overflow-hidden rounded-full bg-foreground/10">
+                      <div className="mt-1 h-1 overflow-hidden rounded-full bg-[#e4e4e7]">
                         <div
                           className="h-full bg-accent"
                           style={{ width: `${fillPct}%` }}
@@ -618,7 +618,7 @@ export default function CardDetailPage() {
 
       <div className="mt-12 flex items-end justify-between gap-4">
         <h2 className="text-lg font-medium">Receipts</h2>
-        <span className="text-xs text-foreground/40">
+        <span className="text-xs text-[#71717a]">
           {filteredReceipts.length} of {receipts.length}
         </span>
       </div>
@@ -629,9 +629,9 @@ export default function CardDetailPage() {
             value={filterMerchant}
             onChange={(e) => setFilterMerchant(e.target.value)}
             placeholder="Search merchant or path…"
-            className="flex-1 min-w-[200px] rounded-full border border-foreground/15 bg-transparent px-4 py-2 text-xs outline-none focus:border-accent"
+            className="flex-1 min-w-[200px] rounded-full border border-[#e4e4e7] bg-transparent px-4 py-2 text-xs outline-none focus:border-accent"
           />
-          <div className="flex gap-1 rounded-full border border-foreground/15 bg-white/[0.02] p-1 text-xs">
+          <div className="flex gap-1 rounded-full border border-[#e4e4e7] bg-white/[0.02] p-1 text-xs">
             {(["all", "ALLOW", "DENY", "REVIEW"] as const).map((k) => (
               <button
                 key={k}
@@ -639,14 +639,14 @@ export default function CardDetailPage() {
                 className={
                   filterDecision === k
                     ? "rounded-full bg-accent px-3 py-1 text-background"
-                    : "rounded-full px-3 py-1 text-foreground/60 hover:text-foreground"
+                    : "rounded-full px-3 py-1 text-[#52525b] hover:text-[#09090b]"
                 }
               >
                 {k.toLowerCase()}
               </button>
             ))}
           </div>
-          <div className="flex gap-1 rounded-full border border-foreground/15 bg-white/[0.02] p-1 text-xs">
+          <div className="flex gap-1 rounded-full border border-[#e4e4e7] bg-white/[0.02] p-1 text-xs">
             {(["all", "1", "7", "30"] as const).map((k) => (
               <button
                 key={k}
@@ -654,7 +654,7 @@ export default function CardDetailPage() {
                 className={
                   filterDays === k
                     ? "rounded-full bg-accent px-3 py-1 text-background"
-                    : "rounded-full px-3 py-1 text-foreground/60 hover:text-foreground"
+                    : "rounded-full px-3 py-1 text-[#52525b] hover:text-[#09090b]"
                 }
               >
                 {k === "all" ? "all" : `${k}d`}
@@ -666,8 +666,8 @@ export default function CardDetailPage() {
 
       {receiptsLoading ? (
         <div className="mt-4 grid gap-3">
-          <div className="h-20 animate-pulse rounded-2xl border border-foreground/10 bg-white/[0.02]" />
-          <div className="h-20 animate-pulse rounded-2xl border border-foreground/10 bg-white/[0.02]" />
+          <div className="h-20 animate-pulse rounded-2xl border border-[#e4e4e7] bg-white/[0.02]" />
+          <div className="h-20 animate-pulse rounded-2xl border border-[#e4e4e7] bg-white/[0.02]" />
         </div>
       ) : receiptsError === "supabase_unconfigured" ? (
         <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-300">
@@ -676,11 +676,11 @@ export default function CardDetailPage() {
           <code>pnpm seed:supabase</code>.
         </div>
       ) : receipts.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6 text-sm text-foreground/60">
+        <div className="mt-4 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6 text-sm text-[#52525b]">
           No receipts yet. The agent hasn&apos;t spent anything on this card.
         </div>
       ) : filteredReceipts.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6 text-sm text-foreground/50">
+        <div className="mt-4 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6 text-sm text-[#52525b]">
           No receipts match these filters.{" "}
           <button
             className="text-accent hover:underline"

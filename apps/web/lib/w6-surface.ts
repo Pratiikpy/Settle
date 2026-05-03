@@ -156,9 +156,9 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
       section: null,
       items: [
         { icon: "home", label: "Health", href: "/control-center" },
-        { icon: "activity", label: "Cron", href: "/admin" },
-        { icon: "globe", label: "Federation", href: "/admin" },
-        { icon: "shield", label: "Preflight", href: "/admin" },
+        { icon: "activity", label: "Cron", href: "/admin/cron" },
+        { icon: "globe", label: "Federation", href: "/admin/federation/origins" },
+        { icon: "shield", label: "Preflight", href: "/admin/preflight" },
         { icon: "code", label: "Verify build", href: "/verify-build" },
       ],
     },

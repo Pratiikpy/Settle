@@ -115,23 +115,23 @@ export default function SendViaLinkPage() {
             }}
           >
             <div>
-              <label className="block text-xs font-medium text-foreground/60">Amount (USDC)</label>
+              <label className="block text-xs font-medium text-[#52525b]">Amount (USDC)</label>
               <input
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="5.00"
                 inputMode="decimal"
-                className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+                className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-foreground/60">Note (optional)</label>
+              <label className="block text-xs font-medium text-[#52525b]">Note (optional)</label>
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="happy birthday"
                 maxLength={200}
-                className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+                className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
               />
             </div>
             <button
@@ -147,23 +147,23 @@ export default function SendViaLinkPage() {
                     ? "Funding link…"
                     : "Create claim link"}
             </button>
-            <p className="text-[11px] text-foreground/45">
+            <p className="text-[11px] text-[#71717a]">
               ~0.003 SOL covers escrow rent and gas. Refunded to the recipient on claim.
             </p>
           </form>
         ) : (
           <div className="mt-8 space-y-5">
-            <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-              <div className="text-[10px] uppercase tracking-wider text-foreground/45">
+            <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">
+              <div className="text-[10px] uppercase tracking-wider text-[#71717a]">
                 Claim link
               </div>
-              <code className="mt-2 block break-all text-xs text-foreground/80">{link}</code>
+              <code className="mt-2 block break-all text-xs text-[#27272a]">{link}</code>
               <button
                 onClick={() => {
                   void navigator.clipboard.writeText(link);
                   toast.success("Copied.");
                 }}
-                className="mt-4 w-full rounded-full border border-foreground/20 py-2 text-xs hover:bg-foreground/5"
+                className="mt-4 w-full rounded-full border border-[#a1a1aa] py-2 text-xs hover:bg-[#f4f4f5]"
               >
                 Copy link
               </button>
@@ -178,13 +178,13 @@ export default function SendViaLinkPage() {
                 Funding tx on Solscan ↗
               </a>
             )}
-            <p className="text-[11px] text-foreground/45">
+            <p className="text-[11px] text-[#71717a]">
               Whoever opens this URL claims the funds. The secret lives only in the URL fragment
               (after the #) — it never reached our server. Treat the link like cash.
             </p>
             {escrow && (
-              <div className="text-[11px] text-foreground/40">
-                Escrow address: <code className="text-foreground/60">{escrow}</code>
+              <div className="text-[11px] text-[#71717a]">
+                Escrow address: <code className="text-[#52525b]">{escrow}</code>
               </div>
             )}
           </div>

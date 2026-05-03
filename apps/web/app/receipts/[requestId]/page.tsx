@@ -916,16 +916,16 @@ export default function ReceiptDetailPage() {
             endpoint falls back to a deterministic template when no LLM key
             is configured. We show a thin loading state on first view so
             cache-cold pages don't flash empty. */}
-        <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+        <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
           {narrationLoading && !narration ? (
-            <p className="text-xs text-foreground/40">Generating narration…</p>
+            <p className="text-xs text-[#71717a]">Generating narration…</p>
           ) : narration ? (
             <>
-              <p className="text-sm leading-relaxed text-foreground/85">
+              <p className="text-sm leading-relaxed text-[#27272a]">
                 {narration.text}
               </p>
               {narration.provider && (
-                <p className="mt-3 text-[10px] uppercase tracking-wide text-foreground/30">
+                <p className="mt-3 text-[10px] uppercase tracking-wide text-[#a1a1aa]">
                   {narration.provider === "template"
                     ? "deterministic narrator"
                     : narration.provider === "nvidia_nim"
@@ -944,25 +944,25 @@ export default function ReceiptDetailPage() {
             - "This is a refund of …" link when refundOriginal is set
             - "Refunds against this receipt" list when refunds[] non-empty */}
         {(refundOriginal || refunds.length > 0) && (
-          <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
             {refundOriginal && (
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+                <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
                   This is a refund of
                 </p>
                 <Link
                   href={`/receipts/${refundOriginal.request_id}`}
-                  className="mt-2 block rounded-lg border border-foreground/10 bg-foreground/[0.02] p-3 text-xs hover:border-foreground/20"
+                  className="mt-2 block rounded-lg border border-[#e4e4e7] bg-[#fafafa] p-3 text-xs hover:border-[#a1a1aa]"
                 >
                   <div className="flex items-baseline justify-between gap-3">
-                    <strong className="text-foreground/85">
+                    <strong className="text-[#27272a]">
                       ${(Number(refundOriginal.amount_lamports) / 1e6).toFixed(2)} USDC
                     </strong>
-                    <span className="text-[10px] uppercase tracking-wide text-foreground/40">
+                    <span className="text-[10px] uppercase tracking-wide text-[#71717a]">
                       {refundOriginal.receipt_kind ?? "x402_spend"}
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-foreground/50">
+                  <p className="mt-1 text-[11px] text-[#52525b]">
                     {new Date(refundOriginal.created_at).toLocaleString()} ·{" "}
                     <code className="font-mono">
                       {refundOriginal.request_id.slice(0, 8)}…
@@ -974,7 +974,7 @@ export default function ReceiptDetailPage() {
 
             {refunds.length > 0 && (
               <div className={refundOriginal ? "mt-4" : ""}>
-                <p className="text-[11px] uppercase tracking-wide text-foreground/40">
+                <p className="text-[11px] uppercase tracking-wide text-[#71717a]">
                   Refunds against this receipt
                 </p>
                 <ul className="mt-2 space-y-2">
@@ -982,17 +982,17 @@ export default function ReceiptDetailPage() {
                     <li key={rf.request_id}>
                       <Link
                         href={`/receipts/${rf.request_id}`}
-                        className="block rounded-lg border border-foreground/10 bg-foreground/[0.02] p-3 text-xs hover:border-foreground/20"
+                        className="block rounded-lg border border-[#e4e4e7] bg-[#fafafa] p-3 text-xs hover:border-[#a1a1aa]"
                       >
                         <div className="flex items-baseline justify-between gap-3">
-                          <strong className="text-foreground/85">
+                          <strong className="text-[#27272a]">
                             -${(Number(rf.amount_lamports) / 1e6).toFixed(2)} USDC
                           </strong>
                           <span className="text-[10px] uppercase tracking-wide text-emerald-400">
                             refund
                           </span>
                         </div>
-                        <p className="mt-1 text-[11px] text-foreground/50">
+                        <p className="mt-1 text-[11px] text-[#52525b]">
                           {new Date(rf.created_at).toLocaleString()} ·{" "}
                           <code className="font-mono">
                             {rf.request_id.slice(0, 8)}…
@@ -1018,7 +1018,7 @@ export default function ReceiptDetailPage() {
             href={`/receipts/${params.requestId}/print`}
             target="_blank"
             rel="noreferrer"
-            className="rounded-full border border-foreground/20 px-3 py-1.5 text-foreground/60 hover:bg-foreground/5"
+            className="rounded-full border border-[#a1a1aa] px-3 py-1.5 text-[#52525b] hover:bg-[#f4f4f5]"
           >
             Save as PDF →
           </a>
@@ -1033,20 +1033,20 @@ export default function ReceiptDetailPage() {
 
         {/* Refund timer — codex round-2: shared time-state visible to both sides */}
         {refundTimer && (
-          <section className="mt-6 rounded-2xl border border-foreground/10 bg-gradient-to-br from-amber-500/10 to-transparent p-5">
+          <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-gradient-to-br from-amber-500/10 to-transparent p-5">
             <div className="flex items-baseline justify-between">
               <h2 className="text-sm font-medium">Refund window</h2>
-              <span className="font-mono text-xs text-foreground/60">
+              <span className="font-mono text-xs text-[#52525b]">
                 {humanizeDuration(refundTimer.secondsLeft)} left
               </span>
             </div>
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[#e4e4e7]">
               <div
                 className="h-full rounded-full bg-amber-400 transition-all duration-1000 ease-linear"
                 style={{ width: `${(refundTimer.pct * 100).toFixed(2)}%` }}
               />
             </div>
-            <p className="mt-2 text-[11px] text-foreground/45">
+            <p className="mt-2 text-[11px] text-[#71717a]">
               While the pact stays open, the buyer can refund unspent funds via the 😞 button.
               Both sides see the same timer.
             </p>
@@ -1066,7 +1066,7 @@ export default function ReceiptDetailPage() {
         </section>
 
         {/* Verification status */}
-        <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+        <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
           <div className="flex items-baseline justify-between">
             <h2 className="text-sm font-medium">Cryptographic verification</h2>
             {/* F2.0 Universal Receipt Kernel — kind badge tells the user which
@@ -1075,7 +1075,7 @@ export default function ReceiptDetailPage() {
                 objects were used to build it. */}
             {r.receipt_kind && (
               <span
-                className="rounded-full border border-foreground/15 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] tracking-wide text-foreground/70"
+                className="rounded-full border border-[#e4e4e7] bg-[#fafafa] px-2 py-0.5 font-mono text-[10px] tracking-wide text-[#27272a]"
                 title="Universal Receipt Kernel — payment kind discriminator"
               >
                 kind: {r.receipt_kind}
@@ -1083,10 +1083,10 @@ export default function ReceiptDetailPage() {
             )}
           </div>
           {verifying ? (
-            <p className="mt-3 text-xs text-foreground/50">Recomputing 4-hash chain…</p>
+            <p className="mt-3 text-xs text-[#52525b]">Recomputing 4-hash chain…</p>
           ) : verify ? (
             <div className="mt-3 grid gap-2 text-xs">
-              <p className="text-foreground/70">{verify.message}</p>
+              <p className="text-[#27272a]">{verify.message}</p>
               <div className="grid grid-cols-2 gap-1 text-[11px]">
                 {["receipt_hash", "reason_hash", "policy_snapshot_hash", "purpose_hash"].map((h) => {
                   const ok = verify.verified.includes(h);
@@ -1098,7 +1098,7 @@ export default function ReceiptDetailPage() {
                           ? "text-emerald-300"
                           : verify.mismatches.includes(h)
                             ? "text-red-300"
-                            : "text-foreground/40"
+                            : "text-[#71717a]"
                       }
                     >
                       {ok ? "✓" : verify.mismatches.includes(h) ? "✗" : "○"} {h}
@@ -1107,8 +1107,8 @@ export default function ReceiptDetailPage() {
                 })}
               </div>
               {r.context_hash && (
-                <p className="mt-2 break-all font-mono text-[10px] text-foreground/40">
-                  <span className="text-foreground/60">context_hash:</span> {r.context_hash}
+                <p className="mt-2 break-all font-mono text-[10px] text-[#71717a]">
+                  <span className="text-[#52525b]">context_hash:</span> {r.context_hash}
                 </p>
               )}
             </div>
@@ -1117,10 +1117,10 @@ export default function ReceiptDetailPage() {
 
         {/* Voice note section — F5 signature UX */}
         {isAllow && (
-          <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
             <div className="flex items-baseline justify-between">
               <h2 className="text-sm font-medium">Voice notes</h2>
-              <span className="text-[11px] text-foreground/40">Sealed-box encrypted</span>
+              <span className="text-[11px] text-[#71717a]">Sealed-box encrypted</span>
             </div>
 
             {/* Recorder */}
@@ -1136,7 +1136,7 @@ export default function ReceiptDetailPage() {
                   >
                     🎙
                   </button>
-                  <span className="text-xs text-foreground/55">
+                  <span className="text-xs text-[#52525b]">
                     {connected
                       ? "Tap to record up to 10s. Encrypted before upload."
                       : "Connect Phantom to record."}
@@ -1160,10 +1160,10 @@ export default function ReceiptDetailPage() {
               )}
               {(recState === "encrypting" || recState === "uploading") && (
                 <div className="flex items-center gap-3">
-                  <span className="grid h-12 w-12 place-items-center rounded-full border border-foreground/15 text-foreground/60">
+                  <span className="grid h-12 w-12 place-items-center rounded-full border border-[#e4e4e7] text-[#52525b]">
                     …
                   </span>
-                  <span className="text-xs text-foreground/55">
+                  <span className="text-xs text-[#52525b]">
                     {recState === "encrypting" ? "Encrypting…" : "Uploading…"}
                   </span>
                 </div>
@@ -1178,7 +1178,7 @@ export default function ReceiptDetailPage() {
                   .map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center gap-3 rounded-xl border border-foreground/10 p-3"
+                      className="flex items-center gap-3 rounded-xl border border-[#e4e4e7] p-3"
                     >
                       <button
                         type="button"
@@ -1190,14 +1190,14 @@ export default function ReceiptDetailPage() {
                         {playingId === a.id ? "♪" : "▶"}
                       </button>
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs text-foreground/70">
+                        <div className="text-xs text-[#27272a]">
                           {a.duration_ms ? `${(a.duration_ms / 1000).toFixed(1)}s` : "voice note"}
                           {" · "}
                           <span className="font-mono">
                             {a.created_by_pubkey.slice(0, 6)}…{a.created_by_pubkey.slice(-4)}
                           </span>
                         </div>
-                        <div className="text-[11px] text-foreground/40">
+                        <div className="text-[11px] text-[#71717a]">
                           {new Date(a.created_at).toLocaleString()}
                         </div>
                       </div>
@@ -1207,7 +1207,7 @@ export default function ReceiptDetailPage() {
             )}
 
             {!connected && (
-              <p className="mt-3 text-[11px] text-foreground/40">
+              <p className="mt-3 text-[11px] text-[#71717a]">
                 Decryption is wallet-sig gated. Connect to play.
               </p>
             )}
@@ -1216,29 +1216,29 @@ export default function ReceiptDetailPage() {
 
         {/* Pact state if pact-scoped */}
         {data.pact && (
-          <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
             <h2 className="text-sm font-medium">
               Pact state{" "}
-              <span className="ml-2 rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-foreground/60">
+              <span className="ml-2 rounded bg-[#e4e4e7] px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-[#52525b]">
                 {data.pact.mode}
               </span>
             </h2>
             {data.pact.mode === "streaming" ? (
-              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-foreground/70">
+              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-[#27272a]">
                 <div>
-                  <div className="text-foreground/40">Max budget</div>
+                  <div className="text-[#71717a]">Max budget</div>
                   <div>${lamportsToUsdc(data.pact.max_total_lamports)}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Claimed</div>
+                  <div className="text-[#71717a]">Claimed</div>
                   <div>${lamportsToUsdc(data.pact.claimed)}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Rate</div>
+                  <div className="text-[#71717a]">Rate</div>
                   <div className="font-mono">{data.pact.rate_lamports_per_slot} / slot</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Status</div>
+                  <div className="text-[#71717a]">Status</div>
                   <div
                     className={
                       data.pact.closed
@@ -1252,43 +1252,43 @@ export default function ReceiptDetailPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Last claim slot</div>
+                  <div className="text-[#71717a]">Last claim slot</div>
                   <div className="font-mono">{data.pact.last_claim_slot}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Expires at slot</div>
+                  <div className="text-[#71717a]">Expires at slot</div>
                   <div className="font-mono">{data.pact.expiry_slot}</div>
                 </div>
               </div>
             ) : data.pact.mode === "delivery_escrow" ? (
-              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-foreground/70">
+              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-[#27272a]">
                 <div>
-                  <div className="text-foreground/40">Held in escrow</div>
+                  <div className="text-[#71717a]">Held in escrow</div>
                   <div>${lamportsToUsdc(data.pact.amount_lamports)}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Pinned merchant</div>
+                  <div className="text-[#71717a]">Pinned merchant</div>
                   <div className="font-mono">
                     {data.pact.merchant_pubkey.slice(0, 6)}…{data.pact.merchant_pubkey.slice(-4)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Confirm by slot</div>
+                  <div className="text-[#71717a]">Confirm by slot</div>
                   <div className="font-mono">{data.pact.confirm_deadline_slot}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Dispute by slot</div>
+                  <div className="text-[#71717a]">Dispute by slot</div>
                   <div className="font-mono">{data.pact.dispute_deadline_slot}</div>
                 </div>
                 <div className="col-span-2">
-                  <div className="text-foreground/40">Status</div>
+                  <div className="text-[#71717a]">Status</div>
                   <div
                     className={
                       data.pact.released
                         ? "text-emerald-300"
                         : data.pact.refunded
                           ? "text-amber-300"
-                          : "text-foreground/80"
+                          : "text-[#27272a]"
                     }
                   >
                     {data.pact.released
@@ -1300,23 +1300,23 @@ export default function ReceiptDetailPage() {
                 </div>
               </div>
             ) : (
-              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-foreground/70">
+              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-[#27272a]">
                 <div>
-                  <div className="text-foreground/40">Cap</div>
+                  <div className="text-[#71717a]">Cap</div>
                   <div>${lamportsToUsdc(data.pact.cap_lamports)}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Spent</div>
+                  <div className="text-[#71717a]">Spent</div>
                   <div>${lamportsToUsdc(data.pact.spent)}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Status</div>
+                  <div className="text-[#71717a]">Status</div>
                   <div className={data.pact.closed ? "text-red-300" : "text-emerald-300"}>
                     {data.pact.closed ? "Closed" : "Open"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-foreground/40">Expires at slot</div>
+                  <div className="text-[#71717a]">Expires at slot</div>
                   <div className="font-mono">{data.pact.expiry_slot}</div>
                 </div>
               </div>
@@ -1348,7 +1348,7 @@ export default function ReceiptDetailPage() {
             the emoji. The emoji is metadata for analytics + the user's own
             "what was that one I refunded with 😡" memory. */}
         {isAllow && (
-          <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+          <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
             <h2 className="text-sm font-medium">Refund</h2>
             {!refundOpen ? (
               <div className="mt-3 flex items-center gap-3">
@@ -1362,7 +1362,7 @@ export default function ReceiptDetailPage() {
                         setRefundIntent(r.intent);
                         setRefundOpen(true);
                       }}
-                      className="grid h-12 w-12 place-items-center rounded-full border border-foreground/15 text-2xl transition hover:bg-foreground/5"
+                      className="grid h-12 w-12 place-items-center rounded-full border border-[#e4e4e7] text-2xl transition hover:bg-[#f4f4f5]"
                       aria-label={`Refund: ${r.intent}`}
                       title={r.hint}
                     >
@@ -1370,7 +1370,7 @@ export default function ReceiptDetailPage() {
                     </button>
                   ))}
                 </div>
-                <span className="text-xs text-foreground/50">
+                <span className="text-xs text-[#52525b]">
                   Tap how you feel. Settle handles the rest.
                 </span>
               </div>
@@ -1388,7 +1388,7 @@ export default function ReceiptDetailPage() {
                       className={
                         refundEmoji === r.emoji
                           ? "flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs text-background"
-                          : "flex items-center gap-2 rounded-full border border-foreground/15 px-3 py-1.5 text-xs text-foreground/70 hover:bg-foreground/5"
+                          : "flex items-center gap-2 rounded-full border border-[#e4e4e7] px-3 py-1.5 text-xs text-[#27272a] hover:bg-[#f4f4f5]"
                       }
                       title={r.hint}
                     >
@@ -1408,7 +1408,7 @@ export default function ReceiptDetailPage() {
                         }"`
                       : "Pick an emoji first"
                   }
-                  className="rounded-lg border border-foreground/15 bg-transparent px-3 py-2 text-xs outline-none focus:border-accent"
+                  className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-xs outline-none focus:border-accent"
                 />
                 <div className="flex gap-2">
                   <button
@@ -1427,7 +1427,7 @@ export default function ReceiptDetailPage() {
                       setRefundIntent("");
                       setRefundCustom("");
                     }}
-                    className="rounded-full border border-foreground/15 px-4 py-2 text-xs hover:bg-foreground/5"
+                    className="rounded-full border border-[#e4e4e7] px-4 py-2 text-xs hover:bg-[#f4f4f5]"
                   >
                     Cancel
                   </button>
@@ -1437,7 +1437,7 @@ export default function ReceiptDetailPage() {
             {/* Show the latest emoji on already-refunded receipts so the
                 user remembers their intent without scrolling refund_requests. */}
             {data.receipt && (data.receipt as unknown as { refund_emoji?: string }).refund_emoji && (
-              <p className="mt-3 text-[11px] text-foreground/50">
+              <p className="mt-3 text-[11px] text-[#52525b]">
                 Last refund:{" "}
                 <span className="text-base">
                   {(data.receipt as unknown as { refund_emoji: string }).refund_emoji}
@@ -1448,7 +1448,7 @@ export default function ReceiptDetailPage() {
         )}
 
         {/* Hash + slot details */}
-        <section className="mt-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
+        <section className="mt-6 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
           <h2 className="text-sm font-medium">Hashes</h2>
           {/* F2.7 hash-chain animation already mounted in the section
               above (line ~1024). No duplicate here. */}
@@ -1458,7 +1458,7 @@ export default function ReceiptDetailPage() {
               <CapabilityBadge hash={r.capability_hash} />
             </div>
           )}
-          <div className="mt-3 grid gap-2 text-[11px] font-mono text-foreground/60">
+          <div className="mt-3 grid gap-2 text-[11px] font-mono text-[#52525b]">
             <Line label="receipt_hash" value={r.receipt_hash} />
             <Line label="reason_hash" value={r.reason_hash} />
             <Line label="policy_snapshot_hash" value={r.policy_snapshot_hash} />
@@ -1466,12 +1466,12 @@ export default function ReceiptDetailPage() {
             <Line label="purpose_text_hash" value={r.purpose_text_hash} />
             <Line label="capability_hash" value={r.capability_hash} />
           </div>
-          <div className="mt-3 text-[11px] text-foreground/45">
+          <div className="mt-3 text-[11px] text-[#71717a]">
             Slot {r.decision_slot} · policy v{r.policy_version} · {new Date(r.created_at).toLocaleString()}
           </div>
           {r.submission_method && (
             <div
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-foreground/[0.03] px-2.5 py-1 text-[10px]"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#e4e4e7] bg-[#fafafa] px-2.5 py-1 text-[10px]"
               title={
                 r.submission_method === "helius_sender_jito"
                   ? "Posted as Jito bundle via Helius Sender for confirmed-on-first-try landing. Compute-budget priority fee + Jito tip baked into the tx."
@@ -1488,12 +1488,12 @@ export default function ReceiptDetailPage() {
               ) : r.submission_method === "rpc_fallback" ? (
                 <>
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                  <span className="text-foreground/60">RPC sendRawTransaction (Sender unavailable)</span>
+                  <span className="text-[#52525b]">RPC sendRawTransaction (Sender unavailable)</span>
                 </>
               ) : (
                 <>
                   <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                  <span className="text-foreground/60">Wallet sendRawTransaction</span>
+                  <span className="text-[#52525b]">Wallet sendRawTransaction</span>
                 </>
               )}
             </div>
@@ -1512,24 +1512,24 @@ export default function ReceiptDetailPage() {
                     ZK Compressed receipt
                   </span>
                 </div>
-                <span className="text-[10px] text-foreground/40">
+                <span className="text-[10px] text-[#71717a]">
                   Light Protocol · ~$0.001
                 </span>
               </div>
-              <p className="mt-2 text-[11px] text-foreground/55">
+              <p className="mt-2 text-[11px] text-[#52525b]">
                 Mirrored as a 1-unit compressed token to the buyer&rsquo;s wallet.
                 Indexed by Photon RPC and visible in Light-Protocol-aware
                 explorers.
               </p>
               <div className="mt-3 grid grid-cols-1 gap-1.5 text-[11px]">
                 <div className="grid grid-cols-[88px,1fr] gap-2">
-                  <span className="text-foreground/40">mint</span>
-                  <code className="truncate font-mono text-foreground/70">
+                  <span className="text-[#71717a]">mint</span>
+                  <code className="truncate font-mono text-[#27272a]">
                     {r.compressed_addr ?? "—"}
                   </code>
                 </div>
                 <div className="grid grid-cols-[88px,1fr] gap-2">
-                  <span className="text-foreground/40">tx</span>
+                  <span className="text-[#71717a]">tx</span>
                   <a
                     href={getSolscanUrl(r.compressed_sig)}
                     target="_blank"
@@ -1544,7 +1544,7 @@ export default function ReceiptDetailPage() {
           )}
         </section>
 
-        <p className="mt-8 text-center text-[11px] text-foreground/40">
+        <p className="mt-8 text-center text-[11px] text-[#71717a]">
           <Link href={`/cards/${r.card_pubkey}`} className="hover:text-accent">
             ← Card timeline
           </Link>
@@ -1559,7 +1559,7 @@ export default function ReceiptDetailPage() {
 function Line({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="grid grid-cols-[180px,1fr] gap-3">
-      <span className="text-foreground/40">{label}</span>
+      <span className="text-[#71717a]">{label}</span>
       <code className="break-all">{value ?? "—"}</code>
     </div>
   );

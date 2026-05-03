@@ -171,7 +171,7 @@ export default function EmbedPayPage() {
       <main className="flex min-h-screen items-center justify-center px-6 py-8">
         <div className="max-w-sm text-center">
           <h1 className="text-lg font-semibold">Invalid pay request</h1>
-          <p className="mt-3 text-xs text-foreground/60">
+          <p className="mt-3 text-xs text-[#52525b]">
             Required: <code>merchant</code> (base58 pubkey) and{" "}
             <code>amount</code> (positive USDC decimal).
           </p>
@@ -185,7 +185,7 @@ export default function EmbedPayPage() {
               });
               postToParent({ type: "settle:closed" });
             }}
-            className="mt-4 rounded-full border border-foreground/15 px-4 py-2 text-xs"
+            className="mt-4 rounded-full border border-[#e4e4e7] px-4 py-2 text-xs"
           >
             Close
           </button>
@@ -196,33 +196,33 @@ export default function EmbedPayPage() {
 
   return (
     <main className="flex min-h-screen flex-col px-5 py-6">
-      <div className="rounded-3xl border border-foreground/10 bg-white/[0.03] p-5">
-        <div className="text-[10px] uppercase tracking-wide text-foreground/40">
+      <div className="rounded-3xl border border-[#e4e4e7] bg-white/[0.03] p-5">
+        <div className="text-[10px] uppercase tracking-wide text-[#71717a]">
           Pay with Settle
         </div>
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-4xl font-semibold tracking-tight">${amount}</span>
-          <span className="text-sm text-foreground/50">USDC</span>
+          <span className="text-sm text-[#52525b]">USDC</span>
         </div>
 
         <div className="mt-5 grid grid-cols-[64px,1fr] gap-y-3 text-xs">
-          <span className="text-foreground/45">to</span>
+          <span className="text-[#71717a]">to</span>
           <div className="flex items-center gap-2">
-            <code className="font-mono text-foreground/85">
+            <code className="font-mono text-[#27272a]">
               {merchant.slice(0, 8)}…{merchant.slice(-6)}
             </code>
             <TrustScoreBadge pubkey={merchant} variant="compact" />
           </div>
           {note && (
             <>
-              <span className="text-foreground/45">note</span>
-              <span className="text-foreground/85 break-words">{note}</span>
+              <span className="text-[#71717a]">note</span>
+              <span className="text-[#27272a] break-words">{note}</span>
             </>
           )}
           {capability && (
             <>
-              <span className="text-foreground/45">capability</span>
-              <code className="break-all font-mono text-[10px] text-foreground/60">
+              <span className="text-[#71717a]">capability</span>
+              <code className="break-all font-mono text-[10px] text-[#52525b]">
                 {capability.slice(0, 16)}…
               </code>
             </>
@@ -230,7 +230,7 @@ export default function EmbedPayPage() {
         </div>
 
         {!connected ? (
-          <div className="mt-6 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4 text-center text-xs text-foreground/60">
+          <div className="mt-6 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4 text-center text-xs text-[#52525b]">
             Connect a wallet (top right) to continue.
           </div>
         ) : status === "success" ? (
@@ -254,13 +254,13 @@ export default function EmbedPayPage() {
 
         {error && <p className="mt-3 text-xs text-red-300">{error}</p>}
 
-        <p className="mt-5 text-[10px] text-foreground/40">
+        <p className="mt-5 text-[10px] text-[#71717a]">
           Every payment commits a 4-hash on-chain receipt. The host page
           receives a verifiable signature back via postMessage.
         </p>
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-[10px] text-foreground/40">
+      <div className="mt-3 flex items-center justify-between text-[10px] text-[#71717a]">
         <span>
           Settle · {process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? "devnet"}
         </span>
@@ -270,7 +270,7 @@ export default function EmbedPayPage() {
             closedRef.current = true;
             postToParent({ type: "settle:closed" });
           }}
-          className="hover:text-foreground/70"
+          className="hover:text-[#27272a]"
         >
           Cancel
         </button>

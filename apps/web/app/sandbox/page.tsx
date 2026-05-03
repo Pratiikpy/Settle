@@ -47,13 +47,13 @@ export default function SandboxPage() {
         <h1 className="w6-heading" style={{ fontSize: 32, lineHeight: 1.1, margin: 0 }}>Devnet sandbox</h1>
         <PythPriceTicker />
       </div>
-      <p className="mt-2 text-sm text-foreground/60">
+      <p className="mt-2 text-sm text-[#52525b]">
         Real Phantom wallet. Free devnet funds. Play with the full app for 5 minutes.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-foreground/10 bg-white/[0.02] p-8">
+      <div className="mt-8 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-8">
         {!connected ? (
-          <div className="text-sm text-foreground/60">
+          <div className="text-sm text-[#52525b]">
             Connect Phantom (top right) to start. We don&apos;t teach you to skip the wallet — but
             we&apos;ll airdrop devnet funds so you can play for free.
           </div>
@@ -73,13 +73,13 @@ export default function SandboxPage() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <a
                 href="/send"
-                className="rounded-lg border border-foreground/15 px-4 py-3 text-center hover:bg-foreground/5"
+                className="rounded-lg border border-[#e4e4e7] px-4 py-3 text-center hover:bg-[#f4f4f5]"
               >
                 Try /send →
               </a>
               <a
                 href="/agents"
-                className="rounded-lg border border-foreground/15 px-4 py-3 text-center hover:bg-foreground/5"
+                className="rounded-lg border border-[#e4e4e7] px-4 py-3 text-center hover:bg-[#f4f4f5]"
               >
                 Hire an agent →
               </a>
@@ -88,7 +88,7 @@ export default function SandboxPage() {
         )}
       </div>
 
-      <p className="mt-6 text-xs text-foreground/40">
+      <p className="mt-6 text-xs text-[#71717a]">
         Devnet only. No real money. Architecture: server-side <code>requestAirdrop</code> +
         SPL test-USDC mint authority on devnet. Mainnet button disabled in sandbox. Rate-limited
         via Upstash Redis (1 airdrop per pubkey per 24h).

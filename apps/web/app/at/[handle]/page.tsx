@@ -195,7 +195,7 @@ export default function HandleProfilePage() {
     <W6AppShell>
       <div className="mx-auto max-w-2xl">
         {/* Profile header */}
-        <div className="rounded-3xl border border-foreground/10 card-surface p-8">
+        <div className="rounded-3xl border border-[#e4e4e7] card-surface p-8">
           <div className="flex items-center gap-3">
             <HandleBadge
               handle={`@${profile.handle}`}
@@ -228,8 +228,8 @@ export default function HandleProfilePage() {
               <FollowButton handle={profile.handle} />
             )}
             {followStats && (
-              <span className="text-xs text-foreground/50">
-                <span className="font-medium text-foreground/80">
+              <span className="text-xs text-[#52525b]">
+                <span className="font-medium text-[#27272a]">
                   {followStats.followers_count}
                 </span>{" "}
                 follower{followStats.followers_count === 1 ? "" : "s"}
@@ -240,15 +240,15 @@ export default function HandleProfilePage() {
           {/* F15 — wallet-aware relationship summary: shows above the public-spend stats
               when you're already a sender to this handle. */}
           {relationship && relationship.you_sent_count > 0 && (
-            <div className="mt-4 rounded-xl border border-accent/30 bg-accent/5 p-3 text-xs text-foreground/70">
-              You&rsquo;ve sent <span className="font-medium text-foreground">${relationship.you_sent_total_usdc}</span>{" "}
+            <div className="mt-4 rounded-xl border border-accent/30 bg-accent/5 p-3 text-xs text-[#27272a]">
+              You&rsquo;ve sent <span className="font-medium text-[#09090b]">${relationship.you_sent_total_usdc}</span>{" "}
               to @{profile.handle} across {relationship.you_sent_count} payment
               {relationship.you_sent_count === 1 ? "" : "s"}.
               {relationship.is_following ? " · You're following them." : ""}
             </div>
           )}
 
-          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-foreground/50">
+          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#52525b]">
             <span>
               Joined{" "}
               {new Date(profile.created_at).toLocaleDateString("en-US", {
@@ -260,23 +260,23 @@ export default function HandleProfilePage() {
               href={`https://solscan.io/account/${profile.pubkey}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? "devnet"}`}
               target="_blank"
               rel="noreferrer"
-              className="hover:text-foreground"
+              className="hover:text-[#09090b]"
             >
               {profile.pubkey.slice(0, 8)}…{profile.pubkey.slice(-4)} ↗
             </a>
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-              <div className="text-xs uppercase tracking-wider text-foreground/40">
+            <div className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
+              <div className="text-xs uppercase tracking-wider text-[#71717a]">
                 Public spend
               </div>
               <div className="mt-2 text-3xl font-semibold tracking-tight">
                 ${profile.public_total_usdc}
               </div>
             </div>
-            <div className="rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-              <div className="text-xs uppercase tracking-wider text-foreground/40">
+            <div className="rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
+              <div className="text-xs uppercase tracking-wider text-[#71717a]">
                 Public receipts
               </div>
               <div className="mt-2 text-3xl font-semibold tracking-tight">
@@ -287,21 +287,21 @@ export default function HandleProfilePage() {
 
           {/* F18 — Public earnings transparency. Only renders when there's flow to show. */}
           {profile.earnings && Number(profile.earnings.lifetime_earned_usdc) > 0 && (
-            <div className="mt-4 rounded-2xl border border-foreground/10 bg-white/[0.02] p-5">
-              <div className="text-xs uppercase tracking-wider text-foreground/40">
+            <div className="mt-4 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-5">
+              <div className="text-xs uppercase tracking-wider text-[#71717a]">
                 Earnings (public_feed only)
               </div>
               <div className="mt-3 grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <div className="text-foreground/40 text-xs">Lifetime</div>
+                  <div className="text-[#71717a] text-xs">Lifetime</div>
                   <div className="font-semibold">${profile.earnings.lifetime_earned_usdc}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40 text-xs">Last 30 days</div>
+                  <div className="text-[#71717a] text-xs">Last 30 days</div>
                   <div className="font-semibold">${profile.earnings.last_30_days_usdc}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40 text-xs">Top senders</div>
+                  <div className="text-[#71717a] text-xs">Top senders</div>
                   <div className="font-semibold">{profile.earnings.top_senders_count}</div>
                 </div>
               </div>
@@ -315,7 +315,7 @@ export default function HandleProfilePage() {
         {/* Public receipts feed */}
         <h2 className="mt-12 text-lg font-medium">Public activity</h2>
         {profile.public_receipts.length === 0 ? (
-          <div className="mt-4 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6 text-sm text-foreground/60">
+          <div className="mt-4 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-6 text-sm text-[#52525b]">
             No public activity yet. {profile.display_name ?? `@${profile.handle}`} keeps
             their spend private by default.
           </div>
@@ -324,15 +324,15 @@ export default function HandleProfilePage() {
             {profile.public_receipts.map((r) => (
               <div
                 key={r.request_id}
-                className="flex items-center justify-between rounded-xl border border-foreground/10 p-4"
+                className="flex items-center justify-between rounded-xl border border-[#e4e4e7] p-4"
               >
                 <div>
                   <div className="text-sm">
-                    <span className="font-mono text-xs text-foreground/50">
+                    <span className="font-mono text-xs text-[#52525b]">
                       {r.merchant_pubkey.slice(0, 6)}…
                     </span>
                   </div>
-                  <div className="mt-1 text-xs text-foreground/40">
+                  <div className="mt-1 text-xs text-[#71717a]">
                     {timeAgo(r.created_at)}
                   </div>
                 </div>
@@ -345,7 +345,7 @@ export default function HandleProfilePage() {
                       href={getSolscanUrl(r.sig_solscan)}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs text-foreground/40 hover:text-accent"
+                      className="text-xs text-[#71717a] hover:text-accent"
                     >
                       ↗
                     </a>

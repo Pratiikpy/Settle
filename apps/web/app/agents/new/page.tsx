@@ -165,42 +165,42 @@ export default function AgentsPage() {
           }}
         >
           <div>
-            <label className="block text-xs font-medium text-foreground/60">Task</label>
+            <label className="block text-xs font-medium text-[#52525b]">Task</label>
             <textarea
               value={task}
               onChange={(e) => setTask(e.target.value)}
               placeholder="Translate this Japanese paper to English."
               rows={3}
-              className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+              className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-foreground/60">Cap (USDC)</label>
+              <label className="block text-xs font-medium text-[#52525b]">Cap (USDC)</label>
               <input
                 value={cap}
                 onChange={(e) => setCap(e.target.value)}
                 placeholder="0.50"
                 inputMode="decimal"
-                className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+                className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-foreground/60">Expiry (min)</label>
+              <label className="block text-xs font-medium text-[#52525b]">Expiry (min)</label>
               <input
                 value={expiryMin}
                 onChange={(e) => setExpiryMin(Number(e.target.value))}
                 type="number"
                 min={1}
                 max={1440}
-                className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+                className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-foreground/60">
+            <label className="block text-xs font-medium text-[#52525b]">
               Merchant allowlist (Solana Attestation Service verified)
             </label>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -231,14 +231,14 @@ export default function AgentsPage() {
                     : "Spawn Pact card"}
           </button>
 
-          <p className="text-xs text-foreground/50">
+          <p className="text-xs text-[#52525b]">
             Anchor <code>open_pact</code> ix · Solana Pay reference · Solana Attestation Service ·
             Lighthouse assertion · Helius Sender.
           </p>
         </form>
 
         <div className="space-y-4">
-          <div className="text-xs font-medium uppercase tracking-wider text-foreground/50">
+          <div className="text-xs font-medium uppercase tracking-wider text-[#52525b]">
             Preview
           </div>
           <div className="relative">

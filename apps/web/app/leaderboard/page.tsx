@@ -30,6 +30,14 @@ interface Row {
   last_used_at: string;
 }
 
+interface FederationOrigin {
+  origin_id: string;
+  label: string;
+  homepage_url: string | null;
+  trusted_since: string;
+  receipt_count: number;
+}
+
 function hashHexFromBytea(s: string): string {
   return s.startsWith("\\x") ? s.slice(2) : s;
 }
@@ -37,6 +45,7 @@ function hashHexFromBytea(s: string): string {
 export default function LeaderboardIndexPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [origins, setOrigins] = useState<FederationOrigin[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +58,14 @@ export default function LeaderboardIndexPage() {
       })
       .catch((e) => {
         if (!cancelled) setError(String((e as Error).message ?? e));
+      });
+    void fetch(`/api/federation/origins`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { origins?: FederationOrigin[] } | null) => {
+        if (!cancelled && data?.origins) setOrigins(data.origins);
+      })
+      .catch(() => {
+        /* federation panel is best-effort */
       });
     return () => {
       cancelled = true;
@@ -204,6 +221,81 @@ export default function LeaderboardIndexPage() {
           (domain + method + path + amount + version). Two services with
           the same capability are directly comparable.
         </p>
+
+        {/* Federation panel — promoted external origins. Populated only
+            once `federation_origins.trusted=true` rows exist. */}
+        {origins && origins.length > 0 && (
+          <section style={{ marginTop: 40 }}>
+            <div className="w6-eyebrow" style={{ marginBottom: 14 }}>
+              Federation · trusted origins
+            </div>
+            <p
+              className="w6-muted"
+              style={{
+                fontSize: 13,
+                marginBottom: 16,
+                maxWidth: 720,
+                lineHeight: 1.5,
+              }}
+            >
+              Settle accepts attested receipts from these foreign protocols.
+              Imported rows show up in your /ledger as "federated · trusted"
+              and get verified against the origin's published key.
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gap: 14,
+              }}
+            >
+              {origins.map((o) => (
+                <div
+                  key={o.origin_id}
+                  className="w6-card"
+                  style={{ padding: 16 }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      justifyContent: "space-between",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <div className="w6-heading" style={{ fontSize: 14 }}>
+                      {o.label}
+                    </div>
+                    <span
+                      className="w6-mono"
+                      style={{ fontSize: 11, color: "var(--w6-ink-4)" }}
+                    >
+                      {o.origin_id}
+                    </span>
+                  </div>
+                  <div
+                    className="w6-muted"
+                    style={{ fontSize: 12, marginBottom: 10 }}
+                  >
+                    {o.receipt_count.toLocaleString()} verified receipt
+                    {o.receipt_count === 1 ? "" : "s"}
+                  </div>
+                  {o.homepage_url && (
+                    <a
+                      href={o.homepage_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w6-btn w6-btn-secondary w6-btn-sm"
+                      style={{ fontSize: 11.5 }}
+                    >
+                      Visit ↗
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       <style>{`

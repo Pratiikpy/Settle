@@ -59,14 +59,14 @@ export function ReputationBadges({ handle }: Props) {
   const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? "devnet";
 
   return (
-    <section className="mt-8 rounded-3xl border border-foreground/10 card-surface p-6">
+    <section className="mt-8 rounded-3xl border border-[#e4e4e7] card-surface p-6">
       <div className="flex items-baseline justify-between">
         <h2 className="text-base font-medium">Reputation badges</h2>
-        <span className="text-[11px] text-foreground/40">
+        <span className="text-[11px] text-[#71717a]">
           Soulbound · MPL Core · permanent_freeze
         </span>
       </div>
-      <p className="mt-2 text-xs text-foreground/55">
+      <p className="mt-2 text-xs text-[#52525b]">
         Auto-issued when an on-chain pattern is detected. Non-transferable —
         these are bound to the wallet forever.
       </p>
@@ -82,7 +82,7 @@ export function ReputationBadges({ handle }: Props) {
                 href={href}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-center gap-4 rounded-2xl border border-foreground/10 bg-white/[0.02] p-4 transition hover:border-accent/40 hover:bg-accent/[0.04]"
+                className="group flex items-center gap-4 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-4 transition hover:border-accent/40 hover:bg-accent/[0.04]"
               >
                 <div
                   className="flex h-12 w-12 flex-none items-center justify-center rounded-xl text-2xl"
@@ -97,14 +97,14 @@ export function ReputationBadges({ handle }: Props) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
                     <span className="truncate text-sm font-medium">{spec.name}</span>
-                    <span className="ml-2 text-[11px] text-foreground/40 transition group-hover:text-accent">
+                    <span className="ml-2 text-[11px] text-[#71717a] transition group-hover:text-accent">
                       ↗
                     </span>
                   </div>
-                  <p className="mt-0.5 line-clamp-2 text-xs text-foreground/55">
+                  <p className="mt-0.5 line-clamp-2 text-xs text-[#52525b]">
                     {spec.threshold}
                   </p>
-                  <p className="mt-1 text-[11px] text-foreground/40">
+                  <p className="mt-1 text-[11px] text-[#71717a]">
                     Earned {timeAgo(b.earned_at)}
                   </p>
                 </div>

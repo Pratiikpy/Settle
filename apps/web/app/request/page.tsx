@@ -121,23 +121,23 @@ export default function RequestPage() {
         }}
       >
         <div>
-          <label className="block text-xs font-medium text-foreground/60">Amount (USDC)</label>
+          <label className="block text-xs font-medium text-[#52525b]">Amount (USDC)</label>
           <input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="5.00"
             inputMode="decimal"
-            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+            className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-foreground/60">Memo (optional)</label>
+          <label className="block text-xs font-medium text-[#52525b]">Memo (optional)</label>
           <input
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
             placeholder="Invoice #1024"
             maxLength={200}
-            className="mt-1 w-full rounded-lg border border-foreground/15 bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
+            className="mt-1 w-full rounded-lg border border-[#e4e4e7] bg-transparent px-4 py-3 text-base outline-none focus:border-accent"
           />
         </div>
         <button
@@ -150,20 +150,20 @@ export default function RequestPage() {
       </form>
 
       {generated && (
-        <div className="mt-8 space-y-6 rounded-2xl border border-foreground/10 bg-white/[0.02] p-6">
+        <div className="mt-8 space-y-6 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6">
           <div>
-            <div className="mb-3 text-xs text-foreground/50">Solana Pay QR</div>
+            <div className="mb-3 text-xs text-[#52525b]">Solana Pay QR</div>
             <div className="flex justify-center rounded-xl bg-black p-4">
               <canvas ref={qrCanvasRef} />
             </div>
-            <p className="mt-3 text-center text-xs text-foreground/40">
+            <p className="mt-3 text-center text-xs text-[#71717a]">
               Scan with Phantom or any Solana Pay wallet
             </p>
           </div>
 
           <div>
-            <div className="text-xs text-foreground/50">Reference pubkey</div>
-            <code className="mt-1 block break-all rounded bg-foreground/5 p-2 font-mono text-[10px]">
+            <div className="text-xs text-[#52525b]">Reference pubkey</div>
+            <code className="mt-1 block break-all rounded bg-[#f4f4f5] p-2 font-mono text-[10px]">
               {generated.reference}
             </code>
           </div>
@@ -171,13 +171,13 @@ export default function RequestPage() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={copyUrl}
-              className="rounded-lg border border-foreground/20 py-2 text-xs hover:bg-foreground/5"
+              className="rounded-lg border border-[#a1a1aa] py-2 text-xs hover:bg-[#f4f4f5]"
             >
               Copy URL
             </button>
             <button
               onClick={copyBlink}
-              className="rounded-lg border border-foreground/20 py-2 text-xs hover:bg-foreground/5"
+              className="rounded-lg border border-[#a1a1aa] py-2 text-xs hover:bg-[#f4f4f5]"
             >
               Copy Blink
             </button>
