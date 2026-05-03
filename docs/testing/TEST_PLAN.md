@@ -2193,6 +2193,56 @@ Plus end-to-end multi-persona flows:
 
 ---
 
+## 23c · UI freshness — every cell backed by a real source (NEW)
+
+> Catches the class of bugs the user calls out:
+> - "I did something on-chain → frontend doesn't update"
+> - "I sent USDC → other user's UI doesn't reflect"
+> - "Stale UI: cell shows old data after my action"
+> - "Hardcoded UI: cell not backed by real API source"
+> - "Multi-tab desync: same user's tab A doesn't see action from tab B"
+
+### 23c.A — Every cell on every surface MUST be backed by a real API source
+- [ ] 23c.A1 /dashboard bento → `/api/dashboard/v6` shape has all bento keys
+- [ ] 23c.A2 /dashboard balance strip → `/api/balance` returns USDC + SOL + cluster
+- [ ] 23c.A3 /at/[handle] trust score → `/api/trust/[pubkey]` has fresh `last_computed_at`
+- [ ] 23c.A4 /ledger filter chips → `/api/ledger` has all 4 provenance buckets in `counts`
+- [ ] 23c.A5 /activity feed → `/api/feed` returns events array
+- [ ] 23c.A6 /capabilities discovery → `/api/capabilities` returns real registry rows
+- [ ] 23c.A7 /leaderboard → `/api/leaderboard` returns capabilities array
+- [ ] 23c.A8 /leaderboard federation panel → `/api/federation/origins` returns origins array
+- [ ] 23c.A9 /landing stats → `/api/stats/landing` has presentability gate
+- [ ] 23c.A10 SOL/USD ticker → `/api/price/sol-usd` returns live Pyth price
+
+### 23c.B — Action → freshness propagation
+- [ ] 23c.B1 ALICE sends → BOB on-chain USDC reflects within 15s (Solana RPC)
+- [ ] 23c.B2 ALICE sends → /api/balance reflects within 30s (no indexer required — direct RPC read)
+- [ ] 23c.B3 Multi-tab — ALICE tab A action propagates to ALICE tab B (same persona, shared localStorage)
+- [ ] 23c.B4 ALICE creates card → /cards/list count increments within 30s (indexer)
+- [ ] 23c.B5 ALICE revokes card → card.revoked=true reflects in /cards/[id] within 10s
+- [ ] 23c.B6 Streaming pact pause → on-chain `paused=true` + UI flips state pill within 5s
+
+### 23c.C — Cross-wallet freshness (other user receives)
+- [ ] 23c.C1 ALICE → BOB: BOB's on-chain USDC increases (Solana RPC truth)
+- [ ] 23c.C2 ALICE → CAROL: same
+- [ ] 23c.C3 ALICE → BOB: BOB's open /dashboard updates within 5s WITHOUT manual refresh (indexer + Supabase Realtime)
+- [ ] 23c.C4 ALICE → BOB: BOB's `/api/dashboard/v6` reflects within 5s
+- [ ] 23c.C5 3 personas isolated — distinct `localStorage["settle-e2e-burner-key"]` per context
+
+### 23c.D — No-stub guarantees (UI must NOT show hardcoded data)
+- [ ] 23c.D1 /dashboard renders → /api/dashboard/v6 was actually called (not stubbed)
+- [ ] 23c.D2 /ledger renders → /api/ledger was actually called
+- [ ] 23c.D3 /dashboard balance strip → /api/balance was actually called for live USDC
+- [ ] 23c.D4 /at/[handle] proof → /api/trust/[pubkey] was actually called
+- [ ] 23c.D5 /leaderboard → /api/leaderboard was actually called
+
+### 23c.E — Stale data detection
+- [ ] 23c.E1 No bento cell shows the literal string "TODO" or "—" except where empty state is intentional
+- [ ] 23c.E2 No 0-value cell where on-chain truth shows non-zero (e.g., dashboard "$0.00" when balance is $11.42)
+- [ ] 23c.E3 After action, `lastComputedAt`-style timestamps must update (trust score, pact spent, etc.)
+
+---
+
 ## 22 · Final go/no-go checklist
 
 Before declaring "ready":
