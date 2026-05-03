@@ -797,3 +797,50 @@ The §23a "honest gap" is now actively shrinking. Pattern proven: SettleE2EBurne
 | §14.5/§23b.D25-D27 — MCP subprocess JSON-RPC | ✓ pass | scripts/mcp-subprocess-test.ts: spawn server + initialize handshake + tools/list returns 6 settle_* tools (settle_pay, settle_verify, settle_open_pact, settle_close_pact, settle_list_capabilities, settle_refund) + tools/call for each → valid JSON-RPC responses (8/8 protocol assertions) | 2026-05-03 |
 | 1+ · Full E2E (workers=4) | ✓ pass | 378/378 in 4.4m (was 362/362 in 9.0m) | 2026-05-03 16:10 |
 
+
+## 2026-05-03 16:50 — Three priority lanes complete: UI / MCP / SDK
+
+### MCP (8/8)
+| Test | Result |
+|---|---|
+| MCP initialize handshake | ✓ |
+| tools/list returns all 6 settle_* tools | ✓ |
+| settle_list_capabilities → real /api/capabilities (3 entries) | ✓ |
+| settle_verify → real /api/receipts/[id] (decision + receipt_hash) | ✓ |
+| settle_pay → describes spend_via_pact + receipt request_id | ✓ |
+| settle_open_pact → describes scope + cap + connect-wallet | ✓ |
+| settle_close_pact → describes Anchor close_pact + ATA transfer | ✓ |
+| settle_refund → describes dispute window + context_hash linking | ✓ |
+
+### SDK (16/16)
+| Test | Result |
+|---|---|
+| canonical_reason_hash TS==Py | ✓ 9b8f9854… |
+| canonical_policy_snapshot_hash TS==Py | ✓ dd3d9c86… |
+| canonical_purpose_hash TS==Py | ✓ 3e1b8acc… |
+| canonical_receipt_hash TS==Py | ✓ c29a5b9d… |
+| compute_capability_hash_hex TS==Py | ✓ 37eb6b2b… |
+| buildIxData × 10 ix byte counts (TS) | ✓ 10/10 |
+| Rust cargo test --release | ✓ 44 passed |
+
+### UI (26/26 every-action + 378 other = 404/404)
+| Surface | Coverage |
+|---|---|
+| CONSUMER · send / balance / dashboard / ledger / receipt-detail / cards / savings / allowances / activity / profile / settings | ✓ 14/14 |
+| MERCHANT · manage / qr / analytics / capabilities / disputes / webhook / verify / public-profile | ✓ 10/10 |
+| CROSS-WALLET · 3-persona isolation + handle resolution | ✓ 2/2 |
+| Other §1, §2-13, §21a/21b/21c, §23b matrix | ✓ 378/378 |
+| **Full E2E** | ✓ **404/404 in 4.7m (workers=4)** |
+
+### Net session totals
+- E2E: 89 → **404** (+315 tests)
+- §23a UI bridge tests: 32 (12 multi-surface + 6 ui-bridge + 4 multi-persona + 7 batch + 1 real onchain + 26 every-action)
+- §23b matrix: 100+ cells
+- §21c cross-wallet: real two-context test passing
+- MCP real server: 6/6 settle_* tools verified
+- SDK exhaustive: TS==Py for 5 hash fns, 10 ix byte counts, Rust 44 tests
+- 14/14 Anchor ix on devnet
+- Workers=4 + fullyParallel: ~2x speedup, no coverage loss
+- TEST_PLAN.md / AUTONOMOUS_RUN_PROMPT.md updated with §21c/§23a/§23b
+- 56 commits this session
+
