@@ -3,20 +3,29 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 9 — pick next high-impact target. Likely candidates:
-- Category C performance: bundle size analysis
-- Category L code health: remove duplicate solscanUrl helper (deferred)
-- Category B data correctness: deeper API validation audit
-- Category G security: rate-limit audit on /api/* routes
-- Category A: scan for dead controls / dead routes
+Pass 10 — explore category C (performance) or H (final feel).
+Possible targets: bundle size, /watch motion polish, /r/[id] OG image.
+
+## Deferred (added pass 9)
+- **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
+  imports any rate-limiter (`lib/jupiter.ts`). Adding rate limiting
+  needs a coherent strategy (per-IP, per-handle, per-route bucket).
+  Plan: dedicated security pass — add `lib/rate-limit.ts` Upstash
+  bucket helper, then progressively wrap public/auth-gated routes.
+- **OG image generation for /r/[id]** — Twitter card declares
+  `summary_large_image` but no `og:image` URL is set. Fix needs an
+  `opengraph-image.tsx` route generating a dynamic image. Non-trivial.
+- **ESLint v9 flat-config migration** — `next lint` still works via
+  `.eslintrc.json` (deprecated path), but Next 16 will require
+  `eslint.config.js`. Defer until Next bump pass.
 
 ## Pass cadence (loop policy — 2026-05-04)
 - 3 polish passes → 1 test pass.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 8 just ran 572/572).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 9 sitemap addition).
+- Items pending full-E2E verification: pass 9 sitemap entries (low risk — new static routes only).
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -169,6 +178,26 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 9 — SEO + discoverability: sitemap.ts adds new public surfaces
+Files changed:
+- `app/sitemap.ts`: added 7 routes to staticRoutes — `/watch`, `/start`, `/start/consumer`, `/start/merchant`, `/start/agent`, `/leaderboard`, `/verify`. These were missing despite being public marketing surfaces; search engines couldn't discover them via the sitemap.
+
+Audited (no change this pass):
+- ESLint v9 CLI: requires flat config. But `next lint` works via `.eslintrc.json` and reports zero warnings on app/ + components/.
+- /r/[id] OG metadata: `og:title` / `og:description` / `twitter:card` all render correctly. But no `og:image` is set — logged as deferred (needs dynamic OG image route).
+- API rate-limiting: 1/133 routes covered. Logged as deferred (architectural pass needed).
+- TODO/FIXME in user-visible UI: only 1 `TODO Wave 6.5` in a comment (not user-facing).
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings/errors.
+- `curl /sitemap.xml | grep` confirmed all 7 new routes appear.
+
+Risk: very low (data-only addition to a metadata route).
+
+Pending full-E2E (next test pass): sitemap visual unaffected; nothing critical to verify.
 
 ### Pass 8 — TEST PASS: full E2E reconciliation of passes 5-7
 - Ran full Playwright suite (workers=4, all 572 specs).

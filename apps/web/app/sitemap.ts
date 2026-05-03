@@ -16,6 +16,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/docs",
     "/security",
     "/public-goods",
+    // Marketing surfaces added in the magic-moment / onboarding work
+    "/watch",
+    "/start",
+    "/start/consumer",
+    "/start/merchant",
+    "/start/agent",
+    "/leaderboard",
+    "/verify",
   ];
 
   const entries: MetadataRoute.Sitemap = staticRoutes.map((p) => ({
