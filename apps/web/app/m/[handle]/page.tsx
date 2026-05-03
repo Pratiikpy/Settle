@@ -131,7 +131,7 @@ export default async function MerchantProfile({
               </p>
             )}
           </div>
-          <div style={{ textAlign: "right" }}>
+          <div data-testid="merchant-trust-badge" style={{ textAlign: "right" }}>
             <div className="w6-eyebrow" style={{ fontSize: 11 }}>
               Trust
             </div>
@@ -158,6 +158,7 @@ export default async function MerchantProfile({
 
         {/* Stats grid */}
         <section
+          data-testid="merchant-trust-stats"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
