@@ -7,6 +7,7 @@ import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-unsafe-burner"
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { SettleE2EBurnerAdapter } from "../components/settle-e2e-burner-adapter";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -27,7 +28,13 @@ const E2E_BURNER_ENABLED =
 export function Providers({ children }: { children: React.ReactNode }) {
   const wallets = useMemo(() => {
     const list: any[] = [new PhantomWalletAdapter()];
-    if (E2E_BURNER_ENABLED) list.push(new UnsafeBurnerWalletAdapter());
+    if (E2E_BURNER_ENABLED) {
+      // Settle E2E burner: loads keypair from localStorage["settle-e2e-burner-key"]
+      // or NEXT_PUBLIC_E2E_BURNER_KEY, falls back to a random keypair if neither
+      // is set (preserving legacy UnsafeBurnerWalletAdapter behavior).
+      list.push(new SettleE2EBurnerAdapter());
+      list.push(new UnsafeBurnerWalletAdapter());
+    }
     return list;
   }, []);
   const [qc] = useState(() => new QueryClient());

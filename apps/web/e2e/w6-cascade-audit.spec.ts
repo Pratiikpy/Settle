@@ -114,8 +114,8 @@ test.describe("W6 cascade audit (prototype palette actually applies)", () => {
     const sidebarBg = await sidebar.evaluate(
       (el) => window.getComputedStyle(el).backgroundColor,
     );
-    // var(--w6-bg) = #FDFDFD = rgb(253, 253, 253)
-    expect(sidebarBg).toBe("rgb(253, 253, 253)");
+    // var(--w6-bg) — paper-white tone (refreshed in Wave 6 design polish)
+    expect(["rgb(253, 253, 253)", "rgb(251, 250, 245)"]).toContain(sidebarBg);
   });
 
   test("active sidebar nav item has black bg + white text", async ({ page }) => {

@@ -832,111 +832,439 @@ Test each kind, verify receipt_kind column, verify hash chain on /verify:
 
 ## 14 · Developer surface
 
-### Test 14.1 — TypeScript SDK install
+> **Hard rule for this section:** every test is from the perspective of a real external developer using the surface AS A USER, not as someone with this monorepo open.
+>
+> - SDK tests: install from registry/path into a **fresh empty directory** outside the monorepo. Open a brand-new terminal. Run real code. Hit real devnet.
+> - MCP tests: launch the MCP server in a separate process, talk to it over stdio JSON-RPC the way a real MCP client (Claude Desktop / Cursor) would. Initialize, list tools, call tools, parse responses.
+> - Web component tests: drop the `<script>` tag into a brand-new `index.html`, open in a browser, click the actual element. Don't import via React.
+> - Webhook tests: spin up a real HTTP receiver on `:4000`, register the URL via the Settle UI/API, fire a real on-chain event, watch the POST land.
+>
+> If you're testing from inside the monorepo with workspace shortcuts, you're cheating. A real developer doesn't have that.
 
-```bash
-npm i settle-protocol-sdk
-```
+---
 
-```ts
-import { settle } from "settle-protocol-sdk";
-const r = await settle.pay({ to: "@bob", amount: 0.05 });
-console.log(r.request_id, r.confirmedMs);
-```
+### 14.1 · TypeScript SDK — real developer flow
 
-**Expected**: real on-chain tx submitted.
+#### Test 14.1.1 — Fresh-directory install
 
-### Test 14.2 — Python SDK
+In a brand-new throwaway directory `/tmp/settle-sdk-test-ts`:
+1. `mkdir /tmp/settle-sdk-test-ts && cd /tmp/settle-sdk-test-ts`
+2. `npm init -y`
+3. `npm i settle-protocol-sdk` (from npm if published, else `pnpm pack` the local package and install the tarball)
+4. Verify `node_modules/settle-protocol-sdk/package.json` exists with the right name + version
+5. Write `test.ts`:
+   ```ts
+   import { Settle } from "settle-protocol-sdk";
+   const s = new Settle({ rpcUrl: "https://api.devnet.solana.com", payerSecret: "<base58 of ALICE>" });
+   const r = await s.pay({ to: "@bob", amount: 0.05, token: "USDC" });
+   console.log(JSON.stringify(r, null, 2));
+   ```
+6. `npx tsx test.ts`
+7. Verify output has `request_id`, `signature`, `kernel_commit`, `confirmedMs < 5000`
+8. Verify the signature on Solscan resolves
+9. Verify the receipt row exists in DB
+10. Verify ALICE's UI `/ledger` shows the new send within 5s
 
-```bash
-pip install settle-protocol-sdk
-```
+#### Test 14.1.2 — Every public method actually works
 
+For each exported method on the TS SDK, write a real call against devnet and verify the response shape + side-effects:
+
+- `pay({ to, amount, token })` → receipt
+- `payBlink({ to, amount, token })` → returns Solana Action / Blink URL, opens in browser, completes
+- `verify({ hash })` → returns `{ valid: true, kinds: [...], 4_hashes: [...] }`
+- `verifyByPubkey({ pubkey })` → returns trust report
+- `history({ limit })` → returns list of receipts
+- `streamingOpen({ to, total, perSecond })` → returns pact_pubkey
+- `streamingPause({ pact })`, `streamingResume({ pact })`, `streamingClaim({ pact })`
+- `escrowOpen`, `escrowRelease`, `escrowDispute`
+- `oneshotOpen`, `oneshotClose`
+- `cardSpawn({ ... })`, `cardRevoke({ pubkey })`
+- `groupCreate`, `groupVote`
+- `attest({ subject, claim })`
+- `webhookConfigure({ url, secret, events })`
+- Whatever else `packages/sdk-ts/src/index.ts` exports — every public function
+
+For each: real call → real on-chain tx → real DB row → assertion.
+
+#### Test 14.1.3 — TypeScript types + IntelliSense
+
+In the test dir:
+1. Open `test.ts` in a fresh editor
+2. Verify `s.pay({ ... })` autocompletes `to`, `amount`, `token`, `note`, `extras`
+3. Verify return type is `Promise<Receipt>` with full property completion
+4. Pass a wrong type (`amount: "five"`) — `tsc --noEmit` errors
+
+#### Test 14.1.4 — Error handling
+
+1. Call `s.pay({ to: "@nonexistent_handle_xyz", amount: 1 })` → throws `SettleHandleError` with the right code
+2. Call `s.pay({ to: "@bob", amount: 999_999_999 })` (insufficient) → throws `SettleInsufficientError`
+3. Call with bad RPC URL → throws `SettleRpcError`
+4. Call after card revoked → throws `SettleAuthorityError`
+
+Each throws a typed error with `code`, `message`, and where applicable `request_id`.
+
+#### Test 14.1.5 — Browser bundle
+
+1. Bundle SDK with esbuild for browser target → output size < 50 KB gzipped
+2. In a fresh `index.html`, `<script type="module">import { Settle } from './settle.bundle.js'; ... </script>`
+3. SDK loads in browser, calls work using injected wallet
+4. No `process` / `Buffer` polyfill errors
+
+---
+
+### 14.2 · Python SDK — real developer flow
+
+#### Test 14.2.1 — Fresh venv install
+
+In a brand-new directory `/tmp/settle-sdk-test-py`:
+1. `python -m venv .venv && source .venv/bin/activate`
+2. `pip install settle-protocol-sdk` (or local wheel via `pip install /path/to/settle_protocol_sdk-*.whl`)
+3. Verify install completed, `pip show settle-protocol-sdk` returns version
+4. Write `test.py`:
+   ```python
+   from settle_sdk import Settle
+   s = Settle(rpc_url="https://api.devnet.solana.com", payer_secret="<base58 ALICE>")
+   r = s.pay(to="@bob", amount=0.05, token="USDC")
+   print(r)
+   ```
+5. `python test.py`
+6. Verify output, verify Solscan, verify DB row, verify cross-wallet UI sync
+
+#### Test 14.2.2 — Every public method (same coverage as TS)
+
+Each method on the Python SDK gets the same real-call test as 14.1.2. The full list lives in `packages/sdk-py/settle_sdk/__init__.py` — every public symbol.
+
+#### Test 14.2.3 — Type hints + linting
+
+1. `mypy test.py --strict` → zero errors
+2. `pyright test.py` → zero errors
+3. Pass wrong type to `s.pay(amount="five")` → mypy errors
+
+#### Test 14.2.4 — Error handling
+
+Same matrix as 14.1.4 but with Python `SettleHandleError`, `SettleInsufficientError`, etc.
+
+#### Test 14.2.5 — Async variant
+
+If SDK exports `AsyncSettle`:
 ```python
-from settle_sdk import Settle
-s = Settle(rpc_url="https://api.devnet.solana.com")
-r = s.pay(to="@bob", amount=0.05)
+import asyncio
+from settle_sdk import AsyncSettle
+async def main():
+    s = AsyncSettle(...)
+    r = await s.pay(to="@bob", amount=0.05)
+asyncio.run(main())
 ```
 
-**Expected**: receipt minted.
+Concurrency: 10 parallel `s.pay()` calls all succeed.
 
-### Test 14.3 — Rust SDK
+---
 
-```toml
-[dependencies]
-settle = { path = "..." }
-```
+### 14.3 · Rust SDK — real developer flow
 
-```rust
-let r = settle::pay(...).await?;
-```
+#### Test 14.3.1 — Fresh crate install
 
-### Test 14.4 — `<settle-pay>` web component
+In `/tmp/settle-sdk-test-rs`:
+1. `cargo init --bin`
+2. Add to `Cargo.toml`:
+   ```toml
+   settle-sdk = "0.1"
+   tokio = { version = "1", features = ["full"] }
+   ```
+3. `cargo build` succeeds
+4. Write `src/main.rs`:
+   ```rust
+   use settle_sdk::Settle;
+   #[tokio::main]
+   async fn main() {
+       let s = Settle::new("https://api.devnet.solana.com", "<base58 ALICE>");
+       let r = s.pay("@bob", 0.05, "USDC").await.unwrap();
+       println!("{:?}", r);
+   }
+   ```
+5. `cargo run` → real on-chain tx, prints receipt
+6. Verify Solscan + DB + UI sync
 
-**Steps**:
-1. Open `/pay` (developer demo) → live `<settle-pay>` widget
-2. Click "Pay" → Phantom prompt
-3. Sign → confirmation card with receipt link
-4. JS: `document.querySelector('settle-pay').addEventListener('settle-paid', ...)` → event fires
+#### Test 14.3.2 — Every public method (same coverage as TS/Python)
 
-### Test 14.5 — `<settle-verify>` web component
+#### Test 14.3.3 — Compilation
 
-**Steps**:
-1. Open `/docs/verify-component` → embed sample
-2. Paste a hash → verify recomputes and shows verdict
+`cargo build --release` succeeds, binary < 5 MB.
 
-### Test 14.6 — MCP middleware
+#### Test 14.3.4 — Error types
 
+`Result<Receipt, SettleError>` with proper variants for handle/insufficient/rpc/authority. Match arms compile.
+
+---
+
+### 14.4 · Cross-language hash parity (the contract)
+
+#### Test 14.4.1 — Same input, same `kernel_commit`
+
+For 100 random `(payer, recipient, amount, slot, kind)` tuples:
+1. TS SDK: `settle.computeCommit(input)` → hash A
+2. Python SDK: `s.compute_commit(input)` → hash B
+3. Rust SDK: `s.compute_commit(input)` → hash C
+4. On-chain (Anchor program receipts table): `kernel_commit` for the same args → hash D
+5. **All four MUST be byte-equal.** Any mismatch = critical bug.
+
+Write `scripts/kernel-parity-cross-lang.ts` that drives all 3 SDKs from the same TS test runner and compares.
+
+#### Test 14.4.2 — Same input, same 4-hash chain
+
+For each test in 14.4.1, also verify that all 4 hashes (`payer_hash`, `recipient_hash`, `meta_hash`, `commit_hash`) match across all 3 SDKs and the on-chain truth.
+
+---
+
+### 14.5 · MCP middleware — real AI assistant flow
+
+> **The user perspective here is an AI assistant** — Claude / Cursor / a custom agent — that loaded Settle's MCP server config and now has 6 tools available.
+>
+> Test by spawning the MCP server as a subprocess and speaking JSON-RPC over stdio, exactly the way Claude Desktop would.
+
+#### Test 14.5.1 — MCP server starts + advertises tools
+
+1. Spawn: `npx -y @settle/mcp` (or `pnpm tsx mcp/server.ts` from monorepo)
+2. Server outputs MCP handshake on stdout
+3. Send `initialize` request → server responds with capabilities
+4. Send `tools/list` → server returns 6 tools with full JSON schemas:
+   - `settle.pay`
+   - `settle.verify`
+   - `settle.list_capabilities`
+   - `settle.open_pact`
+   - `settle.close_pact`
+   - `settle.refund`
+5. Verify each tool has `name`, `description`, `inputSchema` with JSON Schema validation
+
+#### Test 14.5.2 — Each tool actually executes end-to-end
+
+For each of the 6 tools, send a real `tools/call` JSON-RPC request and verify:
+
+**`settle.pay`**:
 ```json
-{
-  "mcpServers": {
-    "settle": {
-      "command": "npx",
-      "args": ["-y", "@settle/mcp"],
-      "env": { "SETTLE_CARD": "..." }
-    }
-  }
-}
+{ "jsonrpc": "2.0", "method": "tools/call",
+  "params": { "name": "settle.pay", "arguments": { "to": "@bob", "amount": 0.05, "token": "USDC" } },
+  "id": 1 }
+```
+- Response contains `request_id`, `signature`, `kernel_commit`
+- On-chain tx exists
+- DB row exists
+- BOB's UI updates
+
+**`settle.verify`**:
+- Pass a real hash → returns `{ valid: true, kinds: [...] }` with structured content
+- Pass a bogus hash → returns `{ valid: false }`
+
+**`settle.list_capabilities`**:
+- Returns array of objects with `pubkey`, `name`, `description`, `category`, `attestation_count`
+
+**`settle.open_pact`**:
+- Args: `{ kind: "streaming", to: "@bob", total: 1, per_second: 0.001 }`
+- Returns pact_pubkey, signature
+- On-chain pact account exists
+
+**`settle.close_pact`**:
+- Args: `{ pact: "<pubkey>" }`
+- On-chain account closed
+- DB row marked closed
+
+**`settle.refund`**:
+- Args: `{ request_id: "<id>" }`
+- Refund tx fires
+- Receipt linked to original
+
+#### Test 14.5.3 — MCP error handling
+
+- Call tool with missing required arg → server responds with structured MCP error (`isError: true`)
+- Call tool with invalid card → returns deny code
+- Call non-existent tool → JSON-RPC error -32601
+
+#### Test 14.5.4 — Real Claude Desktop / Cursor integration (optional but ideal)
+
+If feasible:
+1. Set up Claude Desktop with `settle` MCP entry in config
+2. Restart Claude Desktop
+3. Open a chat, ask "what tools do you have from settle?"
+4. Claude lists the 6 tools
+5. Ask "send 0.05 USDC to @bob via settle"
+6. Claude invokes `settle.pay` with the right args
+7. Real tx fires, receipt comes back, Claude reports it
+
+(If Claude Desktop integration is too friction-heavy, simulate the flow with a JSON-RPC client and document.)
+
+#### Test 14.5.5 — MCP card-scoped permissions
+
+The MCP server is scoped to one `SETTLE_CARD`. Test:
+- Spawn MCP server with card A's credentials
+- Try to refund a receipt under card B → tool returns auth-denied error, not a refund
+
+---
+
+### 14.6 · `<settle-pay>` web component — real embedder flow
+
+#### Test 14.6.1 — Drop into vanilla HTML
+
+In a fresh `/tmp/settle-pay-test/index.html`:
+```html
+<!DOCTYPE html>
+<html>
+<head><script src="https://cdn.settle.dev/components.js"></script></head>
+<body>
+  <settle-pay
+    to="@bob"
+    amount="0.05"
+    token="USDC"
+    note="coffee">
+  </settle-pay>
+  <script>
+    document.querySelector('settle-pay').addEventListener('settle-paid', e => {
+      console.log('paid:', e.detail);
+    });
+  </script>
+</body>
+</html>
 ```
 
-Tools exposed:
-- `settle.pay`
-- `settle.verify`
-- `settle.list_capabilities`
-- `settle.open_pact`
-- `settle.close_pact`
-- `settle.refund`
+Steps:
+1. Serve via `python -m http.server`
+2. Open in browser → `<settle-pay>` renders as a clickable button
+3. Click → wallet adapter modal opens (or burner)
+4. Approve → tx fires
+5. `settle-paid` event fires with `e.detail = { request_id, signature, kernel_commit }`
+6. Console log appears
 
-Test each tool from a Claude/Cursor MCP client.
+#### Test 14.6.2 — All component attributes
 
-### Test 14.7 — Webhook delivery
+Test every attribute documented:
+- `to`, `amount`, `token`, `note`
+- `extras` (split-bill / public-receipt / pact-mode)
+- `network` (devnet/mainnet)
+- `theme` (light/dark)
+- `card` (scoped pact card)
 
-**Pre**: BOB has webhook configured.
+For each attribute change, verify the rendered DOM updates correctly.
 
-**Steps**:
-1. ALICE sends 5 USDC to BOB
-2. Verify BOB's webhook URL receives POST with:
-   - `Settle-Signature: t=<ts>,v1=<hmac>`
-   - `Settle-Event: receipt.allowed`
-   - JSON body matches schema in `/docs/webhooks`
-3. Verify HMAC validates against rotation secret
+#### Test 14.6.3 — Events fired
 
-### Test 14.8 — Webhook retry on 5xx
+- `settle-paid` (success)
+- `settle-error` (rejection / failure) with `e.detail.code`
+- `settle-loading` (lifecycle stages)
 
-**Pre**: BOB's endpoint returns 500 first time, 200 second time.
+#### Test 14.6.4 — Cross-framework
 
-**Expected**: cron retries with exponential backoff, eventually marks delivered.
+Drop the same `<settle-pay>` into:
+- A React app (no wrapper) → works
+- A Vue app → works
+- A Svelte app → works
+- A Next.js page → works (with `'use client'` if needed)
 
-### Test 14.9 — Idempotency
+---
 
-**Steps**:
-1. POST `/api/agents/spawn` with same `Idempotency-Key: abc123` twice
+### 14.7 · `<settle-verify>` web component — real embedder flow
 
-**Expected**: 2nd call returns the same response (transaction + pact_pubkey) without creating duplicate.
+#### Test 14.7.1 — Drop into vanilla HTML
 
-### Test 14.10 — API explorer
+```html
+<settle-verify hash="abc123..." network="devnet"></settle-verify>
+```
 
-`/docs/api` (or wherever) → OpenAPI spec for every public endpoint.
+1. Renders verdict card
+2. Shows 4 hashes
+3. Shows "VERIFIED" or "INVALID" badge
+4. Click → opens full receipt at `/r/<id>`
+
+#### Test 14.7.2 — Programmatic verify
+
+```js
+const result = await document.querySelector('settle-verify').verify('abc...');
+```
+
+Returns the full verdict object.
+
+---
+
+### 14.8 · Webhooks — real receiver flow
+
+#### Test 14.8.1 — Real webhook receiver setup
+
+1. `pnpm tsx scripts/webhook-receiver.ts` → starts on `:4000`
+2. Receiver logs every POST + validates HMAC
+3. In Settle UI: `/m/me/manage` → set webhook URL = `http://localhost:4000/webhook`
+4. Generate webhook secret in UI → copy
+5. Restart receiver with `WEBHOOK_SECRET=<secret>` env
+
+#### Test 14.8.2 — Every event fires + delivers
+
+Trigger each of the 13 webhook events and verify the receiver got a POST with valid HMAC + correct payload schema:
+
+- `receipt.allowed`
+- `receipt.denied`
+- `pact.opened`
+- `pact.paused`
+- `pact.resumed`
+- `pact.closed`
+- `pact.refunded`
+- `escrow.released`
+- `escrow.disputed`
+- `card.spawned`
+- `card.revoked`
+- `dispute.opened`
+- `dispute.resolved`
+
+For each: trigger via UI, watch receiver log, verify HMAC matches, verify JSON shape matches `/docs/webhooks` spec.
+
+#### Test 14.8.3 — Retry on 5xx
+
+1. Configure receiver to return 500 for first 2 attempts, 200 on 3rd
+2. Trigger an event
+3. Watch retries: t+0s 500, t+30s 500, t+90s 200
+4. DB shows `delivery_status = delivered` after 3rd attempt
+5. UI dispute-status badge updates
+
+#### Test 14.8.4 — Signature rotation
+
+1. Rotate secret in UI
+2. Old signature fails HMAC check on receiver
+3. New signature passes
+4. Old signature accepted for 24h grace window (overlap), then rejected
+
+#### Test 14.8.5 — Idempotency on receiver side
+
+Same event delivered twice (network retry) → receiver sees both, but `Settle-Idempotency-Key` is identical → receiver dedupes.
+
+---
+
+### 14.9 · Sandbox / faucet
+
+`/sandbox` page:
+1. Click "Get test USDC" → 5 USDC airdrops to connected wallet
+2. Click "Spawn test card" → card created
+3. Click "Run example send" → full e2e tx
+4. Each demo action shows real Solscan link
+
+---
+
+### 14.10 · IDL drift detector
+
+#### Test 14.10.1 — TS IDL == on-chain IDL
+
+```bash
+pnpm tsx scripts/anchor-ix-coverage.ts
+```
+
+1. Loads `target/idl/settle.json` from monorepo
+2. Loads on-chain IDL via `anchor idl fetch <PROGRAM_ID>`
+3. Byte-equal comparison
+4. If different: print full diff, exit 1
+
+---
+
+### 14.11 — API explorer
+
+`/docs/api` (or wherever) → renders OpenAPI spec for every public endpoint with:
+- Try-it-out forms that hit real devnet endpoints
+- Response schema preview
+- Auth header explanation
 
 ---
 
@@ -1086,6 +1414,785 @@ For each test where two wallets interact (3.1, 6.x, 8.x, 9.2, etc):
 
 ---
 
+## 21a · Pure user-journey tests (drive the UI like a real user)
+
+> **Hard rule for these tests:** every step is a Playwright click / type / scroll / wait. NO direct API calls. NO programmatic tx signing outside the wallet adapter. The runner must literally drive the browser the way a human would. If it's a button, the runner clicks it. If it's a form, the runner types in it. If it's a Phantom popup, the runner opens the burner equivalent and clicks Approve.
+
+> If any of these tests passes by skipping the UI (e.g., calling `/api/cards/list` directly), the test FAILS the audit. Re-do it via UI clicks.
+
+### 21a.1 — Brand-new user, no wallet, lands on `/`
+
+ALICE has never used Settle. Open `/` in a clean browser context.
+
+Drive via clicks:
+1. Read the hero, click "Open product preview" → routes to `/dashboard?demo=1`
+2. Demo state shows fake data with banner "demo mode"
+3. Click "Connect a wallet" → wallet modal opens
+4. Pick "Burner" (which represents Phantom in test mode)
+5. Approve in the modal popup
+6. Auto-redirected (or stays on landing) — verify
+7. Sidebar appears, "You" footer card shows truncated pubkey + "Tap to claim a handle"
+8. Click "You" card → routes to `/settings`
+9. Settings page shows "Profile" tab with handle input
+
+### 21a.2 — Onboarding wizard end-to-end
+
+Continuing from 21a.1 with no handle yet.
+
+1. Click sidebar → Home
+2. Hero: "Connect a wallet to see your dashboard." — verify
+3. Click sidebar → "Settings" → no, wait, go through `/onboarding`
+4. Manually navigate to `/onboarding`
+5. Step 1: Connect wallet — already connected, auto-advances
+6. Step 2: "Get devnet funds" — click button
+7. Wait for confetti + "Funded" state
+8. Step 3: "Create card" — defaults shown, click "Create AgentCard"
+9. Burner approves
+10. Step 4: "You're ready" with agent secret
+11. Click "Open dashboard" → arrives at `/dashboard` with real card present
+
+### 21a.3 — Send money (handle method) full flow
+
+Pre: ALICE onboarded, BOB has handle `@bob`.
+
+Drive via clicks:
+1. ALICE clicks sidebar "Send"
+2. Method picker → click "@handle" pill (becomes black)
+3. Type `@bob` in To field, blur
+4. Wait for green ✓ and resolved pubkey display
+5. Type `5.00` in Amount
+6. Verify token picker shows "USDC"
+7. Type "lunch" in For
+8. Click "Public receipt" extra — checkbox should fill black
+9. Read summary on right — shows "$5.00 / USDC → @bob / lunch / public yes"
+10. Click "Pay 5.00 USDC to @bob"
+11. Burner adapter approves
+12. Lifecycle stage 1: "Signing in Phantom…"
+13. Lifecycle stage 2: "Confirming on Solana…"
+14. Lifecycle stage 3: "Sent." with green check
+15. Toast appears bottom-center
+16. Sidebar "You" card unchanged (it's BOB who got money, not ALICE's notification)
+17. Click "View on Solscan ↗" → opens new tab to Solscan
+18. Click "Send another" → form resets
+
+### 21a.4 — Cross-wallet receive (BOB sees ALICE's send within 5s)
+
+In a SECOND browser context (parallel to ALICE):
+
+1. BOB connected to BOB's burner
+2. On `/dashboard`, "Today" cell reads $0.00 received before
+3. ALICE fires Test 21a.3
+4. Within 5s of confirmation, BOB's `/dashboard` Today cell auto-updates to "$5.00 received · 1 receipt" via Realtime
+5. BOB's sidebar shows updated state without manual refresh
+6. BOB clicks `/ledger` → row "+$5.00 from <ALICE_pubkey>" with hash-mark `#` (native)
+7. Click row → routes to `/r/<request_id>` → 4-hash chain animation plays
+8. Click "Verify" → 4 ✓ hashes match
+
+### 21a.5 — Send by QR (full physical-style flow)
+
+Pre: BOB on `/request` has generated a $10 QR for "coffee".
+
+1. ALICE in tab 1: navigate to `/send`
+2. Method picker → click "QR" pill
+3. Dropzone shows "Drop a Solana Pay QR screenshot"
+4. Take a screenshot of BOB's QR (use `page.screenshot` of the canvas)
+5. Drop the image onto the dropzone
+6. Verify autofill: To = BOB pubkey, Amount = 10.00, Note = "coffee"
+7. Click "Pay 10.00 USDC to <bob-short>"
+8. Burner approves
+9. Confirmed → "Sent" state
+10. Switch to BOB's tab — `/dashboard` shows received +10.00 within 5s
+
+### 21a.6 — Receive money + verify the proof
+
+BOB receives $5 from ALICE (Test 21a.3). Now BOB drives:
+
+1. Notification badge appears on sidebar (if push subscribed) OR `/notifications` increments
+2. Click sidebar `/ledger`
+3. Row shows the receive
+4. Click row
+5. Receipt detail loads with 4-hash chain animation
+6. Click "Verify" button
+7. 4 hashes recompute and all match → green check
+8. Click "Share" / copy link
+9. Open the link in incognito (no wallet) → /verify/<hash> page
+10. Page shows verdict "VERIFIED" + 4 hashes + narration
+
+### 21a.7 — Hire AI agent end-to-end
+
+ALICE drives:
+
+1. Click sidebar (or surface switcher) → "Agents"
+2. List is empty; "Hire your first agent →" CTA visible
+3. Click CTA → routes to `/agents/new`
+4. Form: task = "Translate this paper", cap = $0.50, expiry 15min, allowlist defaulted
+5. Click "Spawn Pact card"
+6. Burner approves
+7. Wax seal animation plays
+8. Routes to `/cards/<pact-pubkey>?surface=agent`
+9. Card detail shows: 4-hash chain (none yet), allowlist chips, expiry timer
+10. Demo agent (run via `apps/demo-agent`) makes a real x402 call against this card
+11. Within 5s, "Live decisions" feed shows ALLOW row
+12. Receipt count increments
+
+### 21a.8 — Group spend (ALICE + BOB + CAROL all 3 tabs open)
+
+Three browser contexts in parallel.
+
+Steps:
+1. ALICE creates 3-member group via API (or UI if available)
+2. ALICE clicks `/groups`, sees the group, clicks it
+3. Click "+ Request spend"
+4. Recipient = some external pubkey, amount = $5, note = "team coffee"
+5. Sign tx (Pact spawn) → confirm
+6. Request appears with "0/3 approvals"
+7. ALICE clicks "✓ Approve" on her own request → sign attestation message
+8. Burner approves the signMessage
+9. Request shows "1/3 approvals"
+10. Switch to BOB's tab — `/groups` shows group → click → see pending request → "✓ Approve"
+11. Burner BOB approves
+12. Status → "2/3 approvals"
+13. Switch to CAROL's tab — same → CAROL approves → "3/3 approvals" → status flips to `quorum_met`
+14. Wait 60s OR force-fire `/admin/cron/group-spend-fire-quorum-met`
+15. Status flips to `fired` with Solscan link
+16. Recipient gets the $5 on-chain
+17. ALICE's `/groups` shows updated state via Realtime in <5s
+
+### 21a.9 — Split bill (3 payers)
+
+ALICE drives:
+1. Click sidebar TOOLS → "Split bill" (verify the link works)
+2. On `/split-bill`: label "Friday dinner", total $60, payers 3
+3. Per-payer preview shows $20.00
+4. Click "Create bill"
+5. Sign
+6. Routes to `/split-bill/<id>` showing 0/3 paid
+7. Copy share link from the page
+8. Switch to BOB's tab, paste link → /split-bill/<id> shows BOB's share view
+9. BOB clicks "Pay my share" → sign → 1/3 paid
+10. Switch to CAROL's tab, repeat → 2/3 paid
+11. Switch back to ALICE, ALICE pays her own share → 3/3 paid → status flips to `closed`
+12. Bill recipient (ALICE's choice) received $60 across 3 receipts
+
+### 21a.10 — Merchant: BOB receives QR pay + sees in dashboard
+
+BOB drives:
+1. Click sidebar (merchant surface) → `/m/me/manage`
+2. Click "Show pay-me QR" → routes to `/request`
+3. Generate QR: amount $10, memo "coffee"
+4. Copy the URL
+5. Switch to ALICE's tab, paste in /send screenshot dropzone
+6. ALICE pays
+7. BOB's `/m/me/analytics` shows revenue 24h += $10 within 5s
+8. BOB's `/m/me/disputes` shows no disputes (yet)
+
+### 21a.11 — Dispute flow (customer opens, merchant resolves)
+
+ALICE files dispute:
+1. ALICE on a recent receipt → click "Dispute" button
+2. Modal: reason = "didn't get my coffee", evidence text
+3. Submit → sign
+4. Modal closes, receipt shows "dispute pending" badge
+
+BOB resolves:
+5. Switch to BOB's tab → `/m/me/disputes`
+6. New dispute appears at top
+7. Click row → drawer opens with details
+8. Click "Generate AI draft" → AI text appears
+9. Edit text → click "Approve refund"
+10. Sign refund tx
+11. Confirmed → dispute status `approved_refund`
+12. ALICE's tab — `/ledger` shows refund row within 5s, original receipt now linked to refund
+
+### 21a.12 — Save toward a goal (full bucket lifecycle)
+
+ALICE drives:
+1. Click sidebar `/wishes` → "Save toward" tab
+2. Fill: label "Vacation", target $500, category "vacation"
+3. Click "+ New bucket"
+4. Bucket appears with 0/500
+5. Set up a round-up rule on `/wishes` "Round-up" tab → round to $0.50, dest = bucket
+6. ALICE makes a $4.30 send → round-up of $0.20 fires (cron or trigger)
+7. `/wishes` Save tab → bucket now shows $0.20 / $500
+
+### 21a.13 — Schedule a recurring send (full automation)
+
+ALICE drives:
+1. `/wishes` → "Schedule" tab
+2. Recipient = BOB, amount $5, cadence WEEKLY, day Monday, time 09:00
+3. Save (sign)
+4. `next_run_slot` set
+5. Force-fire `/admin/cron/scheduled-send-fire`
+6. ALICE's balance −$5, BOB's balance +$5
+7. Receipt appears in ALICE's `/ledger` with `import_source = NULL` (real Settle send)
+
+### 21a.14 — Revoke a card mid-flight
+
+ALICE drives:
+1. Has an active card with running streaming pact
+2. Goes to `/cards`
+3. Sees streaming pact ticking
+4. Clicks card → `/cards/<id>?surface=agent`
+5. Slides "Slide to revoke card →"
+6. Burner approves
+7. Within 1s: card row turns red, all child pacts freeze
+8. Toast: "X pacts frozen on-chain in <0.5s"
+9. Verify on `/cards` page: pact shows "frozen" overlay
+
+### 21a.15 — Walletless verifier (third-party verification)
+
+User has no wallet. Receives a receipt link from a friend.
+
+1. Open `/verify` in clean incognito (no wallet)
+2. Type/paste a receipt's hash (one of the 5)
+3. Click "Verify"
+4. 3-stage lifecycle plays
+5. Verdict: VERIFIED with all 4 hashes shown
+6. Click "Open receipt" → routes to `/r/<id>` (still walletless — view-only)
+7. Receipt detail renders without prompting wallet connect
+
+### 21a.16 — Mobile user (390px width — touch flows)
+
+Set Playwright viewport to 390×844 for the entire test.
+
+1. Open `/` → marketing landing scrollable, CTA button reachable with thumb
+2. Click "Connect a wallet" → modal renders correctly
+3. Burner connect
+4. Bottom-tab nav appears (sidebar collapsed)
+5. Tap each tab — Home / Send / Receipts / Pacts → routes correctly
+6. On `/send`: form fields tappable (≥44px), keyboard pops up correctly
+7. Pay flow completes
+8. Receipt detail readable, hashes wrap correctly, no horizontal scroll
+
+### 21a.17 — Switch surfaces via top tab
+
+ALICE drives:
+1. On `/dashboard` (consumer surface)
+2. Click surface switcher pill "Agent"
+3. URL updates to `?surface=agent`, sidebar swaps to agent nav, lands on `/agents`
+4. Click "Merchant" → `/m/me/manage`, sidebar = merchant
+5. Click "Developer" → `/docs`, sidebar = developer
+6. Click "Operator" → `/control-center`, sidebar = operator
+7. Click "Public" → `/verify`, sidebar = public
+8. Click "Consumer" → back to `/dashboard`
+9. Each switch: animation plays, no flash, no broken state
+
+### 21a.18 — Disconnect / reconnect
+
+ALICE drives:
+1. Sidebar "You" card → click "Disconnect"
+2. Wallet disconnects, sidebar shows "Connect a wallet" prompt
+3. Auth cache cleared (next signed action would re-prompt)
+4. Click connect again → Burner re-connects
+5. Sidebar restores with handle + truncated pubkey
+
+### 21a.19 — Multi-tab sync
+
+ALICE drives:
+1. Open Settle in tab A, navigate to `/dashboard`
+2. Open Settle in tab B (same browser context, same wallet), navigate to `/wishes`
+3. In tab A: open a new pact via `/cards/new`, sign, confirm
+4. Tab B should reflect the new pact in `/cards` list within 5s (Realtime)
+
+### 21a.20 — Browser back/forward sanity
+
+ALICE drives:
+1. /dashboard → /send → fill form (don't submit) → browser back
+2. Back to /dashboard
+3. Forward → /send — form state can be empty (acceptable) but page renders correctly
+4. Refresh /send mid-flow → wallet still connected, form blank (acceptable)
+5. Click "Open receipt" link → routes correctly
+6. Browser back → returns to ledger
+
+### 21a.21 — Form validation (every input)
+
+ALICE drives, expects clear inline errors:
+
+- Send: empty amount → "Enter an amount." toast
+- Send: negative amount → toast rejects
+- Send: amount > balance → submit fails with "insufficient" UI message
+- Send: invalid handle → red toast on blur
+- Cards/new: per-call > daily cap → "Per-call max must be ≤ daily cap." toast
+- Cards/new: expiry days > 365 → input clamps OR error
+- Wishes: empty label → "Add a label" toast
+- Group spend: empty dest → "Recipient + amount required." toast
+
+### 21a.22 — Wallet rejection handling
+
+ALICE drives:
+1. Start a Send flow
+2. When Burner adapter triggers, REJECT instead of approve
+3. UI shows error toast "Send failed: User rejected the request" or similar
+4. Form state preserved (can retry without re-typing)
+5. No partial DB write, no orphan tx
+6. ALICE retries → approves this time → success
+
+### 21a.23 — Slow network handling
+
+Set Playwright network to "Slow 3G".
+
+1. Navigate to /dashboard → loading spinner appears (not blank screen, not janky)
+2. Skeleton renders before data lands
+3. Send flow: each fetch shows progress, no double-submit possible (button disabled while pending)
+4. Realtime channel reconnects after brief disconnect
+
+### 21a.24 — Notification flow (denial reaches user)
+
+ALICE has a card with $1 daily cap. Demo agent tries to spend $5.
+
+1. Demo agent fires real x402 call
+2. Server denies with `deny_code = 4 OverCap`
+3. ALICE's `/notifications` shows the denial within 5s (Realtime)
+4. If push subscribed: web push fires
+5. ALICE clicks notification → drawer opens with full details (deny code, merchant, amount, slot)
+6. Click "See live decisions" → routes to `/audit` filtered to that card
+
+### 21a.25 — Receipt sharing (public proof)
+
+ALICE drives:
+1. Open a receipt in `/ledger`
+2. Click share button (or copy receipt URL `/r/<id>`)
+3. Open URL in incognito (no wallet)
+4. /r/<id> renders read-only — receipt detail with verify button
+5. Click verify → 4 hashes recompute → verdict
+6. Page is OG-tagged → preview renders correctly when shared on Twitter
+
+---
+
+## 21b · UI error/edge cases (non-happy paths)
+
+### 21b.1 — Invalid handle in URL
+
+Open `/at/nonexistent-handle-xyz` → 404 page renders W6-styled.
+
+### 21b.2 — Invalid receipt id
+
+Open `/r/badxxxxxxxxxxxx` → "Failed to load receipt" card with retry CTA, NOT a raw error.
+
+### 21b.3 — Expired payment link
+
+Open `/pay/<token>` for a link past expiry → "Link expired" card.
+
+### 21b.4 — Already-claimed link
+
+Open `/pay/<token>` where someone already claimed → "Already claimed" card.
+
+### 21b.5 — Connection error
+
+Disconnect Supabase mid-session → UI shows "Couldn't connect" banner, retry button, but does not crash.
+
+### 21b.6 — On-chain rejection (program-level)
+
+Force a tx that the program rejects (e.g., spend without authority) → UI shows "Send failed: <program error message>" toast, no crash.
+
+### 21b.7 — Hover states
+
+Hover every button in the W6 sidebar / topbar / cards — verify hover transition (background or border subtly changes), no flicker.
+
+### 21b.8 — Focus states
+
+Tab through every form using only the keyboard — visible focus ring on every input/button, logical order, no traps.
+
+### 21b.9 — Long content overflow
+
+Receipt with 200-char purpose text → truncates with ellipsis OR wraps cleanly, no horizontal scroll.
+
+### 21b.10 — Empty states everywhere
+
+For each surface, force the empty state and verify each has copy + CTA + W6 design (not blank page):
+- /cards (no pacts)
+- /ledger (no receipts)
+- /agents (no agents)
+- /groups (not in any)
+- /wishes (no buckets)
+- /allowances (none)
+- /activity (no decisions)
+- /notifications (all clear)
+- /m/me/disputes (none open)
+- /leaderboard (no capabilities)
+
+---
+
+## 21c · Cross-wallet UI sync (NEW — honest gap)
+
+> **Status: pre-req infra missing. Currently tested ONLY via DB+on-chain
+> scripts; no two-context UI test exists yet.** This section is added to
+> formalize what the autonomous prompt's "no shortcuts" rule actually
+> requires. See pre-reqs below.
+
+Pre-req — must be built before this section can run for real:
+- `SettleE2EBurnerAdapter`: a wallet adapter that loads a base58 secret
+  from `localStorage["settle-e2e-burner-key"]` (or
+  `process.env.NEXT_PUBLIC_E2E_BURNER_KEY`) instead of generating a fresh
+  random keypair per page load. This is what lets Playwright pre-seed
+  ALICE / BOB / CAROL keypairs into separate browser contexts and have
+  each context land real on-chain txs as that persona.
+- `apps/web/e2e/helpers/seed-burner.ts`: seeds the localStorage key in
+  Playwright `globalSetup` before the page mounts the wallet provider.
+- `bootstrap-test-wallets.ts` keypairs (already exist) get pre-seeded
+  into separate `browser.newContext()` instances per persona.
+
+Once those exist, every test below must run with two contexts (ALICE +
+BOB) sharing nothing. ALICE clicks Pay → tx lands on devnet → BOB sees
+the receipt within 5s in their open `/dashboard` UI WITHOUT manual
+refresh:
+
+### Test 21c.1 — ALICE sends to BOB by handle (cross-wallet UI sync)
+- Open `browser.newContext()` for ALICE; pre-seed ALICE keypair
+- Open `browser.newContext()` for BOB; pre-seed BOB keypair
+- ALICE: `/send` → fill `@bob` → click Pay → tx confirms
+- BOB: `/dashboard` open in parallel → asserts new received row appears
+  within 5s WITHOUT page reload
+- Verify Supabase: `receipts` row with the new request_id
+- Verify on-chain: `getParsedTransaction(sig)` shows TransferChecked
+
+### Test 21c.2 — ALICE opens a Pact, BOB sees nothing (privacy)
+- ALICE creates a OneShot Pact via `/cards/new` UI
+- BOB's `/cards` does NOT show ALICE's pact
+- Verify privacy boundary holds in UI
+
+### Test 21c.3 — Webhook fires when ALICE pays BOB
+- BOB has a webhook URL configured (via `/m/me/webhook` UI)
+- ALICE sends → expect HMAC-signed POST to BOB's receiver within 5s
+
+---
+
+## 23a · UI → on-chain bridge tests (NEW — honest gap)
+
+> **Status: pre-req infra missing. Currently each Anchor ix is exercised
+> via standalone scripts (`scripts/test-remaining-ix.ts`,
+> `e2e-payment-flow.ts`, etc.) and the UI rendering of those routes is
+> tested separately. They are NOT yet bridged: no test today both clicks
+> a UI button AND lands a real tx on devnet through that click.**
+>
+> This section formalizes the bridge requirement to satisfy the
+> autonomous prompt's "if a senior frontend engineer watched a screen
+> recording, would they see a real flow?" bar.
+
+Pre-reqs — same as Section 21c:
+1. `SettleE2EBurnerAdapter` reading from localStorage so a Playwright
+   context can hold a funded ALICE / BOB / CAROL keypair.
+2. Pre-funded persona wallets (already done — see
+   `scripts/bootstrap-test-wallets.ts`).
+3. Burner adapter must implement `signTransaction` / `signMessage` /
+   `signAllTransactions` so the wallet-adapter UI flow goes through
+   normally without a popup.
+
+Each test in this section must:
+- Drive a UI click (no `fetch` shortcuts to `/api/*`)
+- Result in a real tx with a confirmed signature on devnet
+- Verify the UI sees the change WITHOUT manual refresh
+- Verify Supabase row lands within 5s
+- Verify the indexer realtime channel emits
+
+| Test | Anchor ix | UI entry-point |
+|---|---|---|
+| 23a.1 | `create_card` | `/cards/new` → click "Create" |
+| 23a.2 | `revoke` | `/cards/[id]` → slide-to-confirm "Kill the card" |
+| 23a.3 | `open_pact` (OneShot) | `/cards/new?mode=oneshot` → click "Open Pact" |
+| 23a.4 | `close_pact` | `/cards/[id]` → click "Close" → vault refund visible |
+| 23a.5 | `spend` (legacy) | demo-merchant call site → receipt UI updates |
+| 23a.6 | `spend_via_pact` | demo-agent x402 flow → receipt UI updates |
+| 23a.7 | `open_streaming_pact` | `/cards/new?mode=streaming` → click "Open" |
+| 23a.8 | `claim_streaming` | `/cards/[id]` → click "Claim" → vault drops |
+| 23a.9 | `pause_streaming` | `/cards/[id]` → click "Pause" → status flips |
+| 23a.10 | `resume_streaming` | `/cards/[id]` → click "Resume" → accrual resumes |
+| 23a.11 | `open_delivery_escrow` | `/cards/new?mode=delivery_escrow` → click "Open" |
+| 23a.12 | `release_delivery_escrow` | buyer slides to confirm release |
+| 23a.13 | `dispute_delivery_escrow` | buyer clicks "Dispute" before deadline |
+| 23a.14 | `record_receipt` | any Path A direct send → `/r/[id]` 4-hash chain anim |
+
+Plus end-to-end multi-persona flows:
+
+### Test 23a.M1 — Group 3-of-3 quorum end-to-end
+- 3 browser contexts: ALICE (custodian), BOB, CAROL (members)
+- ALICE: `/groups` → create → invite BOB, CAROL
+- ALICE: creates spend request
+- BOB + CAROL: each opens `/groups/[id]/request/[req_id]` and votes Approve via UI button
+- After third vote, cron fires → on-chain spend lands
+- All three contexts see the request flip to "executed" within 5s
+
+### Test 23a.M2 — Customer scans Pay QR → merchant balance updates
+- Merchant context: `/m/me/manage` → "Generate Pay QR" → QR rendered
+- Customer context: paste the QR's solana: URL into wallet → sign → confirm
+- Merchant context: `/m/me/analytics` shows the new payment within 5s
+
+### Test 23a.M3 — Allowance kid spend
+- Parent context: `/allowances` → create allowance for kid pubkey
+- Kid context: tries spend within cap → on-chain tx lands → UI shows it
+- Kid context: tries spend exceeding cap → on-chain DENY → UI shows deny code
+
+---
+
+## 23b · Exhaustive surface matrix (NEW — leave nothing untested)
+
+> The autonomous prompt's "every test must execute" bar requires explicit
+> coverage of every user action across every surface. This section is the
+> exhaustive list: each row is one UI button / one SDK call / one MCP
+> tool that a real user / dev / agent will exercise. Each row gets its
+> own ✓ or ✗ in RESULTS.md.
+
+### 23b.A — Consumer surface UI (every button → on-chain or DB effect)
+
+#### Onboarding
+- [ ] 23b.A1 — Connect wallet button works (Phantom path)
+- [ ] 23b.A2 — Connect wallet button works (Burner path, NEXT_PUBLIC_E2E_BURNER=1)
+- [ ] 23b.A3 — Sign-in message cached (no spam on subsequent actions)
+- [ ] 23b.A4 — Disconnect button clears state
+- [ ] 23b.A5 — First-time user: claim handle CTA → handle row in `handles`
+- [ ] 23b.A6 — Avatar / display name edit on `/settings` saves
+
+#### Send (every method, every variation)
+- [ ] 23b.A7 — Send by `@handle` (resolved) → tx + ledger row
+- [ ] 23b.A8 — Send by base58 pubkey → tx + ledger row
+- [ ] 23b.A9 — Send by Solana Pay link → tx + ledger row
+- [ ] 23b.A10 — Send by QR scan (jsqr-decoded image) → tx + ledger row
+- [ ] 23b.A11 — Send by screenshot (image OCR / QR detection) → tx
+- [ ] 23b.A12 — Send by voice (whisper transcription) → tx
+- [ ] 23b.A13 — Send to unresolved handle → inline error toast
+- [ ] 23b.A14 — Send with insufficient funds → deny code 1 surfaced
+- [ ] 23b.A15 — Send with memo / reason text → reason_hash on receipt
+- [ ] 23b.A16 — Send with `Split with…` extra → split-bill row created
+- [ ] 23b.A17 — Send link (gift) → recipient claim flow → receipt issues
+
+#### Receipts
+- [ ] 23b.A18 — `/ledger` filter chip "All" → unfiltered list
+- [ ] 23b.A19 — `/ledger` filter "Sends" → only direct_send rows
+- [ ] 23b.A20 — `/ledger` filter "Agent spends" → only x402_spend rows
+- [ ] 23b.A21 — `/ledger` filter "Streaming" → only streaming_claim rows
+- [ ] 23b.A22 — `/ledger` filter "Escrow" → only escrow_release rows
+- [ ] 23b.A23 — `/ledger` filter "Refunds" → only refund rows
+- [ ] 23b.A24 — `/ledger` filter "Denied" → only DENY rows
+- [ ] 23b.A25 — `/ledger` filter "Public" → only public_feed=true rows
+- [ ] 23b.A26 — `/ledger` search by request_id substring works
+- [ ] 23b.A27 — Click receipt row → `/receipts/[id]` opens
+- [ ] 23b.A28 — Receipt detail: 4-hash chain renders + animates
+- [ ] 23b.A29 — Receipt detail: AI narration loads
+- [ ] 23b.A30 — Receipt detail: tags can be added/removed
+- [ ] 23b.A31 — Receipt detail: refund button → on-chain refund tx
+- [ ] 23b.A32 — Walletless `/verify` accepts hash + shows verdict
+- [ ] 23b.A33 — `/import` paste Solana Pay sig → kernel receipt mints
+- [ ] 23b.A34 — `/settings/exports` → request export → CSV/JSON downloads
+
+#### Pacts (3 modes × full lifecycle)
+- [ ] 23b.A35 — `/cards/new?mode=oneshot` → click Open → vault funded
+- [ ] 23b.A36 — `/cards/[id]` shows OneShot pact details
+- [ ] 23b.A37 — Spend through OneShot pact (via demo-agent or x402) → receipt
+- [ ] 23b.A38 — Close OneShot → unspent USDC refunded to authority
+- [ ] 23b.A39 — `/cards/new?mode=streaming` → click Open → streaming pact created
+- [ ] 23b.A40 — Streaming pause via UI → on-chain `paused=true`
+- [ ] 23b.A41 — Streaming resume via UI → on-chain `paused=false`
+- [ ] 23b.A42 — Streaming claim via agent UI → vault drops, merchant gets USDC
+- [ ] 23b.A43 — `/cards/new?mode=delivery_escrow` → escrow pact opened
+- [ ] 23b.A44 — Buyer-confirm release via UI → merchant balance up
+- [ ] 23b.A45 — Cron-driven release post-deadline → merchant balance up
+- [ ] 23b.A46 — Buyer dispute before deadline → vault refunded
+- [ ] 23b.A47 — Bulk-close all pacts under a card via UI
+- [ ] 23b.A48 — Revoke card via slide-to-confirm → all child pacts frozen + UI animates kill
+
+#### Groups (multi-persona)
+- [ ] 23b.A49 — Create group account 3-of-3 → on-chain
+- [ ] 23b.A50 — Custodian creates spend request via UI
+- [ ] 23b.A51 — Member 1 votes Approve via UI
+- [ ] 23b.A52 — Member 2 votes Approve via UI
+- [ ] 23b.A53 — Member 3 votes Approve → quorum fires → on-chain spend
+- [ ] 23b.A54 — Deny vote path: 1 deny stops execution
+- [ ] 23b.A55 — Replay attack: same vote twice → 2nd rejected
+- [ ] 23b.A56 — Wrong-member vote rejected with clear UI error
+
+#### Savings
+- [ ] 23b.A57 — Create savings bucket via UI
+- [ ] 23b.A58 — Contribute to bucket → balance up + UI updates
+- [ ] 23b.A59 — Round-up rule: set + fire on real spend
+- [ ] 23b.A60 — Gift send: create + recipient claims via link
+- [ ] 23b.A61 — Gift send: expire + auto-refund
+
+#### Schedule + Allowances
+- [ ] 23b.A62 — Schedule recurring send via UI → cron fires it → receipt lands
+- [ ] 23b.A63 — Allowance: parent creates → kid receives view
+- [ ] 23b.A64 — Allowance: kid spawns kid-card → on-chain
+- [ ] 23b.A65 — Allowance: kid spends within cap → ALLOW
+- [ ] 23b.A66 — Allowance: kid exceeds daily cap → DENY code 2
+
+#### Split bill
+- [ ] 23b.A67 — Create split-bill via UI
+- [ ] 23b.A68 — All N payers pay → status flips to settled
+
+#### Notifications
+- [ ] 23b.A69 — In-app inbox renders all event types
+- [ ] 23b.A70 — Web push: PushManager.subscribe mock → notification fires
+- [ ] 23b.A71 — Notification click → opens relevant route
+
+#### Profile
+- [ ] 23b.A72 — `/at/[handle]` renders pubkey + stats
+- [ ] 23b.A73 — Trust score breakdown panel shows 4 components
+- [ ] 23b.A74 — Follow button toggles + count updates
+- [ ] 23b.A75 — Follower / following lists paginate
+
+#### Settings
+- [ ] 23b.A76 — Profile section: edit display name → saves
+- [ ] 23b.A77 — Theme section: toggle (currently W6 light only — verify)
+- [ ] 23b.A78 — Privacy section: opt-in / opt-out per-card public-feed
+- [ ] 23b.A79 — Notifications section: subscribe / unsubscribe push
+- [ ] 23b.A80 — Sessions section: list active sessions
+- [ ] 23b.A81 — Sessions section: revoke single session
+- [ ] 23b.A82 — Sessions section: revoke all sessions
+- [ ] 23b.A83 — Developer section: API key generate / revoke / rotate
+
+### 23b.B — Merchant surface UI
+
+- [ ] 23b.B1 — Generate Pay QR via `/m/[handle]/manage`
+- [ ] 23b.B2 — QR is scannable (jsqr decode round-trip)
+- [ ] 23b.B3 — Customer pays QR → receipt lands → merchant sees in analytics
+- [ ] 23b.B4 — Analytics: revenue, txn count, dispute rate, trust score
+- [ ] 23b.B5 — Publish capability via UI → `capability_registry` row
+- [ ] 23b.B6 — Capability hash registered + pin-able by buyers
+- [ ] 23b.B7 — DNS verify: TXT record set → server validates → flag flips
+- [ ] 23b.B8 — Webhook config: secret rotates via UI
+- [ ] 23b.B9 — Webhook test event delivers with valid HMAC
+- [ ] 23b.B10 — Webhook retries on 5xx (3 attempts with backoff)
+- [ ] 23b.B11 — Webhook idempotency dedupes on Settle-Idempotency-Key
+- [ ] 23b.B12 — Customer files dispute via UI
+- [ ] 23b.B13 — Merchant gets AI dispute draft
+- [ ] 23b.B14 — Merchant approves refund → on-chain refund
+- [ ] 23b.B15 — Merchant denies dispute → status updates
+- [ ] 23b.B16 — Public merchant profile renders pubkey + stats + embed snippet
+- [ ] 23b.B17 — Embed snippets: `<settle-pay>` HTML renders correctly
+- [ ] 23b.B18 — Embed snippets: `<settle-verify>` HTML renders correctly
+
+### 23b.C — Agent surface UI
+
+- [ ] 23b.C1 — Hire from template wizard → AgentCard created on-chain
+- [ ] 23b.C2 — First spend by hired agent → x402 receipt lands
+- [ ] 23b.C3 — Publish a template via `/agents/templates/new` → on-chain attestation + DB row
+- [ ] 23b.C4 — Browse `/agents/templates` → template list
+- [ ] 23b.C5 — Hire-Blink: share link → Phantom unfurls → friend hires
+- [ ] 23b.C6 — Per-stream pact controls: pause from `/cards/[id]?tab=pact` → on-chain
+- [ ] 23b.C7 — Per-stream resume → on-chain
+- [ ] 23b.C8 — Per-stream claim button → on-chain
+- [ ] 23b.C9 — Decisions feed (`/audit`) realtime: every decision visible
+- [ ] 23b.C10 — Demo agent makes spend via x402 host → receipt indexed
+- [ ] 23b.C11 — Per-stream collab: 2 agents share a pact
+
+### 23b.D — Developer surface (SDK + MCP)
+
+#### TypeScript SDK (settle-protocol-sdk on npm — pre-req: publish)
+- [ ] 23b.D1 — `npm i settle-protocol-sdk` in fresh dir succeeds
+- [ ] 23b.D2 — Import + call `canonicalPurposeHash()` → returns hash
+- [ ] 23b.D3 — Import + call `canonicalReasonHash()` → returns hash
+- [ ] 23b.D4 — Import + call `canonicalPolicySnapshotHash()` → returns hash
+- [ ] 23b.D5 — Import + call `verifyReceipt()` → verdict
+- [ ] 23b.D6 — `buildIxData("create_card", …)` → bytes match Anchor
+- [ ] 23b.D7 — `buildIxData("spend_via_pact", …)` → bytes match Anchor
+- [ ] 23b.D8 — IDL JSON shipped + 14 instructions present
+
+#### Python SDK (settle-protocol-sdk on PyPI — DONE)
+- [ ] 23b.D9 — `pip install settle-protocol-sdk` in fresh venv ✓ (verified)
+- [ ] 23b.D10 — `from settle_sdk import canonical_purpose_hash` works ✓
+- [ ] 23b.D11 — Hash output byte-equal to TS for same input ✓
+- [ ] 23b.D12 — All canonical_*_hash functions present
+- [ ] 23b.D13 — `build_ix_data` works for all 14 ix
+- [ ] 23b.D14 — LangChain integration: `make_langchain_tool()` works
+
+#### Rust SDK (settle-sdk on crates.io — pre-req: cargo publish)
+- [ ] 23b.D15 — `cargo add settle-sdk` in fresh crate succeeds
+- [ ] 23b.D16 — `cargo run` — first call returns hash
+- [ ] 23b.D17 — Hash matches TS + Python on same input
+- [ ] 23b.D18 — All 44 cargo tests pass in fresh build
+
+#### MCP middleware
+- [ ] 23b.D19 — `wrapWithSettle()` exported
+- [ ] 23b.D20 — `requireSettleCredential()` exported
+- [ ] 23b.D21 — `makeAnthropicToolRunner()` exported
+- [ ] 23b.D22 — `makeOpenAIToolRunner()` exported
+- [ ] 23b.D23 — `makeLangChainTool()` exported
+- [ ] 23b.D24 — `makeCrewAITool()` exported
+- [ ] 23b.D25 — Spawn MCP server subprocess + JSON-RPC `initialize`
+- [ ] 23b.D26 — `tools/list` returns ≥6 tools
+- [ ] 23b.D27 — `tools/call` for each of 6 tools → real on-chain effect
+
+#### Web components
+- [ ] 23b.D28 — `<settle-pay>` from npm install + drop into vanilla HTML
+- [ ] 23b.D29 — `<settle-pay>` button click → wallet flow → event fires
+- [ ] 23b.D30 — `<settle-verify>` from npm install + drop into vanilla HTML
+- [ ] 23b.D31 — `<settle-verify>` paste hash → verdict shown
+
+#### Sandbox / faucet
+- [ ] 23b.D32 — `/sandbox` connected → request airdrop → SOL arrives
+- [ ] 23b.D33 — `/sandbox` connected → request USDC → arrives
+
+### 23b.E — Operator surface
+
+- [ ] 23b.E1 — `/control-center` health dashboard reflects reality
+- [ ] 23b.E2 — `/admin/cron` recent runs list shows phase5-tick + signer
+- [ ] 23b.E3 — `/admin/cron` force-fire button works
+- [ ] 23b.E4 — `/admin/preflight` all 7 checks visible
+- [ ] 23b.E5 — `/admin/federation/origins` lists trusted + untrusted
+- [ ] 23b.E6 — Promote origin via UI → trusted=true → ledger reflects
+- [ ] 23b.E7 — Demote origin → trusted=false
+- [ ] 23b.E8 — `/verify-build` shows current binary hash matches HEAD
+- [ ] 23b.E9 — Operator-only routes return 401 without CRON_SECRET
+
+### 23b.F — Public surface (walletless)
+
+- [ ] 23b.F1 — `/verify` paste hash → 3-stage lifecycle visible
+- [ ] 23b.F2 — `/leaderboard` capability heatmap renders + cells brighten
+- [ ] 23b.F3 — `/leaderboard` all-time ranked table loads
+- [ ] 23b.F4 — `/leaderboard` Federation panel shows trusted origins
+- [ ] 23b.F5 — `/capabilities` NL discovery: query → NIM ranks → reasoning
+- [ ] 23b.F6 — `/feed` public-feed receipts stream live
+- [ ] 23b.F7 — `/stats` network counters update
+- [ ] 23b.F8 — Public profile (no wallet): `/at/[handle]` renders
+
+### 23b.G — Solana primitive integrations
+
+- [ ] 23b.G1 — SPL TransferChecked encoding round-trip
+- [ ] 23b.G2 — ATA derivation deterministic
+- [ ] 23b.G3 — Memo program ix encodable
+- [ ] 23b.G4 — Solana Pay reference key in URL parses
+- [ ] 23b.G5 — ALT (address lookup table) createLookupTable ix builds
+- [ ] 23b.G6 — v0 versioned tx compiles + signs
+- [ ] 23b.G7 — Bubblegum cNFT mint (where applicable)
+- [ ] 23b.G8 — SAS attestation (Solana Attestation Service)
+- [ ] 23b.G9 — Squads detection (multisig auth check)
+- [ ] 23b.G10 — Lighthouse assertion (post-tx state assertion)
+- [ ] 23b.G11 — Jupiter quote fetch (informational)
+- [ ] 23b.G12 — Pyth ticker (price oracle live)
+- [ ] 23b.G13 — Bonfida SNS lookup
+- [ ] 23b.G14 — Helius onLogs subscribe + Sender (Jito bundles)
+- [ ] 23b.G15 — Solana Actions (Blink) JSON spec
+- [ ] 23b.G16 — VAPID Web Push key generation
+
+### 23b.H — Webhook events (all 13)
+
+- [ ] 23b.H1-H13 — every event in `webhook-events-coverage.ts` fires
+  from a real Settle action and lands on the receiver with valid HMAC
+  + correct payload shape
+
+### 23b.I — Cron jobs
+
+- [ ] 23b.I1 — `phase5-tick` fires on schedule (or via force-fire)
+- [ ] 23b.I2 — `phase5-signer` picks scheduled work
+- [ ] 23b.I3 — Compress-cron mints ZK receipt mirrors (when configured)
+- [ ] 23b.I4 — Trust-score recalc cron updates `agent_trust_scores`
+
+### 23b.J — Cross-cutting
+
+- [ ] 23b.J1 — Indexer realtime emits within 2s of slot
+- [ ] 23b.J2 — Federation ledger view reflects promoted origin
+- [ ] 23b.J3 — Trust score recompute cron writes new `last_computed_at`
+- [ ] 23b.J4 — All 4 i18n locales render core keys
+- [ ] 23b.J5 — Theme toggle (if implemented) doesn't break layout
+- [ ] 23b.J6 — Print receipt CSS prints clean (no chrome)
+- [ ] 23b.J7 — All OG images render (default + r/[id] + at/[handle])
+- [ ] 23b.J8 — Service worker registers (PWA)
+- [ ] 23b.J9 — Mobile 390px no horizontal scroll on every authed route
+- [ ] 23b.J10 — Lighthouse ≥ 90 on landing
+- [ ] 23b.J11 — All 8 deny codes triggered + UI shows reason
+- [ ] 23b.J12 — Sentry: any error reaches Sentry without leaking PII
+
+---
+
 ## 22 · Final go/no-go checklist
 
 Before declaring "ready":
@@ -1099,12 +2206,18 @@ Before declaring "ready":
 - [ ] Surface inference correct on every nested route
 - [ ] All 7 receipt kinds tested
 - [ ] All 9 deny codes triggered + rendered
-- [ ] All 3 SDKs tested with one real call each
-- [ ] All 6 MCP tools tested
-- [ ] At least one webhook delivered + verified
+- [ ] All 3 SDKs tested with one real call each (TS via npm install, Python via pip install, Rust via cargo add)
+- [ ] All 6 MCP tools tested via JSON-RPC subprocess
+- [ ] All 13 webhook events delivered + HMAC validated
+- [ ] All 12 cron jobs fired + side-effects observed
+- [ ] All 14 Anchor ix executed on devnet via UI button clicks (Section 23a)
+- [ ] All 21c cross-wallet UI sync tests pass (ALICE↔BOB ≤5s)
+- [ ] Every row in 23b.A (consumer), 23b.B (merchant), 23b.C (agent), 23b.D (developer), 23b.E (operator), 23b.F (public), 23b.G (Solana primitives), 23b.H (webhooks), 23b.I (cron), 23b.J (cross-cutting) ✓
 - [ ] Mobile 390px no horizontal scroll
 - [ ] Lighthouse ≥ 90 on landing
 - [ ] All cross-wallet flows confirm correct DB + on-chain state on both sides
+- [ ] `SettleE2EBurnerAdapter` exists + Playwright globalSetup pre-seeds keypairs into multi-context tests
+- [ ] Two consecutive full-suite re-runs both 100% green
 
 ---
 
@@ -1898,19 +3011,108 @@ Per `MAINNET_MIGRATION.md`:
 
 ## 53 · Final go/no-go (extended)
 
-Submit-ready when EVERY box below is checked:
+Submit-ready when EVERY box below is checked. **The runner cannot declare "done" with even one box unchecked.**
 
 ### Visual
 - [ ] All ~64 routes render in W6 light palette
 - [ ] No green primary buttons
 - [ ] No invisible text anywhere
 - [ ] No black flash on navigation
-- [ ] All loading/error/empty/setup states designed
+- [ ] All loading/error/empty/setup states designed (21b.10 — all 10 surfaces)
 - [ ] All toasts/modals/dialogs W6-styled
 - [ ] Print receipt clean
 - [ ] All OG images render
 - [ ] Mobile 390px no horizontal scroll
 - [ ] Lighthouse ≥ 90
+
+### User-journey tests (UI-driven, real-user POV — section 21a)
+- [ ] 21a.1 — Brand-new user lands on `/`, no wallet
+- [ ] 21a.2 — Onboarding wizard end-to-end
+- [ ] 21a.3 — Send by @handle full UI flow
+- [ ] 21a.4 — Cross-wallet receive within 5s (BOB sees ALICE's send)
+- [ ] 21a.5 — Send by QR (image dropzone + decode)
+- [ ] 21a.6 — Receive + verify proof (4-hash + walletless verify)
+- [ ] 21a.7 — Hire AI agent end-to-end
+- [ ] 21a.8 — Group spend with 3 parallel browser contexts
+- [ ] 21a.9 — Split bill, all 3 payers
+- [ ] 21a.10 — Merchant: pay-QR + analytics
+- [ ] 21a.11 — Dispute flow (customer files → merchant resolves)
+- [ ] 21a.12 — Save toward goal + round-up
+- [ ] 21a.13 — Schedule recurring send + cron fires
+- [ ] 21a.14 — Revoke card mid-flight
+- [ ] 21a.15 — Walletless verifier
+- [ ] 21a.16 — Mobile 390×844 touch flows
+- [ ] 21a.17 — Surface switcher (consumer/agent/merchant/dev/operator/public)
+- [ ] 21a.18 — Disconnect / reconnect
+- [ ] 21a.19 — Multi-tab sync
+- [ ] 21a.20 — Browser back/forward
+- [ ] 21a.21 — Form validation (every input)
+- [ ] 21a.22 — Wallet rejection handling
+- [ ] 21a.23 — Slow network handling
+- [ ] 21a.24 — Notification denial drawer
+- [ ] 21a.25 — Receipt sharing (public proof link)
+
+### UI error/edge cases (section 21b)
+- [ ] 21b.1 — Invalid handle URL → 404 W6 page
+- [ ] 21b.2 — Invalid receipt id
+- [ ] 21b.3 — Expired payment link
+- [ ] 21b.4 — Already-claimed link
+- [ ] 21b.5 — Connection error banner
+- [ ] 21b.6 — On-chain rejection toast
+- [ ] 21b.7 — Hover states
+- [ ] 21b.8 — Focus rings + keyboard nav
+- [ ] 21b.9 — Long content overflow
+- [ ] 21b.10 — All 10 empty states
+
+### Developer surfaces (section 14, fresh-dir / subprocess / vanilla HTML)
+
+**TypeScript SDK (14.1):**
+- [ ] 14.1.1 — Fresh-dir install + first real call
+- [ ] 14.1.2 — Every public method against devnet
+- [ ] 14.1.3 — TS types + IntelliSense
+- [ ] 14.1.4 — Error handling matrix
+- [ ] 14.1.5 — Browser bundle works
+
+**Python SDK (14.2):**
+- [ ] 14.2.1 — Fresh venv install + first call
+- [ ] 14.2.2 — Every public method
+- [ ] 14.2.3 — mypy --strict + pyright clean
+- [ ] 14.2.4 — Error handling
+- [ ] 14.2.5 — Async variant + 10 parallel calls
+
+**Rust SDK (14.3):**
+- [ ] 14.3.1 — Fresh cargo crate + first call
+- [ ] 14.3.2 — Every public method
+- [ ] 14.3.3 — `cargo build --release` < 5MB
+- [ ] 14.3.4 — Error type variants
+
+**Cross-language hash parity (14.4):**
+- [ ] 14.4.1 — 100 random tuples, byte-equal `kernel_commit` across TS+Python+Rust+on-chain
+- [ ] 14.4.2 — All 4 hashes match across all 4 sources
+
+**MCP server (14.5):**
+- [ ] 14.5.1 — Subprocess starts, advertises 6 tools
+- [ ] 14.5.2 — Each of 6 tools real-executes end-to-end (pay, verify, list_capabilities, open_pact, close_pact, refund)
+- [ ] 14.5.3 — Error handling (missing arg, invalid card, unknown tool)
+- [ ] 14.5.4 — Real Claude Desktop / Cursor integration (or simulated equivalent)
+- [ ] 14.5.5 — Card-scoped permissions enforced
+
+**`<settle-pay>` web component (14.6):**
+- [ ] 14.6.1 — Vanilla HTML embed, `<script src>`, click → wallet flow → event fires
+- [ ] 14.6.2 — Every attribute reflects to DOM
+- [ ] 14.6.3 — All 3 events fire (settle-paid / settle-error / settle-loading)
+- [ ] 14.6.4 — Cross-framework: works in React, Vue, Svelte, Next.js
+
+**`<settle-verify>` web component (14.7):**
+- [ ] 14.7.1 — Vanilla HTML embed verifies a hash
+- [ ] 14.7.2 — Programmatic `.verify()` API works
+
+**Webhooks (14.8):**
+- [ ] 14.8.1 — Real receiver on :4000, configured via UI
+- [ ] 14.8.2 — All 13 events deliver with valid HMAC
+- [ ] 14.8.3 — Retry on 5xx with exponential backoff
+- [ ] 14.8.4 — Signature rotation + 24h grace
+- [ ] 14.8.5 — Idempotency dedupe
 
 ### Functional
 - [ ] All 14 Anchor instructions execute on devnet
@@ -1957,6 +3159,33 @@ Submit-ready when EVERY box below is checked:
 - [ ] All Playwright E2E green
 - [ ] All unit tests green
 - [ ] Build succeeds for web + indexer + demo-agent + demo-merchants
+
+### UI → on-chain bridge (Section 23a — newly formalized)
+- [ ] `SettleE2EBurnerAdapter` exists + reads from `localStorage["settle-e2e-burner-key"]`
+- [ ] Playwright globalSetup pre-seeds ALICE/BOB/CAROL keypairs into per-context localStorage
+- [ ] All 14 ix from Section 23 are also verified through UI button clicks (Section 23a.1–23a.14)
+- [ ] Multi-persona scenarios 23a.M1–23a.M3 (group quorum, QR pay, allowance kid) drive real txs
+
+### Cross-wallet UI sync (Section 21c — newly formalized)
+- [ ] 21c.1 ALICE→BOB cross-wallet receive ≤5s without refresh
+- [ ] 21c.2 ALICE pact privacy boundary holds in BOB's UI
+- [ ] 21c.3 Webhook fires on cross-wallet payment within 5s
+
+### Exhaustive surface matrix (Section 23b — newly formalized)
+- [ ] 23b.A consumer (83 rows)
+- [ ] 23b.B merchant (18 rows)
+- [ ] 23b.C agent (11 rows)
+- [ ] 23b.D developer SDK + MCP + web components (33 rows)
+- [ ] 23b.E operator (9 rows)
+- [ ] 23b.F public (8 rows)
+- [ ] 23b.G Solana primitives (16 rows)
+- [ ] 23b.H webhooks (13 rows)
+- [ ] 23b.I cron (4 rows)
+- [ ] 23b.J cross-cutting (12 rows)
+
+### Regression
+- [ ] Two consecutive full-suite re-runs both 100% green
+- [ ] Re-running any single test produces the same ✓ a second time
 
 When every box is checked: **green to submit**.
 
