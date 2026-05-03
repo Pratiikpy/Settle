@@ -152,7 +152,7 @@ export default async function PrintReceiptPage({
 
             {r.pact_pubkey && (
               <>
-                <div className="label">Pact</div>
+                <div className="label">Spending rule</div>
                 <div className="value">{r.pact_pubkey}</div>
               </>
             )}

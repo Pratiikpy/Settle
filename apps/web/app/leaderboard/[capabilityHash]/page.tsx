@@ -66,9 +66,9 @@ export default function CapabilityLeaderboardPage() {
     <W6AppShell forceSurface="public">
       <div style={{ maxWidth: 880 }}>
         <Link href="/leaderboard" className="text-xs text-[#71717a] hover:text-accent">
-          ← All capabilities
+          ← All services
         </Link>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight">Capability leaderboard</h1>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight">Service leaderboard</h1>
         <div className="mt-1 break-all font-mono text-[10px] text-[#71717a]">
           {params.capabilityHash}
         </div>

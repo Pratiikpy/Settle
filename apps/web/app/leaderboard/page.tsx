@@ -155,7 +155,7 @@ export default function LeaderboardIndexPage() {
                 <thead>
                   <tr>
                     <th style={{ width: 60 }}>#</th>
-                    <th>Capability hash</th>
+                    <th>Service hash</th>
                     <th>Merchants</th>
                     <th style={{ textAlign: "right" }}>Volume</th>
                     <th style={{ textAlign: "right" }}>Completed</th>
