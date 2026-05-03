@@ -3,11 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 11 — pick next high-impact target. Candidates:
-- Category C: bundle size analysis
-- Category I: branding consistency (logo / palette unification)
-- Category L: dedupe `solscanUrl` / `getSolscanUrl` (deferred)
-- Category D: scan POST routes for missing input validation (zod)
+Pass 12 = TEST PASS (every 4th). Reconcile passes 9, 10, 11 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -23,14 +19,15 @@ Pass 11 — pick next high-impact target. Candidates:
 
 ## Resolved
 - ✓ OG image generation for /r/[id] (pass 10).
+- ✓ Dedupe `solscanUrl` (pass 11) — turned out to be 0 callers, pure dead code.
 
 ## Pass cadence (loop policy — 2026-05-04)
 - 3 polish passes → 1 test pass.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (passes 9 sitemap, 10 OG image).
-- Items pending full-E2E verification: pass 9 sitemap entries, pass 10 OG image route.
+- Polish passes since last full-E2E: 3 (passes 9, 10, 11). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: sitemap entries (p9), OG image route (p10), format.ts dead-code delete (p11).
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -183,6 +180,31 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 11 — code health (category L): delete 3 dead exports from lib/format.ts
+Files changed:
+- `apps/web/lib/format.ts`: removed three exports with zero callers anywhere in the repo:
+  1. `solscanUrl(sig, cluster?)` — duplicate of `lib/solana.ts#getSolscanUrl`. Repo-wide grep returned 0 importers.
+  2. `truncateAddress(addr, chars=4)` — never imported.
+  3. `formatLatencyMs(ms)` — never imported.
+
+Audit method:
+- `Grep` (repo-wide, all .ts/.tsx) for each function name → only match was the definition in `lib/format.ts` itself.
+- 0 callers in app/, components/, lib/, packages/, scripts/, e2e/, programs/.
+
+Why this matters:
+- Reduces dead-code surface area. `format.ts` is now a 3-export module (`lamportsToUsdc`, `timeAgo`) — both with real callers (14 and 8 respectively).
+- Closes the previously-deferred "dedup solscanUrl" item — turned out the duplicate had zero callers, so dedup = pure delete.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (nav-smoke + section-23a-end-to-end-loop): 38/38 green, including the real on-chain ALICE→BOB QR-pay proof (11.993 → 11.995 USDC).
+
+Risk: very low (delete-only, all callers verified absent).
+
+Pending full-E2E (next test pass): no expected impact on rendering or behavior.
 
 ### Pass 10 — final product feel (category H): dynamic OG image for /r/[id]
 Files changed:

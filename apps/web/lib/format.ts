@@ -7,23 +7,6 @@ export function lamportsToUsdc(lamports: bigint | string | number): string {
   return `${whole}.${fracStr}`;
 }
 
-/** Truncate a base58 pubkey for display: "Card1111…1111a". */
-export function truncateAddress(addr: string, chars = 4): string {
-  if (addr.length <= chars * 2) return addr;
-  return `${addr.slice(0, chars)}…${addr.slice(-chars)}`;
-}
-
-/** Format a Solana cluster + tx signature as a Solscan URL. */
-export function solscanUrl(sig: string, cluster: "mainnet" | "devnet" = "devnet"): string {
-  return `https://solscan.io/tx/${sig}?cluster=${cluster}`;
-}
-
-/** ms-precision elapsed-time formatter for the demo: "0.4s on Solana". */
-export function formatLatencyMs(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
-
 /** Format a timestamp delta as "2m ago" / "1h ago". */
 export function timeAgo(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
