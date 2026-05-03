@@ -3,7 +3,12 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 24 = TEST PASS (every 4th). Reconcile passes 21, 22, 23 with full Playwright.
+Pass 25 — pick next polish target.
+- Category I: palette (deferred — risky)
+- Category C: code-split (deferred — risky)
+- Category G: CSP (deferred — needs origin allowlist)
+- Category K: dead-data scrub
+- Category D: deeper API audit (more endpoints)
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +31,8 @@ Pass 24 = TEST PASS (every 4th). Reconcile passes 21, 22, 23 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 21 landing logs, pass 22 OG images, pass 23 aria-live regions). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: landing console.warns, /watch + /start OG image routes, aria-live="polite" on magic-moment + watch ledgers.
+- Polish passes since last full-E2E: 0 (pass 24 just ran 576/576 — was 574, +2 OG image specs).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +185,13 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 24 — TEST PASS: full E2E reconciliation of passes 21-23
+- Items previously pending: landing API console.warns (p21), /watch + /start OG image routes (p22), aria-live regions on ledgers (p23).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 576 specs.
+- **Result: 576/576 green in 7.1m.** Up from 574 prior baseline (+2 OG image specs from pass 22).
+- No regressions across observability logs, OG image rendering, or ARIA additions.
+- All previously pending items now fully verified.
 
 ### Pass 23 — accessibility (N): aria-live regions for live ledgers
 Files changed:
