@@ -466,3 +466,20 @@ Updated in `docs/testing/HUMAN_BLOCKERS.md`:
 | 32 · Trust score recompute API (`GET /api/trust/[pubkey]`) | ✓ pass | live recalc on-demand for both ALICE + BOB; returns score, tier, components, cached:false (fresh compute) | 2026-05-03 08:52 |
 | 26 · API endpoint sample (8/9) | ✓ pass | /api/feed 200, /api/stats/landing 200, /api/handles/by-pubkey 200, /api/leaderboard 200, /api/capabilities 200, /api/preflight 200, /api/federation/origins 200; /api/health 503 (honestly reports unconfigured redis/cnft/demo-merchants — not a regression) | 2026-05-03 08:52 |
 
+
+## 2026-05-03 09:35 — UI sections 2-13, 21b + 4 infra scripts
+
+| 2 · Onboarding (3 tests) | ✓ pass | connect → /dashboard, sandbox/faucet route, wallet button truncation | 2026-05-03 09:30 |
+| 3 · Send flow (6 tests) | ✓ pass | recipient input + handle resolution wired; pubkey paste; /send/link, /send/voice routes; multi-token UI; unresolved-handle error path | 2026-05-03 09:30 |
+| 4 · Receipts (4 tests) | ✓ pass | /ledger filter chips, /verify walletless, /import, /settings/exports | 2026-05-03 09:30 |
+| 5 · Pacts (3 tests) | ✓ pass | /cards mode explainers + chips, /cards/new create, /cards/[id] detail | 2026-05-03 09:30 |
+| 6, 7, 9 · Group/Savings/Allowances/Merchant (9 tests) | ✓ pass | every consumer + merchant subroute renders | 2026-05-03 09:30 |
+| 10, 12, 13 · Agent/Notifications/Public (9 tests) | ✓ pass | agents + new + streaming + templates, /blink/[slug], /activity, /leaderboard, /capabilities, /stats | 2026-05-03 09:30 |
+| 21b · UI edge cases (5 tests) | ✓ pass | disconnected prompt, /verify, unknown receipt route, mobile no-h-scroll, 404 page | 2026-05-03 09:30 |
+| 26 · API coverage (full inventory) | ✓ pass | scripts/api-coverage.ts inventories 134 routes, 185 probes; only 1 5xx (/api/health honest 503) | 2026-05-03 09:25 |
+| 27 · Cron fire-all (declared) | ✓ pass | scripts/cron-fire-all.ts fires phase5-tick + phase5-signer; both 200 OK | 2026-05-03 09:32 |
+| 52 · Security audit | ✓ pass | scripts/security-audit.ts: 0 secret-leak patterns across 38 JS chunks + HTML; no reflected XSS; 4 security headers now set | 2026-05-03 09:33 |
+| 14.5 · MCP middleware exports | ✓ pass | scripts/mcp-coverage.ts: 8/8 expected exports (wrapWithSettle, requireSettleCredential, makeAnthropicToolRunner, makeOpenAIToolRunner, makeLangChainTool, makeCrewAITool, attachSettleHeader, SettlePaymentRequiredError) | 2026-05-03 09:33 |
+| 1+ · Full E2E (post-headers + new specs) | ✓ pass | 128/128 (was 89, +39 new) in 4.0m | 2026-05-03 09:34 |
+| Sec headers · X-Frame-Options / nosniff / Referrer-Policy / Permissions-Policy | ✓ pass | added in next.config.mjs; verified via curl -I | 2026-05-03 09:33 |
+
