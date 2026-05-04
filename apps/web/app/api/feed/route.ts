@@ -46,5 +46,16 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ ok: true, events: data ?? [], count: data?.length ?? 0 });
+  return NextResponse.json(
+    { ok: true, events: data ?? [], count: data?.length ?? 0 },
+    {
+      // Public agent activity feed — events are append-only and tags
+      // mutate slowly. 30s edge cache is a sweet spot: viewers see
+      // near-real-time activity without thrashing Supabase under
+      // viral landing-page load.
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+      },
+    },
+  );
 }

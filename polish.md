@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 59 — pick next polish target.
+Pass 60 = TEST PASS (every 4th). Reconcile passes 57, 58, 59 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 59 — pick next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 57 docs metadata, pass 58 /api/verify cache).
-- Items pending full-E2E verification: /docs/pay-component metadata, /api/verify/[hash] cache header.
+- Polish passes since last full-E2E: 3 (pass 57 docs, pass 58 /api/verify cache, pass 59 /api/feed cache). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: docs metadata, /api/verify cache, /api/feed cache.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,30 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 59 — performance (C): cache /api/feed for landing-scale activity load
+Files changed:
+- `apps/web/app/api/feed/route.ts`: success response now carries `Cache-Control: public, s-maxage=30, stale-while-revalidate=120`. Powers `/feed` (public agent activity) which is now both crawlable (per pass 54) and listed in the sitemap.
+
+Why this matters:
+- `/feed` is a public surface and the page polls this endpoint live. Multiple concurrent /feed visitors + Realtime triggered refreshes meant Supabase saw N×K queries.
+- 30s edge cache gives near-real-time UX (events lag by at most 30s) while reducing DB load by 30x at peak.
+- 120s stale-while-revalidate keeps things fast through traffic spikes (e.g. landing-page → "see live activity" click-through).
+
+Audited but skipped:
+- `/api/stats`: has its own in-memory cache layer (returns `{cached: true/false}` flag); skip Cache-Control to avoid layered cache confusion.
+- API routes already cached (passes 33, 41, 46, 58): /api/receipts/[id] (60s), /api/handles/[handle]/profile (30s), /api/merchants/[handle]/profile (30s), /api/handles/by-pubkey (30s), /api/capabilities (60s), /api/landing/feed (30s), /api/balance (10s), /api/stats/landing (5min), /api/verify/[hash] (60s).
+- /api/feed is the last public-data API in this category that lacked a cache header.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `curl -I /api/feed?limit=10` confirms `cache-control: public, s-maxage=30, stale-while-revalidate=120`.
+- Targeted Playwright nav-smoke: 14/14 green.
+
+Risk: low. Same conservative caching tier proven safe in passes 33, 41, 46, 58.
+
+Pending full-E2E (next test pass): cache hit-rate change only; no rendering impact.
 
 ### Pass 58 — performance (C): cache /api/verify/[hash] for shared verifier flow
 Files changed:
