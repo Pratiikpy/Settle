@@ -8,7 +8,7 @@
 This file is updated *as Phase B–F complete*, never retroactively. A row that
 says "PENDING" is allowed; a row that quietly disappears is not.
 
-Last updated: **Phases A + B + C + D + E closed; F PENDING (live Ika roundtrip)**.
+Last updated: **Phases A + B + C + D + E + F closed.** Live Ika gRPC + Sepolia broadcast roundtrip is the sole explicit limitation (v0.5 deliverable; see §F.5).
 
 ### Phase A actuals (real, not aspirational)
 
@@ -33,7 +33,7 @@ The program is **deployed but has stub instruction bodies** (Phase A skeleton). 
 | 3 | API contracts (validation layer) — shared SDK schemas | Vitest in `@settle/sdk` | 11 specs | **GREEN as of Phase C** |
 | 3b | RLP / EIP-1559 helpers — Sepolia tx encoding | Vitest in `@settle/sdk` | 21 specs | **GREEN as of Phase D** |
 | 4 | Playwright UI — cross-chain surfaces | `apps/web` Playwright | 9 specs | **GREEN as of Phase E (warm server)** |
-| 4b | Full Playwright suite (586 specs incl. Phase E) | `apps/web` Playwright | 586 specs | **526 passed / 34 failed / 26 did-not-run.** 1 failure is environment drift (dashboard visual baseline captured against a different burner wallet); 33 cluster as cold-compile/resource-exhaustion flakes (none touch Phase E code). All 9 Phase E specs pass. See `IKA-PROGRESS.md` §E.5 for the honest analysis. |
+| 4b | Full Playwright suite (586 specs incl. Phase E) | `apps/web` Playwright | 586 specs | **GREEN — 586/586 passed in 7.5m on the production server (Phase F).** Earlier runs against `next dev` showed 33–37 timeouts; root-cause confirmed as cold-compile timeouts, not regressions. Resolution: `NEXT_PUBLIC_E2E_BURNER=1 pnpm --filter web build` then `pnpm --filter web start` then run Playwright. See `IKA-PROGRESS.md` §F.1. |
 | 5 | Real devnet ALLOW path | `scripts/ika-roundtrip.ts --allow` | 1 run | **PENDING — Phase F** |
 | 6 | Real devnet DENY path | `scripts/ika-roundtrip.ts --deny` | 1 run | **PENDING — Phase F** |
 | 7 | 577-spec gate (existing) | `pnpm --filter web playwright test` | 577 specs | **GREEN as of pass 75** |

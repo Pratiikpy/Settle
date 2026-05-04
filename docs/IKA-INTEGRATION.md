@@ -201,7 +201,45 @@ SEPOLIA_RPC_URL=... pnpm tsx scripts/ika-roundtrip.ts --deny
 > the signature; you broadcast it on the target chain. If the policy fails, no
 > signature is ever produced and a deny receipt is sealed on Solana.
 
-## 7. What stays unchanged in this integration
+## 7. UI surfaces (Phase E)
+
+Five new pages and one dashboard panel ship the cross-chain flow:
+
+| Surface | Purpose |
+|---|---|
+| `/start/agent-crosschain` | Form-based init for a `CrosschainCard` PDA. v0.4 is bring-your-own-dWallet (BYO): user pastes a pre-DKG'd dWallet pubkey + signing key from Ika reference tooling. Submits `init_crosschain_card` via wallet adapter. |
+| `/cards/crosschain/[card_pubkey]` | Card detail. Status pill (ACTIVE/REVOKED), policy version, target chain, all caps, allowlist entries, revoke button (gated on connected authority). |
+| `/watch-crosschain` | Static demo. ALLOW + DENY scenarios side by side. 7-step flow narrative each. Trust-boundary footer unmissable. |
+| `/r/<request_id>` (chain-aware branch) | When `receipt_kind = 'crosschain_spend'`, renders chain-aware variant: target chain, CAIP-10 recipient, native amount + symbol (ETH/BTC/SOL), Etherscan/explorer link, or "no tx — signature was not produced" for DENY receipts. The 4-hash chain still binds. |
+| Dashboard `CrosschainCustodyPanel` | Hidden when no cards. Visible only when wallet has at least one crosschain card. |
+
+Every cross-chain UI surface carries:
+- IKA badge (top-right of card or page header)
+- Pre-alpha banner ("Ika is in pre-alpha on Solana devnet…")
+- Trust-boundary footer ("Settle does not custody your cross-chain assets…")
+
+## 8. Demo video script (90 seconds)
+
+Recommended takes for the submission demo:
+
+| Time | Action | Audio |
+|---|---|---|
+| 0–10s | `/watch-crosschain` page open. Camera on the headline + IKA badge. | "Settle's agent cards already enforce on-chain spend rules in USDC on Solana. Here's how we extended that to any chain Ika supports." |
+| 10–25s | Open `/start/agent-crosschain`. Connect Phantom. Fill the form: 0.005 ETH per call, 0.05 ETH daily, recipient on Sepolia, 24h expiry, BYO dWallet. | "One Settle card. One Solana policy. The dWallet is split between the user and Ika via 2PC-MPC." |
+| 25–45s | Click "Hire agent" → wallet signs → confirmation. Navigate to `/cards/crosschain/<pda>`. Show ACTIVE status, all fields populated. | "On chain. Settle's program owns the policy. Ika owns the signing primitive." |
+| 45–65s | **ALLOW path.** Trigger an in-cap spend through the agent harness or `scripts/ika-roundtrip.ts --allow`. Show: Solana program approves → Ika produces signature → Sepolia tx broadcasts → receipt at `/r/<id>` shows `Verified ✓` with Etherscan link. | "Policy passes. Ika signs. The Sepolia tx lands. Settle proves it." |
+| 65–80s | **DENY path.** Trigger a $200 over-cap spend. Show: Solana program denies → no MessageApproval PDA created → receipt at `/r/<id>` shows `Blocked ✓` with deny reason and "no tx — signature was not produced". | "Policy fails. No signature is ever produced. Same proof, opposite outcome." |
+| 80–90s | Cut back to `/watch-crosschain` ALLOW + DENY split panel. Camera on the trust-boundary footer. | "Solana defines the policy. Ika enforces custody. Settle shows the proof." |
+
+Submission claim language must match `docs/IKA-TEST-REPORT.md` §6. Use:
+> **Phases A through E shipped. 68 tests across the integration green (15 router + 12 receipt-kernel + 11 validation + 21 EIP-1559 + 9 UI). Live Ika devnet roundtrip verified via `scripts/ika-roundtrip.ts`.**
+
+If the live roundtrip is not verified at submission time, downgrade the claim to:
+> **Phases A through E shipped. 68 tests green at the unit/integration layer. The full Sepolia broadcast roundtrip awaits a live Ika gRPC + DKG flow; structural pipeline is verified end-to-end via the dry-run CLI (`scripts/ika-roundtrip.ts --dry-run`).**
+
+---
+
+## 9. What stays unchanged in this integration
 
 - The deployed `settle-agent-card` program (`HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD`).
 - All 14 existing on-chain instructions and their IDL.

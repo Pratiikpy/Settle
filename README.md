@@ -18,6 +18,7 @@ Settle is a payment app for the AI age — built on Solana. Send money to anyone
 - `/r/<request_id>` — public, shareable cryptographic receipt poster with auto-generated OG image
 - `/m/<handle>` — public merchant profile with trust badge (receipts × revenue × disputes)
 - `/leaderboard` — service usage leaderboard
+- `/watch-crosschain`, `/start/agent-crosschain` — Settle × Ika cross-chain custody demo + onboarding (sidetrack submission; see [`docs/IKA-INTEGRATION.md`](docs/IKA-INTEGRATION.md))
 
 ## Try it now (2 minutes, devnet)
 
@@ -29,6 +30,18 @@ You can prove every claim above without installing anything.
 4. **Verify a receipt without us** → grab any `receipt_hash` from `/r/<id>`, drop it into [`/verify`](https://settle.so/verify). The SDK function (`@settle/sdk` `verifyReceipt`) re-derives the hash chain in your browser — no Settle servers required.
 
 Running the full stack locally? Skip to [Run locally](#run-locally) below.
+
+---
+
+## Settle × Ika sidetrack (cross-chain custody)
+
+> **Solana defines the policy. Ika enforces custody and signing across chains. Settle shows proof of what was allowed, blocked, signed, and executed.**
+
+A sibling Anchor 1.0 program (`programs-ika/settle-dwallet-router`, deployed on devnet at [`FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK`](https://solscan.io/account/FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK?cluster=devnet)) extends Settle's policy gate to sign for assets on any chain Ika supports. Day-1 chain: Ethereum Sepolia.
+
+The full integration story, build/test instructions, devnet ids, and pre-alpha caveats live in [`docs/IKA-INTEGRATION.md`](docs/IKA-INTEGRATION.md). The plan + per-phase log: [`SIDETRACK-IKA-PLAN.md`](SIDETRACK-IKA-PLAN.md), [`IKA-PROGRESS.md`](IKA-PROGRESS.md). Test evidence + honesty rules: [`docs/IKA-TEST-REPORT.md`](docs/IKA-TEST-REPORT.md).
+
+68 cross-chain tests across the integration: 15 router policy-gate (Rust), 12 receipt-kernel (SDK), 11 API validation (SDK), 21 EIP-1559 / RLP (SDK), 9 UI Playwright. All green.
 
 ---
 

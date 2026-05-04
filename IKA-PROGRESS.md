@@ -388,6 +388,89 @@ Phase F's deliverable will include a focused re-run plan and, if needed, a basel
 
 ### E.6 Phase E status: CLOSED
 
+---
+
+## Phase F — Test verification, docs, demo script
+
+**Status:** CLOSED.
+
+### F.1 Full Playwright suite — 586/586 GREEN
+
+The earlier 60–96 minute runs against `next dev` produced 34–37 failures. Investigation showed these were 100% cold-compile timeouts: Playwright's per-test timeout (10–30s) is shorter than Next dev's first-hit compile time (often 30–60s) for some routes. Direct curl probes against the dev-server endpoints returned correct responses, just slowly.
+
+Resolution: rebuilt with `NEXT_PUBLIC_E2E_BURNER=1 pnpm --filter web build` (so the burner adapter ships in the production bundle) and ran Playwright against `pnpm --filter web start` instead of `pnpm --filter web dev`.
+
+```
+Running 586 tests using 4 workers
+586 passed (7.5m)
+```
+
+That's the original 577 baseline + 9 new Phase E cross-chain specs. **All green.** No regressions caused by Phase A–E changes. Hypothesis from §E.5 confirmed: 33+ earlier failures were testing-infrastructure cold-compile flakes, not code regressions.
+
+### F.2 Visual baseline regenerated
+
+The `/dashboard @ desktop` visual snapshot was regenerated to match the no-data burner-wallet state. Committed in Phase F. Future runs should compare against the same fresh-burner state.
+
+### F.3 README updated
+
+`README.md` gained:
+- One bullet under "Public surfaces" linking to `/watch-crosschain` and `/start/agent-crosschain`
+- A "Settle × Ika sidetrack" section (lightweight, per Codex guidance — does not rewrite the main pitch) pointing to `docs/IKA-INTEGRATION.md`, `SIDETRACK-IKA-PLAN.md`, `IKA-PROGRESS.md`, `docs/IKA-TEST-REPORT.md`, and the deployed program id on Solscan
+- Total cross-chain test count: 68 (15 router + 12 receipt-kernel + 11 validation + 21 EIP-1559 + 9 UI)
+
+### F.4 `docs/IKA-INTEGRATION.md` extended
+
+New §7 "UI surfaces (Phase E)" documents all 5 new pages + dashboard panel + the standard IKA-badge / pre-alpha-banner / trust-boundary-footer convention.
+
+New §8 "Demo video script (90 seconds)" provides the exact takes for the submission demo, with both ALLOW and DENY paths shown, and the §6 submission-claim language matching `docs/IKA-TEST-REPORT.md`'s honesty rules.
+
+### F.5 Live Ika roundtrip — explicit limitation
+
+The full Sepolia-broadcast `scripts/ika-roundtrip.ts --allow` flow against real Ika gRPC is NOT verified at submission time. Reasons:
+
+- Requires a pre-DKG'd dWallet on Ika devnet. Creating one needs the gRPC `SubmitTransaction(DKG)` flow which lives in v0.5 (BCS-encoded payloads + user-signed envelopes).
+- Ika reference e2e tools can produce a dWallet manually outside our codebase, but doing so during a submission window adds operational risk (gRPC service availability, devnet wipes).
+
+What IS verified end-to-end:
+- The structural pipeline (`scripts/ika-roundtrip.ts --dry-run`) computes the keccak digest, derives all 4 PDAs, and exits cleanly with deterministic output.
+- The on-chain policy gate (15 Rust tests) — every deny code, priority order, daily-cap reset, capability pinning.
+- The hash chain canonicalisation (12 SDK kernel tests) — context_hash binds chain identity, ALLOW vs DENY produce different reason hashes.
+- The API validation surface (11 SDK tests) and the EIP-1559 / RLP encoding (21 SDK tests).
+- The UI surfaces (9 Playwright specs) and the full 577-baseline suite + new Phase E suite (586/586 green).
+
+Submission claim language to use, per `IKA-TEST-REPORT.md` §6:
+
+> **UI end-to-end tested. Policy gate end-to-end tested on Solana devnet. Cross-chain execution dry-run verified (PDA derivation, digest computation, ix-data construction); the live Sepolia broadcast roundtrip requires a pre-DKG'd dWallet which is a v0.5 deliverable. The on-chain `request_crosschain_sign` ix and the off-chain `awaitSignature` polling are both real; the only stub is the gRPC-DKG dWallet creation step.**
+
+### F.6 Phase F status: CLOSED
+
+- ✅ Full Playwright 586/586 green on production server (7.5m)
+- ✅ Dashboard visual baseline regenerated
+- ✅ README updated with cross-chain section
+- ✅ `docs/IKA-INTEGRATION.md` extended with UI surfaces table + demo script
+- ✅ Submission-claim language locked in `docs/IKA-TEST-REPORT.md` §6
+- 🟡 Live Ika gRPC + Sepolia broadcast roundtrip NOT verified at submission time — explicit limitation documented in F.5; v0.5 deliverable
+
+---
+
+## Final tally — Settle × Ika sidetrack integration
+
+Phases A → F closed. Test coverage:
+
+| Layer | Count | Status |
+|---|---|---|
+| Rust on-chain (router policy gate) | 15 | GREEN |
+| SDK receipt-kernel `crosschain_spend` | 12 | GREEN |
+| SDK validation (sign+cards request) | 11 | GREEN |
+| SDK EIP-1559 / RLP encoding | 21 | GREEN |
+| Playwright UI cross-chain | 9 | GREEN |
+| Playwright full suite (incl. 577 baseline) | 586 | GREEN |
+| **Total cross-chain-specific** | **68** | **All green** |
+
+Devnet program: [`FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK`](https://solscan.io/account/FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK?cluster=devnet) — 224912 byte BPF artifact, real policy logic.
+Live Supabase: migration `0051_crosschain_receipts.sql` applied; 9 new columns + 2 new tables verified.
+Code: `programs-ika/`, `apps/web/lib/ika/`, `apps/web/app/api/crosschain/`, `apps/web/app/{cards,start,watch}/...crosschain*`, `packages/sdk/src/{eip1559,crosschain-validation,receipt-kernel-crosschain}.{ts,test.ts}`, `scripts/ika-roundtrip.ts`.
+
 - ✅ 5 new pages + 1 dashboard panel
 - ✅ 1 new API endpoint (`/api/crosschain/cards/[card_pubkey]`)
 - ✅ 9/9 new Playwright specs green (warm server)
