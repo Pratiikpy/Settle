@@ -170,6 +170,11 @@ jobs:
       # `anchor test` spins up solana-test-validator, deploys the program, and runs
       # all 24 mocha tests. Linux runners have SeCreateSymbolicLinkPrivilege
       # equivalent (no special config needed); on Windows local dev, see TESTING.md.
+      #
+      # `--provider.cluster localnet` overrides Anchor.toml's `cluster = "devnet"`
+      # default so the test deploys to the local solana-test-validator that
+      # `anchor test` spawns (which mints SOL freely). Without the override the
+      # CI runner's empty devnet wallet can't pay deploy rent.
       - name: Run anchor test (24 tests)
         working-directory: programs/settle-agent-card
-        run: anchor test --skip-build
+        run: anchor test --skip-build --provider.cluster localnet

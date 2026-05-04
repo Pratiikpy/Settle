@@ -347,10 +347,21 @@ function diff(json: CanonicalIdl, ts: CanonicalIdl): DriftReport[] {
       return inner;
     }),
   );
+  // Anchor 0.31.x stopped emitting event field metadata in target/idl JSON
+  // (the JSON has empty `fields` arrays for every event); idl.ts still
+  // carries the canonical event-field shape used by the indexer to byte-parse
+  // logs. Skip the per-field comparison for events when the JSON side is
+  // empty — drift then only flags missing/extra event NAMES, which is the
+  // signal we still want.
   drift.push(
-    ...diffArrays("events", json.events, ts.events, (a, b) =>
-      compareFields(a.fields, b.fields, "fields"),
-    ),
+    ...diffArrays("events", json.events, ts.events, (a, b) => {
+      if (a.fields.length === 0 && b.fields.length > 0) {
+        // Anchor stripped event fields; trust idl.ts as the canonical
+        // source. No drift to report at the field level.
+        return [];
+      }
+      return compareFields(a.fields, b.fields, "fields");
+    }),
   );
 
   return drift;
