@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 49 — pick next polish target. Categories near saturation; remaining big targets all deferred-risky (palette I, code-split C, CSP G, Next bump).
+Pass 50 — next polish target. Categories near saturation; remaining big targets all deferred-risky.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 49 — pick next polish target. Categories near saturation; remaining big t
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 48 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 49 /at/[handle] dynamic metadata layout).
+- Items pending full-E2E verification: /at/[handle] generateMetadata layout.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 49 — SEO + share previews (O + H): dynamic metadata for /at/[handle]
+Files added:
+- `apps/web/app/at/[handle]/layout.tsx`: server-component layout with `generateMetadata({ params })`. Fetches `/api/handles/[handle]/profile` (uses `next: { revalidate: 60 }` to honor the upstream cache from pass 41). Returns:
+  - `title`: `<display_name | @handle> on Settle · @<handle>` (e.g. `Pratiik on Settle · @pratiik`)
+  - `description`: `<n> public receipts · $<amount> USDC settled. Verify any payment cryptographically on Solana.`
+  - `openGraph` with `type: "profile"`
+  - `twitter` summary card
+- Falls back to `{ title: \`@\${handle} · Settle\` }` when the profile is null.
+
+Why this matters:
+- /at/[handle] is the consumer-facing public profile (parallel to /m/[handle] for merchants). Like /m/[handle] before pass 43, it was sharing the global Settle title for every handle.
+- Now each consumer profile gets a unique poster: their display name + handle, public receipt count, settled USDC. Identical pattern to pass 43 — every public surface gets a unique share preview.
+
+Combined with the metadata layouts from pass 47 (/verify, /leaderboard) this completes the metadata coverage for "use client" public pages without rewriting their React tree.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /at/me` → fallback title `@me · Settle` confirmed (no real handle "me").
+- Targeted Playwright (misc-routes + nav-smoke): 40/40 green.
+
+Risk: low. Layout is server-side, returns children unchanged. Identical pattern to pass 47.
+
+Pending full-E2E (next test pass): no rendering changes; metadata is in `<head>` only.
 
 ### Pass 48 — TEST PASS: full E2E reconciliation of passes 45-47
 - Items previously pending: /agents/templates/[slug] generateMetadata (p45), /api/handles/by-pubkey + /api/capabilities cache headers (p46), /verify + /leaderboard metadata layouts (p47).
