@@ -3,7 +3,7 @@
 //
 // We hand-build ix data via `@settle/sdk`'s Borsh writer so the sign flow
 // doesn't depend on the auto-generated IDL (which is deferred while the
-// flat workspace layout is in place — see SIDETRACK-IKA-PLAN.md §B.5).
+// flat workspace layout is in place; see `docs/IKA-INTEGRATION.md`).
 //
 // Anchor ix data layout: `[8-byte sighash discriminator][borsh-encoded args]`.
 // Discriminator = `sha256("global:" + ix_name)[0..8]`.

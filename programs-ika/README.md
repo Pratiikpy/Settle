@@ -58,5 +58,4 @@ programs-ika/
 - It does not unify daily-cap accounting with the USDC card. Each card has its
   own cap. The product UI declares this honestly.
 
-See the parent repo's `SIDETRACK-IKA-PLAN.md` for the full plan and `docs/IKA-INTEGRATION.md`
-for the user-facing integration story.
+See [`docs/IKA-INTEGRATION.md`](../docs/IKA-INTEGRATION.md) for the full user-facing integration story.

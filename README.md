@@ -39,7 +39,7 @@ Running the full stack locally? Skip to [Run locally](#run-locally) below.
 
 A sibling Anchor 1.0 program (`programs-ika/settle-dwallet-router`, deployed on devnet at [`FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK`](https://solscan.io/account/FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK?cluster=devnet)) extends Settle's policy gate to sign for assets on any chain Ika supports. Day-1 chain: Ethereum Sepolia.
 
-The full integration story, build/test instructions, devnet ids, and pre-alpha caveats live in [`docs/IKA-INTEGRATION.md`](docs/IKA-INTEGRATION.md). The plan + per-phase log: [`SIDETRACK-IKA-PLAN.md`](SIDETRACK-IKA-PLAN.md), [`IKA-PROGRESS.md`](IKA-PROGRESS.md). Test evidence + honesty rules: [`docs/IKA-TEST-REPORT.md`](docs/IKA-TEST-REPORT.md).
+The full integration story, build/test instructions, devnet ids, and pre-alpha caveats live in [`docs/IKA-INTEGRATION.md`](docs/IKA-INTEGRATION.md). Test evidence + honesty rules: [`docs/IKA-TEST-REPORT.md`](docs/IKA-TEST-REPORT.md).
 
 68 cross-chain tests across the integration: 15 router policy-gate (Rust), 12 receipt-kernel (SDK), 11 API validation (SDK), 21 EIP-1559 / RLP (SDK), 9 UI Playwright. All green.
 

@@ -24,6 +24,19 @@ programs/settle-agent-card/target/idl/*
 .env.*.local
 !.env.example
 
+# Local dev secrets — keypairs, MCP config, anything starting with .test-
+.test-*.json
+.mcp.json
+
+# Local-only planning + per-phase logs (kept out of the public repo).
+# These document private engineering process; the public-facing artifacts
+# live in README.md, docs/IKA-INTEGRATION.md, and docs/IKA-TEST-REPORT.md.
+polish.md
+PROJECT_STATUS.md
+codex_strategry.md
+IKA-PROGRESS.md
+SIDETRACK-IKA-PLAN.md
+
 # coverage
 coverage/
 *.lcov

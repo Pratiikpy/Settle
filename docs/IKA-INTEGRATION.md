@@ -4,8 +4,7 @@
 > Settle shows proof of what was allowed, blocked, signed, and executed.
 
 This document is the user-facing technical story for Settle's submission to
-the Encrypt and Ika sidetrack. Plan and decision log live in
-[`SIDETRACK-IKA-PLAN.md`](../SIDETRACK-IKA-PLAN.md). Test evidence lives in
+the Encrypt and Ika sidetrack. Test evidence lives in
 [`IKA-TEST-REPORT.md`](./IKA-TEST-REPORT.md).
 
 ---

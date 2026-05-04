@@ -178,7 +178,7 @@ const HttpContextShape = {
 // Distinct from CardContextShape because the on-chain primitive is the
 // `settle-dwallet-router::CrosschainCard`, NOT `settle-agent-card::AgentCard`.
 // Caps are denominated in chain-native minor units (wei, sat, lamport) — not
-// USDC base units. See SIDETRACK-IKA-PLAN.md v2 §2.2.
+// USDC base units. See `docs/IKA-INTEGRATION.md` for the full design.
 const CrosschainCardContextShape = {
   /** CrosschainCard PDA pubkey (Solana base58). */
   card_pubkey: Pubkey,
