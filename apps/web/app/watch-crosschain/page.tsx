@@ -89,12 +89,8 @@ export default function WatchCrosschainPage() {
 
         <section
           data-testid="wcc-scenarios"
-          style={{
-            marginTop: 32,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))",
-            gap: 18,
-          }}
+          className="grid grid-cols-1 md:grid-cols-2"
+          style={{ marginTop: 32, gap: 18 }}
         >
           <Scenario
             testId="wcc-allow"

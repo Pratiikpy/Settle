@@ -60,7 +60,6 @@ const METHODS: Array<{ id: Method; label: string }> = [
   { id: "link", label: "Link" },
   { id: "qr", label: "QR" },
   { id: "screenshot", label: "Screenshot" },
-  { id: "voice", label: "Voice" },
 ];
 
 interface RecentRecipient {
@@ -248,7 +247,7 @@ export default function SendPage() {
       return;
     }
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to send.");
+      toast.error("Connect a wallet to send.");
       return;
     }
     if (!isUsdc && cluster === "devnet") {
@@ -383,7 +382,7 @@ export default function SendPage() {
             }}
           >
             @handle, wallet pubkey, payment link, QR code, or a screenshot.
-            Voice on the way. Every send produces a sealed receipt.
+            Every send produces a sealed receipt.
           </p>
         </div>
 
@@ -397,7 +396,7 @@ export default function SendPage() {
           className="w6-send-grid"
         >
           {/* COMPOSER */}
-          <div className="w6-card" style={{ padding: 28 }}>
+          <div className="w6-card w6-send-form" style={{ padding: 28 }}>
             {/* Method picker */}
             <div className="w6-eyebrow" style={{ marginBottom: 10 }}>
               How are you sending?
@@ -575,7 +574,7 @@ export default function SendPage() {
                 : !isUsdc && cluster === "devnet"
                   ? "Pick USDC — swap is mainnet only"
                   : stage === "signing"
-                    ? "Signing in Phantom…"
+                    ? "Signing in wallet…"
                     : stage === "confirming"
                       ? "Confirming on Solana…"
                       : stage === "success"
@@ -590,8 +589,10 @@ export default function SendPage() {
                 marginTop: 10,
               }}
             >
-              Solana fee ≈ 0.000005 SOL · receivable: {amount || "0"}{" "}
-              {isUsdc ? "USDC" : `≈ $${quotedUsdc ?? "—"} USDC`}
+              Solana fee ≈ 0.000005 SOL
+              {amount && parseFloat(amount) > 0
+                ? ` · receivable: ${amount} ${isUsdc ? "USDC" : `≈ $${quotedUsdc ?? "—"} USDC`}`
+                : null}
             </div>
           </div>
 
@@ -825,6 +826,7 @@ export default function SendPage() {
           }
           @media (max-width: 480px) {
             .w6-send-extras { grid-template-columns: 1fr !important; }
+            .w6-send-form { padding-bottom: 96px !important; }
           }
         `}</style>
       </div>

@@ -62,7 +62,7 @@ export default function SettingsPage() {
 
   async function handleClaim() {
     if (!connected || !publicKey || !signMessage) {
-      toast.error("Connect Phantom first.");
+      toast.error("Connect a wallet first.");
       return;
     }
     if (!handleInput.trim()) {
@@ -155,7 +155,7 @@ export default function SettingsPage() {
 
         {!connected ? (
           <div className="mt-12 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-10 text-center text-sm text-[#52525b]">
-            Connect Phantom (top right) to manage your settings.
+            Connect a wallet to manage your settings.
           </div>
         ) : (
           <>
@@ -299,7 +299,7 @@ export default function SettingsPage() {
               <button
                 onClick={async () => {
                   if (!publicKey || !signMessage) {
-                    toast.error("Connect Phantom first.");
+                    toast.error("Connect a wallet first.");
                     return;
                   }
                   if (

@@ -23,7 +23,7 @@ export default function SendViaLinkPage() {
 
   async function handleCreate() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to send.");
+      toast.error("Connect a wallet to send.");
       return;
     }
     if (!amount) {
@@ -140,7 +140,7 @@ export default function SendViaLinkPage() {
               className="w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
             >
               {!connected
-                ? "Connect Phantom to send"
+                ? "Connect a wallet to send"
                 : gesture === "signing"
                   ? "Signing escrow…"
                   : gesture === "confirming"

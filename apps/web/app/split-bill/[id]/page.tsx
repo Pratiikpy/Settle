@@ -230,7 +230,7 @@ export default function SplitBillPage() {
               className="mt-5 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
             >
               {!connected
-                ? "Connect Phantom to pay"
+                ? "Connect a wallet to pay"
                 : alreadyPaid
                   ? "You've already paid ✓"
                   : busy

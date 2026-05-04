@@ -19,7 +19,7 @@ export function TemplateHireButton({ slug }: { slug: string }) {
 
   async function handleHire() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to hire.");
+      toast.error("Connect a wallet to hire.");
       return;
     }
 
@@ -77,7 +77,7 @@ export function TemplateHireButton({ slug }: { slug: string }) {
         className="w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
       >
         {!connected
-          ? "Connect Phantom to hire"
+          ? "Connect a wallet to hire"
           : gesture === "signing"
             ? "Signing mandate…"
             : gesture === "confirming"

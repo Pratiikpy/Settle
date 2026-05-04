@@ -26,7 +26,7 @@ export default function NewTemplatePage() {
 
   async function handleSubmit() {
     if (!connected || !publicKey || !signMessage) {
-      toast.error("Connect Phantom to publish.");
+      toast.error("Connect a wallet to publish.");
       return;
     }
     if (!SLUG_RE.test(slug)) {
@@ -170,7 +170,7 @@ export default function NewTemplatePage() {
           disabled={!connected || submitting}
           className="mt-8 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
         >
-          {!connected ? "Connect Phantom to publish" : submitting ? "Signing & publishing…" : "Publish template"}
+          {!connected ? "Connect a wallet to publish" : submitting ? "Signing & publishing…" : "Publish template"}
         </button>
 
         <style jsx>{`

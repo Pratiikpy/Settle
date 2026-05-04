@@ -57,7 +57,7 @@ export function FollowButton({
 
   async function toggle() {
     if (!connected || !publicKey || !signMessage) {
-      toast.error("Connect Phantom to follow.");
+      toast.error("Connect a wallet to follow.");
       return;
     }
     if (busy) return;

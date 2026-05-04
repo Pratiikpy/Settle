@@ -24,7 +24,7 @@ export default function SplitBillCreatePage() {
 
   async function create() {
     if (!connected || !publicKey || !signMessage) {
-      toast.error("Connect Phantom first.");
+      toast.error("Connect a wallet first.");
       return;
     }
     const total = parseFloat(totalUsd);

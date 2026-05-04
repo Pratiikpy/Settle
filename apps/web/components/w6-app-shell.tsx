@@ -114,7 +114,7 @@ function DevnetBanner() {
         type="button"
         onClick={() => setDismissed(true)}
         className="w6-btn w6-btn-ghost"
-        style={{ height: 22, padding: "0 8px", fontSize: 11 }}
+        style={{ height: 28, padding: "0 8px", fontSize: 11 }}
       >
         Dismiss
       </button>

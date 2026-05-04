@@ -61,7 +61,7 @@ export default function PayLinkPage() {
 
   async function handlePay() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to pay.");
+      toast.error("Connect a wallet to pay.");
       return;
     }
     if (!preview) return;
@@ -200,7 +200,7 @@ export default function PayLinkPage() {
               className="mt-6 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
             >
               {!connected
-                ? "Connect Phantom to pay"
+                ? "Connect a wallet to pay"
                 : paying
                   ? gesture === "signing"
                     ? "Signing…"

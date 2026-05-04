@@ -95,7 +95,7 @@ export default function NewCardPage() {
 
   async function handleCreate() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to continue.");
+      toast.error("Connect a wallet to continue.");
       return;
     }
     if (parseFloat(perCallMax) > parseFloat(dailyCap)) {
@@ -224,7 +224,7 @@ export default function NewCardPage() {
               }}
             >
               {isDelegationFlow
-                ? "You're creating a new agent budget with the Settle relayer as its agent. Phase 5 automation can spend within the cap + allowlist below — and only that."
+                ? "You're creating a new agent budget with the Settle relayer as its agent. The automated agent can spend within the cap + allowlist below — and only that."
                 : t("cards.new_subtitle")}
             </p>
           </div>
@@ -446,7 +446,7 @@ export default function NewCardPage() {
               {!connected
                 ? "Connect a wallet to create"
                 : gesture === "signing"
-                  ? "Signing in Phantom…"
+                  ? "Signing in wallet…"
                   : gesture === "confirming"
                     ? "Creating on Solana…"
                     : "Create agent budget"}

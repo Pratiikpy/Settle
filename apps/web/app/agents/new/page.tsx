@@ -46,7 +46,7 @@ export default function AgentsPage() {
       return;
     }
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to continue.");
+      toast.error("Connect a wallet to continue.");
       return;
     }
 
@@ -221,7 +221,7 @@ export default function AgentsPage() {
             className="w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
           >
             {!connected
-              ? "Connect Phantom to hire"
+              ? "Connect a wallet to hire"
               : gesture === "signing"
                 ? "Signing mandate…"
                 : gesture === "confirming"

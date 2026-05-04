@@ -582,7 +582,7 @@ export default function ReceiptDetailPage() {
 
   async function handleStartRecording() {
     if (!connected || !publicKey) {
-      toast.error("Connect Phantom to attach a voice note.");
+      toast.error("Connect a wallet to attach a voice note.");
       return;
     }
     const recorder = new VoiceRecorder();
@@ -690,7 +690,7 @@ export default function ReceiptDetailPage() {
 
   async function handlePlay(attachmentId: string) {
     if (!publicKey || !signMessage) {
-      toast.error("Connect Phantom to play.");
+      toast.error("Connect a wallet to play.");
       return;
     }
     setPlayingId(attachmentId);
@@ -718,7 +718,7 @@ export default function ReceiptDetailPage() {
 
   async function handleRefund() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to refund.");
+      toast.error("Connect a wallet to refund.");
       return;
     }
     if (!refundEmoji) {
@@ -1139,7 +1139,7 @@ export default function ReceiptDetailPage() {
                   <span className="text-xs text-[#52525b]">
                     {connected
                       ? "Tap to record up to 10s. Encrypted before upload."
-                      : "Connect Phantom to record."}
+                      : "Connect a wallet to record."}
                   </span>
                 </div>
               )}

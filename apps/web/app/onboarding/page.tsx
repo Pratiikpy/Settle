@@ -16,7 +16,7 @@ import { getSolscanUrl } from "../../lib/solana";
  * /onboarding — Guided ≤60s flow for first-time users.
  *
  * Steps:
- *   1. Connect Phantom
+ *   1. Connect a wallet
  *   2. Sandbox airdrop (0.5 SOL + 25 test-USDC)
  *   3. Create your first AgentCard ("main")
  *   4. Done — redirect to the new card detail page
@@ -85,7 +85,7 @@ export default function OnboardingPage() {
 
   async function handleCreateCard() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom first.");
+      toast.error("Connect a wallet first.");
       return;
     }
     trustGesture();

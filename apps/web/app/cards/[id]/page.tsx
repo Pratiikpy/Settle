@@ -270,7 +270,7 @@ export default function CardDetailPage() {
 
   async function handleRevoke(kind: "card" | "pact" = "pact") {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to revoke.");
+      toast.error("Connect a wallet to revoke.");
       return;
     }
 
@@ -734,7 +734,7 @@ export default function CardDetailPage() {
       <TrustGesture
         state={gesture}
         {...(gesture === "signing"
-          ? { message: "Signing revoke in Phantom…" }
+          ? { message: "Signing revoke in wallet…" }
           : gesture === "confirming"
             ? { message: "Confirming on Solana…" }
             : gesture === "success"

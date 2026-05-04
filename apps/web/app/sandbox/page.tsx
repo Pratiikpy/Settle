@@ -54,7 +54,7 @@ export default function SandboxPage() {
       <div className="mt-8 rounded-2xl border border-[#e4e4e7] bg-white/[0.02] p-8">
         {!connected ? (
           <div className="text-sm text-[#52525b]">
-            Connect Phantom (top right) to start. We don&apos;t teach you to skip the wallet — but
+            Connect a wallet to start. We don&apos;t teach you to skip the wallet — but
             we&apos;ll airdrop devnet funds so you can play for free.
           </div>
         ) : !funded ? (

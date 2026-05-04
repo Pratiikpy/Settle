@@ -248,13 +248,6 @@ export default function GroupsPage() {
             Members request a spend; quorum signs; the cron fires.
           </p>
         </div>
-        <button
-          type="button"
-          className="w6-btn w6-btn-primary w6-btn-sm"
-          onClick={() => toast.info("New-group flow coming soon.")}
-        >
-          + New group
-        </button>
       </div>
 
       {!connected ? (

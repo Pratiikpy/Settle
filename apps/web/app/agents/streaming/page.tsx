@@ -103,7 +103,7 @@ export default function StreamingDashboard() {
 
   async function callPauseOrResume(pact: PactRow, action: "pause" | "resume") {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to control the stream.");
+      toast.error("Connect a wallet to control the stream.");
       return;
     }
     try {
@@ -190,7 +190,7 @@ export default function StreamingDashboard() {
 
       {!connected ? (
         <div className="mt-6 rounded-2xl border border-[#e4e4e7] bg-[#f4f4f5] p-6 text-sm text-[#52525b]">
-          Connect Phantom to see your active streaming rules.
+          Connect a wallet to see your active streaming rules.
         </div>
       ) : loading ? (
         <div className="mt-6 text-sm text-[#52525b]">Loading…</div>
@@ -250,7 +250,7 @@ function OpenStreamForm({
 
   async function submit() {
     if (!publicKey || !signTransaction) {
-      toast.error("Connect Phantom.");
+      toast.error("Connect a wallet.");
       return;
     }
     if (!parentCard) {

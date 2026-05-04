@@ -40,7 +40,7 @@ export default function ImportPage() {
 
   async function handleImport() {
     if (!connected || !publicKey) {
-      toast.error("Connect Phantom first.");
+      toast.error("Connect a wallet first.");
       return;
     }
     const sig = signature.trim();

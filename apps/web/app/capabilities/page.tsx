@@ -84,7 +84,7 @@ export default function CapabilitiesPage() {
 
   async function handleContribute() {
     if (!connected || !publicKey) {
-      toast.error("Connect Phantom first.");
+      toast.error("Connect a wallet first.");
       return;
     }
     if (!formHash || !formAlias) {

@@ -95,7 +95,7 @@ export default function PayWidgetPage() {
 
   async function handlePay() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom first.");
+      toast.error("Connect a wallet first.");
       return;
     }
     setStatus("signing");
@@ -201,7 +201,7 @@ export default function PayWidgetPage() {
 
         {!connected ? (
           <div className="mt-6 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4 text-center text-xs text-[#52525b]">
-            Connect Phantom (top right) to continue.
+            Connect a wallet to continue.
           </div>
         ) : status === "success" ? (
           <div className="mt-6 rounded-xl border border-emerald-400/30 bg-emerald-400/[0.05] p-4 text-center text-xs text-emerald-300">
@@ -215,7 +215,7 @@ export default function PayWidgetPage() {
             className="mt-6 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
           >
             {status === "signing"
-              ? "Sign in Phantom…"
+              ? "Sign in wallet…"
               : status === "confirming"
                 ? "Confirming on Solana…"
                 : `Pay $${amount}`}

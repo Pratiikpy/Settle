@@ -153,7 +153,7 @@ export default function CollabPayPage() {
             disabled={!connected || busy}
             className="mt-4 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
           >
-            {!connected ? "Connect Phantom to pay" : busy ? "Paying…" : "Pay both atomically"}
+            {!connected ? "Connect a wallet to pay" : busy ? "Paying…" : "Pay both atomically"}
           </button>
           <p className="mt-2 text-[10px] text-[#71717a]">
             One Solana tx, two TransferChecked ixs. All-or-nothing.

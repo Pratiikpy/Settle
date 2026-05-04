@@ -72,7 +72,7 @@ export function EscrowState(props: EscrowProps) {
 
   async function callAction(action: "release" | "dispute") {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom.");
+      toast.error("Connect a wallet.");
       return;
     }
     setBusy(action);

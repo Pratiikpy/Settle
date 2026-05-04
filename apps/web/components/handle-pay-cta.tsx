@@ -51,7 +51,7 @@ export function HandlePayCta({
 
   async function handlePay() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to send.");
+      toast.error("Connect a wallet to send.");
       return;
     }
     trustGesture(amount);
@@ -133,7 +133,7 @@ export function HandlePayCta({
         className="mt-4 w-full rounded-full bg-accent py-3 text-sm font-medium text-background transition disabled:opacity-50"
       >
         {!connected
-          ? "Connect Phantom to pay"
+          ? "Connect a wallet to pay"
           : paying
             ? gesture === "signing"
               ? "Signing…"

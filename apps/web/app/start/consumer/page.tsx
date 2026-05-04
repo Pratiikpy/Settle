@@ -33,7 +33,7 @@ export default function ConsumerOnboarding() {
           title: "Get a receipt you can verify forever",
           body: "Every send writes a 4-hash chain on Solana. Share the link or verify it later.",
           ctaText: "View receipts",
-          ctaHref: "/receipts",
+          ctaHref: "/ledger",
         },
       ]}
       whatNext={[

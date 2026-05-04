@@ -90,7 +90,7 @@ export function PauseOnBlur({
    */
   async function firePause(): Promise<boolean> {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to pause.");
+      toast.error("Connect a wallet to pause.");
       return false;
     }
     if (paused) return true; // already paused

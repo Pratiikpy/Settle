@@ -36,7 +36,7 @@ export default function RequestPage() {
 
   function handleGenerate() {
     if (!amount || !publicKey) {
-      toast.error("Connect Phantom + enter amount.");
+      toast.error("Connect a wallet — enter amount.");
       return;
     }
     const decimal = parseFloat(amount);
@@ -145,7 +145,7 @@ export default function RequestPage() {
           disabled={!connected}
           className="w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
         >
-          {!connected ? "Connect Phantom to generate" : "Generate"}
+          {!connected ? "Connect a wallet to generate" : "Generate"}
         </button>
       </form>
 

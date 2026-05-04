@@ -62,7 +62,7 @@ export default function CollabHubPage() {
 
   async function create() {
     if (!connected || !publicKey || !signMessage) {
-      toast.error("Connect Phantom first.");
+      toast.error("Connect a wallet first.");
       return;
     }
     if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(creatorB)) {
@@ -125,7 +125,7 @@ export default function CollabHubPage() {
 
         {!connected ? (
           <div className="mt-10 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-6 text-sm text-[#52525b]">
-            Connect Phantom to create a collab.
+            Connect a wallet to create a collab.
           </div>
         ) : (
           <section className="mt-8 rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5">

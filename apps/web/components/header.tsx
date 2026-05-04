@@ -54,6 +54,8 @@ const W6_REDESIGNED_PREFIXES = [
   "/embed",
   "/request",
   "/verify-build",
+  "/start",
+  "/watch",
 ];
 
 /**

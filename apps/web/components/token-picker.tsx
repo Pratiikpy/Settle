@@ -141,7 +141,7 @@ export function TokenPicker({
             <div className="max-h-72 overflow-y-auto">
               {!publicKey ? (
                 <div className="p-6 text-center text-xs text-[#52525b]">
-                  Connect Phantom to see your tokens.
+                  Connect a wallet to see your tokens.
                 </div>
               ) : loading ? (
                 <div className="p-6 text-center text-xs text-[#52525b]">

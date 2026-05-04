@@ -101,7 +101,7 @@ export default function ClaimPage() {
 
   async function handleClaim() {
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect Phantom to claim.");
+      toast.error("Connect a wallet to claim.");
       return;
     }
     if (!escrowKey) return;
@@ -169,7 +169,7 @@ export default function ClaimPage() {
         </h1>
         <p className="mt-2 text-sm text-[#52525b]">
           {previewAmount
-            ? "Connect Phantom to receive it. Settles in under a second."
+            ? "Connect a wallet to receive it. Settles in under a second."
             : "Someone sent you money via a Settle link. Connect your wallet to claim."}
         </p>
 
@@ -219,7 +219,7 @@ export default function ClaimPage() {
               className="mt-6 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
             >
               {!connected
-                ? "Connect Phantom to claim"
+                ? "Connect a wallet to claim"
                 : gesture === "signing"
                   ? "Signing claim…"
                   : gesture === "confirming"
