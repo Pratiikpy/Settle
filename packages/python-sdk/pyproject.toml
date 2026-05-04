@@ -27,7 +27,9 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://settle.so"
-Repository = "https://github.com/Pratiikpy/settle-protocol"
+Repository = "https://github.com/Pratiikpy/Settle"
+Issues = "https://github.com/Pratiikpy/Settle/issues"
+Documentation = "https://github.com/Pratiikpy/Settle/tree/main/packages/python-sdk#readme"
 
 [build-system]
 requires = ["setuptools>=68"]
