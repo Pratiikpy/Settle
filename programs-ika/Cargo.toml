@@ -1,0 +1,40 @@
+# Settle x Ika sidetrack workspace.
+#
+# Separate from `programs/` because this workspace is on Anchor 1.0 while the
+# main `settle-agent-card` program is on Anchor 0.31.1. The two cannot share a
+# Cargo workspace because they would resolve incompatible `anchor-lang` versions.
+#
+# This workspace is INTENTIONALLY isolated. Adding crates here MUST NOT cause
+# any change to the main `programs/` workspace or the deployed
+# `settle-agent-card` program.
+[workspace]
+resolver = "2"
+members = [
+    "settle-dwallet-router",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Settle"]
+license = "MIT"
+edition = "2021"
+publish = false
+
+[workspace.dependencies]
+# Anchor 1.0 — required by ika-dwallet-anchor.
+anchor-lang = "1"
+
+# Ika dWallet CPI SDK (Anchor 1.0).
+# Local path for iterative development — the cloned pre-alpha repo lives next
+# to the settle-protocol checkout under `resources/identity/ika-pre-alpha`.
+# Switch to a git ref (`{ git = "https://github.com/dwallet-labs/ika-pre-alpha" }`)
+# before any production deployment so the dependency is reproducible.
+ika-dwallet-anchor = { path = "../../resources/identity/ika-pre-alpha/chains/solana/program-sdk/anchor" }
+
+[workspace.lints.clippy]
+arithmetic_side_effects = "deny"
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

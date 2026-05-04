@@ -1,0 +1,7 @@
+target/
+.anchor/
+test-ledger/
+keys/*.json
+!keys/.gitkeep
+*.log
+Cargo.lock

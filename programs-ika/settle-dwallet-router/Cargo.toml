@@ -1,0 +1,29 @@
+[package]
+name = "settle-dwallet-router"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+anchor-lang = { workspace = true }
+ika-dwallet-anchor = { workspace = true }
+
+[features]
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+default = []
+
+[lints.clippy]
+arithmetic_side_effects = "deny"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = [
+    'cfg(target_os, values("solana"))',
+    'cfg(feature, values("custom-heap", "custom-panic", "anchor-debug", "no-log-ix-name"))',
+]
+
+[lib]
+crate-type = ["cdylib", "lib"]

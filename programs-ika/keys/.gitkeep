@@ -1,0 +1,10 @@
+# Program keypairs go here. Generated locally; not committed.
+#
+# Phase A bootstrap (run from this directory's parent, settle-protocol/):
+#
+#   solana-keygen new -o programs-ika/keys/dwallet_router-keypair.json --no-bip39-passphrase
+#   anchor keys sync   # picks up the new pubkey and patches declare_id! in lib.rs
+#
+# After deploy, the deployed program id should match the keypair pubkey:
+#
+#   solana address -k programs-ika/keys/dwallet_router-keypair.json

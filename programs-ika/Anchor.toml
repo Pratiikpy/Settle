@@ -1,0 +1,41 @@
+# Settle x Ika sidetrack Anchor project.
+#
+# This is a separate Anchor workspace from the main `programs/` workspace. Run
+# `anchor build`, `anchor test`, `anchor deploy` from this directory.
+
+[toolchain]
+anchor_version = "1.0.0"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+# Phase A: placeholder. Replace via `anchor keys sync` after generating
+# `keys/dwallet_router-keypair.json` (see keys/.gitkeep for steps).
+settle_dwallet_router = "D1WaLLetRouterProgRamID11111111111111111111"
+
+[programs.localnet]
+settle_dwallet_router = "D1WaLLetRouterProgRamID11111111111111111111"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "echo Phase B will wire integration tests here"
+
+[test]
+startup_wait = 5000
+shutdown_wait = 2000
+upgradeable = false
+
+[test.validator]
+url = "https://api.devnet.solana.com"
+
+# Clone the Ika dWallet program when running localnet so CPI calls resolve.
+[[test.validator.clone]]
+address = "87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY"
