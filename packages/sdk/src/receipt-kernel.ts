@@ -77,6 +77,12 @@ export const ReceiptKind = z.enum([
   "escrow_release", // delivery escrow released to merchant
   "escrow_dispute", // delivery escrow disputed → buyer refund
   "refund", // post-receipt refund (any kind of receipt)
+  // ── Cross-chain receipts (Settle x Ika sidetrack, phase C+) ──
+  // Issued by `request_crosschain_sign` on the `settle-dwallet-router`
+  // program. Both ALLOW and DENY paths produce a `crosschain_spend` receipt;
+  // the receipt records the policy outcome on Solana, plus optionally the
+  // cross-chain `target_tx_hash` once the user broadcasts on the target chain.
+  "crosschain_spend",
 ]);
 export type ReceiptKindT = z.infer<typeof ReceiptKind>;
 
@@ -88,6 +94,43 @@ const Pubkey = z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, "base58 pubkey"
 const Hex32 = z.string().regex(/^[0-9a-f]{64}$/, "32-byte lowercase hex (64 chars)");
 const Decimal = z.string().regex(/^\d+$/, "non-negative decimal string");
 const Uuid = z.string().uuid();
+
+// ── CAIP validators (used by crosschain_spend) ──
+//
+// CAIP-2 chain id: <namespace>:<reference>
+//   eip155:11155111 (Ethereum Sepolia)
+//   bip122:000000000019d6689c085ae165831e93 (Bitcoin)
+//   solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc6wjsTfRH7 (Solana mainnet-beta)
+const Caip2 = z
+  .string()
+  .regex(/^[-a-z0-9]{3,8}:[-a-zA-Z0-9_]{1,32}$/, "CAIP-2 chain id");
+// CAIP-10 account id: <chain>:<address>
+//   eip155:11155111:0x12345...
+const Caip10 = z
+  .string()
+  .regex(
+    /^[-a-z0-9]{3,8}:[-a-zA-Z0-9_]{1,32}:[-A-Za-z0-9_:.]{1,128}$/,
+    "CAIP-10 account id",
+  );
+// Asset id: either a CAIP-19 string OR the literal "native".
+//   eip155:11155111/erc20:0xabc...
+//   solana:.../slip44:501
+const AssetId = z.union([
+  z.literal("native"),
+  z
+    .string()
+    .regex(
+      /^[-a-z0-9]{3,8}:[-a-zA-Z0-9_]{1,32}\/[-a-z0-9]{3,16}:[-A-Za-z0-9_:.]{1,128}$/,
+      "CAIP-19 asset id or 'native'",
+    ),
+]);
+// Chain-native minor units. u128 max is ~3.4e38 — for ETH wei (max ~10^96
+// theoretical, practical ~10^28 for circulating supply scales) and BTC sats
+// (~2.1e15) we just enforce non-negative integer string with no upper bound.
+// Decimal already does this, but we re-export for crosschain readability.
+const MinorAmount = z.string().regex(/^\d+$/, "non-negative integer minor units");
+// Decimals for the chain-native unit (18 ETH, 8 BTC, 9 SOL).
+const Decimals = z.number().int().min(0).max(36);
 const HttpMethod = z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]);
 const HttpPath = z
   .string()
@@ -129,6 +172,30 @@ const CardContextShape = {
 const HttpContextShape = {
   http_method: HttpMethod,
   http_path: HttpPath,
+} as const;
+
+// Cross-chain card context — kinds bound to a CrosschainCard supply this.
+// Distinct from CardContextShape because the on-chain primitive is the
+// `settle-dwallet-router::CrosschainCard`, NOT `settle-agent-card::AgentCard`.
+// Caps are denominated in chain-native minor units (wei, sat, lamport) — not
+// USDC base units. See SIDETRACK-IKA-PLAN.md v2 §2.2.
+const CrosschainCardContextShape = {
+  /** CrosschainCard PDA pubkey (Solana base58). */
+  card_pubkey: Pubkey,
+  /** Cross-chain card policy version; bumped on revoke + on policy mutations. */
+  policy_version: z.number().int().nonnegative(),
+  /** Daily cap in chain-native minor units. */
+  daily_cap_minor: MinorAmount,
+  /** Per-call cap in chain-native minor units. */
+  per_call_max_minor: MinorAmount,
+  /** Used in the current cap window in chain-native minor units. */
+  used_today_minor: MinorAmount,
+  /** Number of allowlist entries (0..8). */
+  allowlist_count: z.number().int().min(0).max(8),
+  /** Solana slot at/after which sign requests fail Expired. 0 = no expiry. */
+  expiry_slot: z.number().int().nonnegative(),
+  /** Card revoked? */
+  revoked: z.boolean(),
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -195,6 +262,48 @@ export const ReceiptInputSchema = z.discriminatedUnion("kind", [
     /** Reason text shown to the merchant. Pre-canonicalized: trim + NFC. */
     refund_reason: z.string().min(1).max(2048),
   }),
+
+  // Cross-chain spend — Settle policy on Solana approves (or denies) a
+  // signature request that the Ika network produces against a non-Solana
+  // chain. The receipt records the policy outcome on Solana; once the user
+  // broadcasts the resulting tx on the target chain, `target_tx_hash` is
+  // filled in via `record_signed_outcome`. ALLOW receipts have a tx hash
+  // after `record_signed_outcome`; DENY receipts never do (no signature
+  // was produced).
+  z.object({
+    kind: z.literal("crosschain_spend"),
+    ...BaseInputShape,
+    ...CrosschainCardContextShape,
+    /**
+     * Capability pin hash. Either the value pinned by the matching allowlist
+     * entry, or `0`*64 when the entry was unpinned. Bound into the receipt
+     * hash so the entry-vs-request capability decision is provable.
+     */
+    capability_hash: Hex32,
+    /** The on-chain CAIP-2 chain id the signature targets. */
+    target_chain: Caip2,
+    /** CAIP-10 account id of the destination on the target chain. */
+    target_recipient: Caip10,
+    /** Asset transferred. CAIP-19 string or "native". */
+    target_asset: AssetId,
+    /** Amount in chain-native minor units (wei, sat, lamport). */
+    amount_minor: MinorAmount,
+    /** Decimal places for the chain-native unit (18 ETH, 8 BTC, 9 SOL). */
+    amount_decimals: Decimals,
+    /**
+     * Ika dWallet account pubkey (Solana base58). Convention: callers also
+     * set `recipient = dwallet_pubkey` so the BaseInputShape Solana-side
+     * recipient field is meaningful.
+     */
+    dwallet_pubkey: Pubkey,
+    /** Ika DWalletSignatureScheme u16 (0=EcdsaKeccak256, 5=EddsaSha512, etc.). */
+    signature_scheme: z.number().int().min(0).max(6),
+    /**
+     * Cross-chain tx hash, lowercase hex without 0x prefix. Null until the
+     * `record_signed_outcome` ix lands; always null for DENY receipts.
+     */
+    target_tx_hash: z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+  }),
 ]);
 export type ReceiptInput = z.infer<typeof ReceiptInputSchema>;
 
@@ -219,6 +328,9 @@ function buildCanonicalReceipt(input: ReceiptInput, purposeTextHashHex: string):
     "capability_hash" in input ? input.capability_hash : ZERO_HASH_HEX;
   const policy_version = "policy_version" in input ? input.policy_version : 0;
 
+  // crosschain_spend: amount_lamports is "0" by convention (no Solana value
+  // moved); the hash chain still binds it to lock the canonical shape.
+
   const receipt: CanonicalReceipt = {
     request_id: input.request_id,
     card_pubkey,
@@ -234,6 +346,35 @@ function buildCanonicalReceipt(input: ReceiptInput, purposeTextHashHex: string):
 }
 
 function buildCanonicalReason(input: ReceiptInput): CanonicalReason {
+  // crosschain_spend: distinct from settle-agent-card kinds because per_call_max
+  // is denominated in chain-native minor units. Surface those values verbatim.
+  if (input.kind === "crosschain_spend") {
+    const used = BigInt(input.used_today_minor);
+    const cap = BigInt(input.daily_cap_minor);
+    const amt = BigInt(input.amount_minor);
+    // cap_remaining_after only meaningful on ALLOW; on DENY we still report
+    // the unchanged remaining as it would have been if the deny didn't fire.
+    const remainingAfter =
+      input.decision === "ALLOW" ? cap - (used + amt) : cap - used;
+    return {
+      decision: input.decision,
+      deny_code: input.deny_code,
+      cap_remaining_after: remainingAfter < 0n ? "0" : remainingAfter.toString(),
+      per_call_max: input.per_call_max_minor,
+      // For crosschain, "allowlist_match=true" means the request matched a
+      // CrosschainAllowlistEntry. The router only emits an ALLOW when this
+      // is true; a DENY with deny_code=3 (OffAllowlist) sets it false.
+      allowlist_match: input.deny_code !== 3,
+      // capability_pinned: did the request carry the matching capability_hash?
+      // We can't tell from inputs alone (the router returned ALLOW or
+      // CapabilityNotPinned), so derive from deny_code.
+      capability_pinned: input.deny_code !== 7,
+      merchant_verified: false,
+      expiry_slot: input.expiry_slot,
+      current_slot: input.decision_slot,
+    };
+  }
+
   // For non-card-bound kinds (direct_send, link_send, refund), the reason is
   // a "trivial allow" — user signed, no policy applies. allowlist_match=true
   // and capability_pinned=false reflects "the user authorized the recipient
@@ -254,6 +395,20 @@ function buildCanonicalReason(input: ReceiptInput): CanonicalReason {
 }
 
 function buildCanonicalPolicySnapshot(input: ReceiptInput): CanonicalPolicySnapshot {
+  if (input.kind === "crosschain_spend") {
+    // Same canonical shape as settle-agent-card kinds — but the cap fields
+    // carry chain-native minor units rather than USDC lamports. The hash
+    // chain still binds them; renderers that read minor amounts must consult
+    // `target_chain` + `amount_decimals` from the receipt input.
+    return {
+      policy_version: input.policy_version,
+      daily_cap: input.daily_cap_minor,
+      per_call_max: input.per_call_max_minor,
+      allowlist_count: input.allowlist_count,
+      expiry_slot: input.expiry_slot,
+      revoked: input.revoked,
+    };
+  }
   if ("card_pubkey" in input) {
     return {
       policy_version: input.policy_version,
@@ -338,18 +493,27 @@ export function kernelCommit(rawInput: unknown): KernelCommitResult {
     }),
   );
 
+  // Build the kind-aware context payload. For crosschain_spend, bind the
+  // cross-chain identity fields so two receipts differing only in
+  // `target_chain` or `target_recipient` produce distinct context_hashes.
+  const contextPayload: Record<string, unknown> = {
+    kind: input.kind,
+    sender: input.sender,
+    recipient: input.recipient,
+    amount_lamports: input.amount_lamports,
+    request_id: input.request_id,
+  };
+  if (input.kind === "crosschain_spend") {
+    contextPayload.target_chain = input.target_chain;
+    contextPayload.target_recipient = input.target_recipient;
+    contextPayload.target_asset = input.target_asset;
+    contextPayload.amount_minor = input.amount_minor;
+    contextPayload.amount_decimals = input.amount_decimals;
+    contextPayload.dwallet_pubkey = input.dwallet_pubkey;
+    contextPayload.signature_scheme = input.signature_scheme;
+  }
   const context_hash = bytesToHex(
-    blake3(
-      new TextEncoder().encode(
-        stableStringify({
-          kind: input.kind,
-          sender: input.sender,
-          recipient: input.recipient,
-          amount_lamports: input.amount_lamports,
-          request_id: input.request_id,
-        }),
-      ),
-    ),
+    blake3(new TextEncoder().encode(stableStringify(contextPayload))),
   );
 
   return {
@@ -390,6 +554,7 @@ const KIND_TAG: Record<ReceiptKindT, number> = {
   escrow_release: 5,
   escrow_dispute: 6,
   refund: 7,
+  crosschain_spend: 8,
 };
 const KIND_BY_TAG = Object.fromEntries(
   Object.entries(KIND_TAG).map(([k, v]) => [v, k as ReceiptKindT]),

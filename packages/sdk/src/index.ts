@@ -13,6 +13,8 @@ export * from "./locale.js";
 export * from "./graphql-client.js";
 export * from "./intent-parse.js";
 export * from "./preflight-status.js";
+// Settle x Ika sidetrack — request validators for /api/crosschain/* routes.
+export * from "./crosschain-validation.js";
 // AU-01-003 — byte-level Anchor ix-data builder is now part of the SDK
 // (previously lived only in apps/web/lib/borsh.ts). External SDK consumers
 // can build Anchor ix data via `buildIxData("create_card", w => …)`

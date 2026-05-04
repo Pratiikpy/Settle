@@ -30,7 +30,7 @@ export async function GET(
   const { data, error } = await supabase
     .from("receipts")
     .select(
-      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, capability_hash, purpose_text_hash, purpose_hash, receipt_hash, reason_hash, policy_snapshot_hash, target_method, target_path, sig_solscan, decision_slot, policy_version, public_feed, created_at, request_initiated_at, upstream_called_at, upstream_returned_at, compressed_sig, compressed_addr, receipt_kind, context_hash",
+      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, capability_hash, purpose_text_hash, purpose_hash, receipt_hash, reason_hash, policy_snapshot_hash, target_method, target_path, sig_solscan, decision_slot, policy_version, public_feed, created_at, request_initiated_at, upstream_called_at, upstream_returned_at, compressed_sig, compressed_addr, receipt_kind, context_hash, target_chain, target_recipient, target_asset, amount_minor, amount_decimals, dwallet_pubkey, signature_scheme, target_tx_hash, explorer_url",
     )
     .eq("request_id", requestId)
     .maybeSingle();
@@ -227,6 +227,27 @@ export async function GET(
       // pre-kernel rows; new rows always populate it.
       receipt_kind: (data.receipt_kind as string | null) ?? "x402_spend",
       context_hash: strip(data.context_hash),
+      // ── Cross-chain fields (Settle x Ika sidetrack) ──
+      // Only meaningful when receipt_kind = 'crosschain_spend'. Renderers MUST
+      // branch on receipt_kind before reading these. Returned as a nested
+      // object so existing kinds' clients can ignore it cleanly.
+      crosschain:
+        data.receipt_kind === "crosschain_spend"
+          ? {
+              target_chain: (data.target_chain as string | null) ?? null,
+              target_recipient: (data.target_recipient as string | null) ?? null,
+              target_asset: (data.target_asset as string | null) ?? null,
+              amount_minor:
+                data.amount_minor === null || data.amount_minor === undefined
+                  ? null
+                  : String(data.amount_minor),
+              amount_decimals: (data.amount_decimals as number | null) ?? null,
+              dwallet_pubkey: (data.dwallet_pubkey as string | null) ?? null,
+              signature_scheme: (data.signature_scheme as number | null) ?? null,
+              target_tx_hash: (data.target_tx_hash as string | null) ?? null,
+              explorer_url: (data.explorer_url as string | null) ?? null,
+            }
+          : null,
     },
     pact,
   }, {

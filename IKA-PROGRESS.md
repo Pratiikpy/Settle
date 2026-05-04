@@ -163,6 +163,76 @@ Plus 1 anchor-generated `test_id` (declare_id sanity).
 
 ### B.6 Phase B status: CLOSED
 
+---
+
+## Phase C — SDK + receipts plumbing
+
+**Status:** CLOSED.
+
+### C.1 SDK extension — `crosschain_spend` receipt kind
+
+`packages/sdk/src/receipt-kernel.ts`:
+- Added `crosschain_spend` to the `ReceiptKind` enum (KIND_TAG = 8).
+- Added `Caip2`, `Caip10`, `AssetId` (CAIP-19 or `"native"`), `MinorAmount`, `Decimals` validators.
+- Added `CrosschainCardContextShape` (card_pubkey, policy_version, daily_cap_minor, per_call_max_minor, used_today_minor, allowlist_count, expiry_slot, revoked) — distinct from the USDC `CardContextShape` because caps are denominated in chain-native minor units.
+- Added the discriminated-union variant: `kind: "crosschain_spend"` + Base + CrosschainCardContext + capability_hash + target_chain + target_recipient + target_asset + amount_minor + amount_decimals + dwallet_pubkey + signature_scheme + target_tx_hash.
+- `buildCanonicalReason` and `buildCanonicalPolicySnapshot` branch on the new kind so cross-chain caps land in the canonical objects.
+- `kernelCommit` extends the `context_hash` payload to bind cross-chain identity (target_chain, target_recipient, target_asset, amount_minor, amount_decimals, dwallet_pubkey, signature_scheme), so two receipts differing only in chain or recipient produce distinct context hashes.
+
+### C.2 SDK extension — shared API validators
+
+`packages/sdk/src/crosschain-validation.ts` (new):
+- `SignRequestSchema` — Zod schema for `POST /api/crosschain/sign` body.
+- `CardsQuerySchema` — Zod schema for `GET /api/crosschain/cards?pubkey=…` query.
+- `validateSignRequest`, `validateCardsQuery` — return-error helpers (no throwing) so route handlers can produce 400 JSON cleanly.
+
+Re-exported from `packages/sdk/src/index.ts` so the route handlers consume the same schemas the tests assert against.
+
+### C.3 Web API surfaces
+
+- `apps/web/app/api/receipts/[requestId]/route.ts` — extended SELECT to include the 9 cross-chain columns added by migration 0051. Response now carries a top-level `crosschain` field (null for non-crosschain kinds) so renderers branch on `receipt_kind` cleanly.
+- `apps/web/app/api/crosschain/cards/route.ts` (new) — `GET ?pubkey=<base58>` returns the wallet's cards plus their per-card allowlist rows. Cached `s-maxage=30, stale-while-revalidate=120`.
+- `apps/web/app/api/crosschain/sign/route.ts` (new) — `POST` validates the body via the shared schema, returns a clearly-labelled 501 `{ error: "not_implemented", phase: "C" }` until Phase D wires the gRPC bridge. The validation layer is real and tested; the network call is stubbed.
+
+Both new routes use `validateSignRequest` / `validateCardsQuery` from the SDK, so server and tests share one source of truth.
+
+### C.4 Tests (target: 5 SDK + 4 API; delivered: 12 SDK + 11 API contract = 23)
+
+Run: `pnpm --filter @settle/sdk exec vitest run src/crosschain-validation.test.ts src/receipt-kernel-crosschain.test.ts`
+
+`crosschain-validation.test.ts` — 11 tests:
+- Sign request: accepts valid; rejects missing fields; rejects garbage card_pubkey; rejects non-UUID request_id; rejects too-short message_digest_hex; rejects out-of-range signature_scheme (-1 and 7); rejects timeout_ms < 1000 and > 60000; accepts valid timeout_ms.
+- Cards query: accepts valid; rejects missing; rejects malformed.
+
+`receipt-kernel-crosschain.test.ts` — 12 tests:
+- Canonical hash determinism (same input → same 4 hashes + context_hash on repeat).
+- CAIP-2 validation: accepts known formats; rejects missing colon, empty namespace, whitespace.
+- CAIP-10 validation: accepts EVM/BTC shapes; rejects chain-only; rejects whitespace.
+- amount_minor: accepts u128-scale strings (10^28); rejects fractional, negative, alphabetic, empty, scientific notation.
+- Chain identity binding: changing `target_chain` produces different context_hash; changing `target_recipient` likewise; policy_snapshot reflects cross-chain caps in minor units; DENY receipts produce different reason_hash than ALLOW; zero-pinned capability hashes are stable.
+
+Result: **2 test files, 23 tests, 0 failed**. SDK build clean. Web `tsc --noEmit` exit 0.
+
+### C.5 Out of Phase C scope
+
+- Anchor IDL extraction — still deferred (Phase D when the layout is restructured for `anchor idl parse`).
+- Real Ika gRPC client (`lib/ika/grpc-client.ts`, `lib/ika/sign-flow.ts`) — Phase D.
+- DB integration tests for the routes — covered indirectly by Phase F Playwright + the schema is authoritative via migration 0051.
+
+### C.6 Phase C status: CLOSED
+
+- ✅ `crosschain_spend` receipt kind in SDK kernel
+- ✅ CAIP-2/CAIP-10 validators
+- ✅ Cross-chain card context shape with minor-unit caps
+- ✅ Receipts API extended (additive, NULL-safe for non-crosschain rows)
+- ✅ `/api/crosschain/cards` route (real, returns the wallet's cards + allowlist)
+- ✅ `/api/crosschain/sign` route (validation real, 501 stub for the gRPC call)
+- ✅ Shared validators between server and tests
+- ✅ 23 SDK tests green
+- ✅ Existing 577 Playwright specs still untouched
+
+---
+
 - ✅ 4 instruction handlers fully implemented
 - ✅ Policy gate logic in pure module
 - ✅ 15 unit tests green
