@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 53 — pick next polish target. After 52 passes, the polish surface area is largely covered. Remaining big targets all deferred-risky (palette I, full code-split C, CSP G, Next bump).
+Pass 54 — next polish target. After 53 passes, polish surface largely covered.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 53 — pick next polish target. After 52 passes, the polish surface area is
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 52 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 53 /agents + /agents/templates metadata).
+- Items pending full-E2E verification: /agents layout + /agents/templates metadata.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,29 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 53 — SEO + share previews (O + H): metadata for /agents + /agents/templates
+Files changed:
+- `apps/web/app/agents/templates/page.tsx`: added `metadata` static export. Title: `"Agent templates · Settle"`. Description: `"Hire any AI agent on Solana with a budget cap and on-chain rules. Browse community-published templates, sign once, watch every receipt — instant revoke at any time."`. (Server component; can export metadata directly.)
+- `apps/web/app/agents/layout.tsx`: NEW. `/agents` page is "use client" so needed a server-component layout for metadata. Provides default for the whole `/agents/*` segment. Sub-routes with their own metadata (e.g. `/agents/templates/[slug]` from pass 45) override via Next.js metadata merging. Title: `"AI agents · Settle"`. Description: `"Hire AI agents that spend with cryptographically scoped permissions on Solana. Set rules. Watch every receipt. Revoke instantly. Built for the agentic economy."`
+
+Why this matters:
+- /agents is a primary public surface (linked from the landing page footer + persona-fork CTAs from /start) but was inheriting the global Settle title.
+- /agents/templates is the public template marketplace — every share previously showed the global title.
+- Both now have unique, descriptive metadata. Sub-route /agents/templates/[slug] keeps its dynamic per-template metadata from pass 45.
+- Continues the systematic per-public-surface metadata coverage from passes 22, 42, 43, 45, 47, 49, 50.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /agents` confirms `<title>AI agents · Settle</title>` + correct description.
+- `curl /agents/templates` confirms `<title>Agent templates · Settle</title>` + correct description.
+- Targeted Playwright nav-smoke: 14/14 green.
+
+Risk: low. Layout returns children unmodified; metadata-only change.
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 52 — TEST PASS: full E2E reconciliation of passes 49-51
 - Items previously pending: /at/[handle] dynamic metadata layout (p49), /receipts/[id] dynamic metadata layout (p50), robots.txt expanded disallow list (p51).

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { W6AppShell } from "../../../components/w6-app-shell";
 import { TemplateBrowser } from "./template-browser";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Agent templates · Settle",
+  description:
+    "Hire any AI agent on Solana with a budget cap and on-chain rules. Browse community-published templates, sign once, watch every receipt — instant revoke at any time.",
+};
 
 interface Template {
   slug: string;
