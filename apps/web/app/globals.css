@@ -114,6 +114,10 @@
 }
 
 @layer utilities {
+  /* Hide scrollbar visually while keeping scroll functionality. */
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
   /* WAVE_6 — when a route opts into the new shell via `data-w6` on its
      root, swap the page background + color to the prototype palette
      without leaking into legacy routes. Bumped to `html body[data-w6]`

@@ -42,7 +42,7 @@ export function LocaleSwitcher({
           key={l}
           onClick={() => setLocale(l)}
           title={TITLES[l]}
-          className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide transition-colors ${
+          className={`rounded-full px-3 py-2 text-[10px] uppercase tracking-wide transition-colors ${
             locale === l
               ? "bg-accent text-background"
               : "text-[#52525b] hover:text-[#09090b]"
