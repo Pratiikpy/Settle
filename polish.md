@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 55 — next polish target. After 54 passes, polish surface largely covered. Most gaps now require focused branches with full visual-regression (palette, code-split, CSP, Next bump).
+Pass 56 = TEST PASS (every 4th). Reconcile passes 53, 54, 55 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 55 — next polish target. After 54 passes, polish surface largely covered.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 53 /agents metadata, pass 54 /stats + /feed metadata + sitemap/robots reconciliation).
-- Items pending full-E2E verification: /agents + /stats + /feed metadata layouts, /activity removed from sitemap, /feed removed from robots disallow.
+- Polish passes since last full-E2E: 3 (pass 53 /agents, pass 54 /stats+/feed+sitemap, pass 55 /capabilities). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: /agents + /stats + /feed + /capabilities metadata layouts, sitemap/robots reconciliation.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,29 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 55 — SEO + share previews (O + H): /capabilities + /capabilities/discover metadata
+Files added:
+- `apps/web/app/capabilities/layout.tsx`: NEW. Title `"Capability registry · Settle"`. Description: `"Browse the Solana-native capability registry. Each verified capability is a hashable contract a merchant publishes — agents pin to it, receipts attest to it, reputation grows from it."`
+- `apps/web/app/capabilities/discover/layout.tsx`: NEW. Overrides parent layout with search-specific copy. Title: `"Discover capabilities · Settle"`. Description: `"Search the Solana capability registry by name or domain. Find verified merchants and the on-chain receipts that prove their service quality."`
+
+Why this matters:
+- Both pages are "use client" (search/filter UI) so couldn't directly export metadata.
+- /capabilities is the public capability registry browser. Anyone shopping for a verified merchant lands here.
+- /capabilities/discover is a more focused search variant. Distinct enough to warrant its own metadata.
+- Both inherit nicely if the parent layout is a fallback for any new sub-routes added later.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /capabilities` → "Capability registry · Settle" + correct description.
+- `curl /capabilities/discover` → "Discover capabilities · Settle" + correct description (sub-route override works).
+- Targeted Playwright nav-smoke: 14/14 green.
+
+Risk: very low. Layouts return children unchanged.
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 54 — SEO + share previews (O + H): /stats + /feed metadata + sitemap/robots reconciliation
 Files added/changed:
