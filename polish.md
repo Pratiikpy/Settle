@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 62 — next polish target.
+Pass 63 — next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 62 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 61 /onboarding metadata + robots fix).
-- Items pending full-E2E verification: /onboarding metadata layout, robots.txt /onboarding/ re-add.
+- Polish passes since last full-E2E: 2 (pass 61 /onboarding fix, pass 62 sitemap expansion).
+- Items pending full-E2E verification: /onboarding metadata + robots fix, sitemap with 7 new public routes.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 62 — repo hygiene (O): sitemap.ts adds 7 missed public routes
+Files changed:
+- `apps/web/app/sitemap.ts`: appended 7 routes to staticRoutes that have unique metadata + are not in robots disallow:
+  - `/capabilities` and `/capabilities/discover` — public capability registry pages (metadata via passes 55).
+  - `/stats` — network transparency dashboard (metadata via pass 54).
+  - `/docs/mcp`, `/docs/webhooks`, `/docs/pay-component`, `/docs/verify-component` — developer docs sub-routes (metadata via passes 57 + earlier).
+
+Why this matters:
+- Pass 9 added `/watch`, `/start/*`, `/leaderboard`, `/verify` to the sitemap when they were shipped.
+- Subsequent passes added unique metadata to many public pages but never updated the sitemap. Search engines couldn't discover them via the sitemap canonical list — only via crawl-link-following.
+- Now every public surface that has unique metadata is also explicitly listed in `/sitemap.xml`. Crawler discovery becomes deterministic.
+
+Audited and intentionally NOT added:
+- `/agents/templates/[slug]` — dynamic per-template; sitemap can fetch these but the existing sitemap.ts already handles featured templates via best-effort Supabase query (lines 30+).
+- `/r/[id]`, `/at/[handle]`, `/m/[handle]` — these are user-generated content; including in sitemap would expose every receipt/handle and explode crawler workload. Not added intentionally.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `curl /sitemap.xml | grep` confirmed all 7 new routes appear correctly.
+- Targeted Playwright misc-routes: 26/26 green.
+
+Risk: very low (sitemap-only data addition).
+
+Pending full-E2E (next test pass): no rendering changes; only sitemap content differs.
 
 ### Pass 61 — fix pass-51 regression: /onboarding metadata + robots disallow
 Files changed/added:

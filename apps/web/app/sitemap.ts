@@ -25,6 +25,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/start/agent",
     "/leaderboard",
     "/verify",
+    // Capability registry (public)
+    "/capabilities",
+    "/capabilities/discover",
+    // Network transparency
+    "/stats",
+    // Docs sub-routes (each got dedicated metadata in passes 47, 50, 57, etc.)
+    "/docs/mcp",
+    "/docs/webhooks",
+    "/docs/pay-component",
+    "/docs/verify-component",
   ];
 
   const entries: MetadataRoute.Sitemap = staticRoutes.map((p) => ({
