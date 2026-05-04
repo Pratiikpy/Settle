@@ -168,7 +168,7 @@ export default function NewTemplatePage() {
         <button
           onClick={() => void handleSubmit()}
           disabled={!connected || submitting}
-          className="mt-8 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
+          className="mt-8 w-full w6-btn w6-btn-primary disabled:opacity-50"
         >
           {!connected ? "Connect a wallet to publish" : submitting ? "Signing & publishing…" : "Publish template"}
         </button>

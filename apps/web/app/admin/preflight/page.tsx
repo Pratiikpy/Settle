@@ -31,8 +31,8 @@ interface PreflightResponse {
 }
 
 const STATUS_TONE: Record<CheckResult["status"], string> = {
-  green: "border-emerald-400/40 bg-emerald-400/[0.05] text-emerald-200",
-  yellow: "border-amber-400/40 bg-amber-400/[0.05] text-amber-200",
+  green: "border-emerald-400/40 bg-emerald-50 text-emerald-700",
+  yellow: "border-amber-400/40 bg-amber-50 text-amber-700",
   red: "border-red-400/40 bg-red-400/[0.05] text-red-200",
 };
 

@@ -74,7 +74,7 @@ export function TemplateHireButton({ slug }: { slug: string }) {
       <button
         onClick={() => void handleHire()}
         disabled={!connected || gesture !== "idle"}
-        className="w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
+        className="w-full w6-btn w6-btn-primary disabled:opacity-50"
       >
         {!connected
           ? "Connect a wallet to hire"

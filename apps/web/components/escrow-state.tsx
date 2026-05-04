@@ -209,7 +209,7 @@ export function EscrowState(props: EscrowProps) {
             type="button"
             onClick={() => void callAction("release")}
             disabled={busy !== "none"}
-            className="w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
+            className="w-full w6-btn w6-btn-primary disabled:opacity-50"
           >
             {busy === "release" ? "Releasing…" : "Permissionless release"}
           </button>

@@ -182,7 +182,7 @@ export default function CapabilitiesPage() {
             <button
               type="button"
               onClick={() => setShowForm((v) => !v)}
-              className="rounded-full bg-accent px-4 py-2 text-xs font-medium text-background"
+              className="w6-btn w6-btn-primary"
             >
               {showForm ? "Cancel" : "Contribute →"}
             </button>
@@ -263,7 +263,7 @@ export default function CapabilitiesPage() {
                 type="button"
                 onClick={() => void handleContribute()}
                 disabled={submitting || !formHash || !formAlias}
-                className="mt-2 rounded-full bg-accent px-4 py-2 text-xs font-medium text-background disabled:opacity-50"
+                className="mt-2 w6-btn w6-btn-primary disabled:opacity-50"
               >
                 {submitting ? "Submitting…" : "Submit contribution"}
               </button>
@@ -292,8 +292,8 @@ export default function CapabilitiesPage() {
                   <span
                     className={
                       e.verified
-                        ? "text-[10px] uppercase tracking-wide text-emerald-300"
-                        : "text-[10px] uppercase tracking-wide text-amber-300"
+                        ? "text-[10px] uppercase tracking-wide text-emerald-700"
+                        : "text-[10px] uppercase tracking-wide text-amber-700"
                     }
                   >
                     {e.verified ? "verified ✓" : "unverified"}

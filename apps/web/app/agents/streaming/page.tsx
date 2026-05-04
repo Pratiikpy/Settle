@@ -433,7 +433,7 @@ function OpenStreamForm({
       <button
         onClick={() => void submit()}
         disabled={submitting}
-        className="mt-4 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
+        className="mt-4 w-full w6-btn w6-btn-primary disabled:opacity-50"
       >
         {submitting ? "Opening…" : "Open + fund vault"}
       </button>
@@ -598,7 +598,7 @@ function StreamingCard({
             <button
               onClick={() => void fireClaim()}
               disabled={claiming}
-              className="rounded-full bg-accent px-3 py-2 text-xs font-medium text-background disabled:opacity-50"
+              className="w6-btn w6-btn-primary disabled:opacity-50"
             >
               {claiming ? "Claiming…" : "Fire claim_streaming ix"}
             </button>

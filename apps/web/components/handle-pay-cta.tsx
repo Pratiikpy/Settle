@@ -130,7 +130,7 @@ export function HandlePayCta({
         type="button"
         onClick={() => void handlePay()}
         disabled={!connected || paying}
-        className="mt-4 w-full rounded-full bg-accent py-3 text-sm font-medium text-background transition disabled:opacity-50"
+        className="mt-4 w-full w6-btn w6-btn-primary disabled:opacity-50"
       >
         {!connected
           ? "Connect a wallet to pay"

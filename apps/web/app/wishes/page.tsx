@@ -556,15 +556,15 @@ export default function WishesPage() {
             {/* Delegation status banner — wishes need a delegated card or
                 they can never fire on-chain. */}
             {relayerConfigured === true && delegatedCards.length === 0 && (
-              <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-4 text-xs">
-                <p className="text-amber-300">
+              <div className="mb-6 rounded-2xl border border-amber-400/40 bg-amber-50 p-4 text-xs">
+                <p className="text-amber-700">
                   <strong>No delegated card yet.</strong> Wishes you create now
                   will be saved, but they won't fire on-chain until you spawn a
                   card with the Settle relayer as agent.
                 </p>
                 <a
                   href="/settings/relayer"
-                  className="mt-3 inline-block rounded-full border border-amber-400/40 px-4 py-1.5 text-amber-200 hover:bg-amber-400/10"
+                  className="mt-3 inline-block rounded-full border border-amber-600/40 px-4 py-1.5 text-amber-700 hover:bg-amber-100"
                 >
                   Set up delegation →
                 </a>
@@ -689,7 +689,7 @@ export default function WishesPage() {
                   />
                   <button
                     onClick={createSchedule}
-                    className="rounded-full bg-accent py-2 text-xs font-medium text-background"
+                    className="w6-btn w6-btn-primary w-full"
                   >
                     Save wish
                   </button>
@@ -965,8 +965,8 @@ export default function WishesPage() {
                           onClick={() => setRoundChoice(p.value)}
                           className={`rounded-full px-3 py-1 text-xs ${
                             roundChoice === p.value
-                              ? "bg-accent text-background"
-                              : "border border-[#e4e4e7]"
+                              ? "bg-[var(--w6-ink)] text-[var(--w6-bg)]"
+                              : "border border-[#e4e4e7] text-[var(--w6-ink-3)]"
                           }`}
                         >
                           {p.label}
@@ -981,7 +981,7 @@ export default function WishesPage() {
                     />
                     <button
                       onClick={saveRoundUp}
-                      className="rounded-full bg-accent py-2 text-xs font-medium text-background"
+                      className="w6-btn w6-btn-primary w-full"
                     >
                       Enable round-up
                     </button>
@@ -1021,7 +1021,7 @@ export default function WishesPage() {
                   />
                   <button
                     onClick={createGift}
-                    className="rounded-full bg-accent py-2 text-xs font-medium text-background"
+                    className="w6-btn w6-btn-primary w-full"
                   >
                     Send gift
                   </button>

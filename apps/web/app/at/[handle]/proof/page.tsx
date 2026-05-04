@@ -165,7 +165,7 @@ export default async function ProofPage({ params }: PageProps) {
             {badges.map((b) => (
               <span
                 key={b.asset_pubkey as string}
-                className="rounded-full border border-emerald-400/30 bg-emerald-400/[0.05] px-3 py-1 text-[10px] text-emerald-300"
+                className="rounded-full border border-emerald-400/30 bg-emerald-400/[0.05] px-3 py-1 text-[10px] text-emerald-700"
               >
                 {b.badge_kind as string}
               </span>

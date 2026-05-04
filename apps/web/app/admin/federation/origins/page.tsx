@@ -131,8 +131,8 @@ export default function FederationOriginsPage() {
           </p>
         </header>
 
-        <section className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/[0.04] p-4">
-          <p className="text-[11px] uppercase tracking-wide text-amber-300/70">
+        <section className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-50 p-4">
+          <p className="text-[11px] uppercase tracking-wide text-amber-700/70">
             CRON_SECRET
           </p>
           <input
@@ -145,7 +145,7 @@ export default function FederationOriginsPage() {
           <button
             onClick={() => load(secret)}
             disabled={!secret || loading}
-            className="mt-3 rounded-full bg-accent px-4 py-1.5 text-xs font-medium text-background disabled:opacity-50"
+            className="mt-3 w6-btn w6-btn-primary disabled:opacity-50"
           >
             {loading ? "Loading…" : "Load origins"}
           </button>
@@ -178,7 +178,7 @@ export default function FederationOriginsPage() {
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${
                       o.trusted
-                        ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+                        ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-700"
                         : "border-[#a1a1aa] bg-[#f4f4f5] text-[#52525b]"
                     }`}
                   >

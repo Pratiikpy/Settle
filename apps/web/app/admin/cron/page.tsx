@@ -129,8 +129,8 @@ export default function AdminCronPage() {
           </p>
         </header>
 
-        <section className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/[0.04] p-4">
-          <p className="text-[11px] uppercase tracking-wide text-amber-300/70">
+        <section className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-50 p-4">
+          <p className="text-[11px] uppercase tracking-wide text-amber-700/70">
             CRON_SECRET
           </p>
           <input
@@ -218,9 +218,9 @@ export default function AdminCronPage() {
 function statusTone(status: string): string {
   switch (status) {
     case "confirmed":
-      return "border-emerald-400/30 bg-emerald-400/[0.04] text-emerald-100";
+      return "border-emerald-400/30 bg-emerald-50 text-emerald-700";
     case "sent":
-      return "border-amber-400/30 bg-amber-400/[0.04] text-amber-100";
+      return "border-amber-400/30 bg-amber-50 text-amber-700";
     case "failed":
       return "border-red-400/30 bg-red-400/[0.04] text-red-100";
     case "dry_run_logged":
@@ -249,7 +249,7 @@ function CronCard({
       <button
         onClick={onFire}
         disabled={running}
-        className="mt-3 rounded-full bg-accent px-4 py-1.5 text-xs font-medium text-background disabled:opacity-50"
+        className="mt-3 w6-btn w6-btn-primary disabled:opacity-50"
       >
         {running ? "Running…" : "Run now"}
       </button>

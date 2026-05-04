@@ -125,8 +125,8 @@ export default async function AdminHealthPage() {
         <span
           className={`rounded-full px-3 py-1 text-xs ${
             isHealthy
-              ? "bg-emerald-400/10 text-emerald-300"
-              : "bg-amber-400/10 text-amber-300"
+              ? "bg-emerald-400/10 text-emerald-700"
+              : "bg-amber-400/10 text-amber-700"
           }`}
         >
           {isHealthy ? "● healthy" : "○ check failures"}
@@ -162,7 +162,7 @@ export default async function AdminHealthPage() {
                 <tr key={r.execution_id} className="border-t border-[#f4f4f5]">
                   <td className="py-1 text-[#52525b]">{fmtAge(ageSeconds(r.created_at))}</td>
                   <td className="py-1">{r.intent_kind}</td>
-                  <td className={`py-1 ${ok ? "text-emerald-300" : "text-amber-300"}`}>
+                  <td className={`py-1 ${ok ? "text-emerald-700" : "text-amber-700"}`}>
                     {r.status}
                   </td>
                   <td className="py-1 text-[#71717a]">
@@ -184,16 +184,16 @@ export default async function AdminHealthPage() {
 
       {failures && failures.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-sm font-semibold text-amber-300">failures last 24h</h2>
+          <h2 className="text-sm font-semibold text-amber-700">failures last 24h</h2>
           <ul className="mt-2 space-y-2 text-xs">
             {failures.map((f) => (
-              <li key={f.execution_id} className="rounded border border-amber-400/20 bg-amber-400/[0.03] p-2">
+              <li key={f.execution_id} className="rounded border border-amber-400/20 bg-amber-50 p-2">
                 <div className="flex justify-between">
                   <span className="text-[#52525b]">
                     {f.intent_kind} · {fmtAge(ageSeconds(f.created_at))} ago
                   </span>
                 </div>
-                <div className="mt-1 text-amber-200">{f.error_message ?? "(no error message)"}</div>
+                <div className="mt-1 text-amber-700">{f.error_message ?? "(no error message)"}</div>
               </li>
             ))}
           </ul>
@@ -215,9 +215,9 @@ function Stat({ label, value, ok }: { label: string; value: string; ok?: boolean
       <div
         className={`mt-1 text-sm ${
           ok === false
-            ? "text-amber-300"
+            ? "text-amber-700"
             : ok === true
-              ? "text-emerald-300"
+              ? "text-emerald-700"
               : "text-[#09090b]"
         }`}
       >

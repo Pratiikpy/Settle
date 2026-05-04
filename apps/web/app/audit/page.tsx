@@ -66,8 +66,8 @@ interface AuditResponse {
 const STATUS_BADGE: Record<ExecutionRow["status"], string> = {
   dry_run_logged: "border-[#a1a1aa] bg-[#f4f4f5] text-[#27272a]",
   pending: "border-[#a1a1aa] bg-[#f4f4f5] text-[#27272a]",
-  sent: "border-amber-400/40 bg-amber-400/10 text-amber-200",
-  confirmed: "border-emerald-400/40 bg-emerald-400/10 text-emerald-200",
+  sent: "border-amber-400/40 bg-amber-400/10 text-amber-700",
+  confirmed: "border-emerald-400/40 bg-emerald-400/10 text-emerald-700",
   failed: "border-red-400/40 bg-red-400/10 text-red-200",
 };
 
@@ -233,7 +233,7 @@ export default function AuditPage() {
                             </span>
                           )}
                           {r.plan_json.pact_ready === false && (
-                            <span className="rounded bg-amber-400/10 px-1.5 py-0.5 text-amber-300">
+                            <span className="rounded bg-amber-400/10 px-1.5 py-0.5 text-amber-700">
                               no pact attached
                             </span>
                           )}
@@ -301,8 +301,8 @@ function Stat({
 }) {
   const toneCls = {
     neutral: "border-[#e4e4e7] text-[#27272a]",
-    amber: "border-amber-400/30 text-amber-200",
-    emerald: "border-emerald-400/30 text-emerald-200",
+    amber: "border-amber-400/30 text-amber-700",
+    emerald: "border-emerald-400/30 text-emerald-700",
     red: "border-red-400/30 text-red-200",
   }[tone];
   return (

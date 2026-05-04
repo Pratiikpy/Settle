@@ -173,7 +173,7 @@ export default function CollabHubPage() {
               type="button"
               onClick={() => void create()}
               disabled={submitting}
-              className="mt-4 w-full rounded-full bg-accent py-3 text-sm font-medium text-background disabled:opacity-50"
+              className="mt-4 w-full w6-btn w6-btn-primary disabled:opacity-50"
             >
               {submitting ? "Creating…" : "Create collab"}
             </button>

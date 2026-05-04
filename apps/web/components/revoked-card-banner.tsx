@@ -50,15 +50,15 @@ export function RevokedCardBanner({
   return (
     <div
       role="alert"
-      className="my-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.05] p-4 text-sm"
+      className="my-3 rounded-lg border border-amber-400/30 bg-amber-50 p-4 text-sm"
       data-testid="revoked-card-banner"
     >
-      <p className="font-medium text-amber-200">
+      <p className="font-medium text-amber-700">
         ⚠ This {kindLabel} points to a revoked card
       </p>
-      <p className="mt-1 text-xs text-amber-100/80">
+      <p className="mt-1 text-xs text-amber-700/80">
         Card{" "}
-        <code className="font-mono text-amber-100">{truncated}</code> is revoked
+        <code className="font-mono text-amber-700">{truncated}</code> is revoked
         on-chain. The cron signer will fail any future fire of this rule with
         &ldquo;source card not found or revoked&rdquo;. Pick a new delegated
         card, or delete this rule.
@@ -67,7 +67,7 @@ export function RevokedCardBanner({
         {rebindHref && (
           <Link
             href={rebindHref}
-            className="rounded-full border border-amber-400/40 bg-amber-400/[0.08] px-3 py-1 text-[11px] text-amber-100 hover:bg-amber-400/[0.16]"
+            className="rounded-full border border-amber-400/40 bg-amber-400/[0.08] px-3 py-1 text-[11px] text-amber-700 hover:bg-amber-400/[0.16]"
           >
             Pick another card →
           </Link>

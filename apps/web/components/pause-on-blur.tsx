@@ -223,7 +223,7 @@ export function PauseOnBlur({
 
       {returnBanner && (
         <div className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
-          <div className="text-[11px] text-amber-300">
+          <div className="text-[11px] text-amber-700">
             Tab was hidden for{" "}
             <span className="font-mono">
               {(returnBanner.hiddenMs / 1000).toFixed(1)} s
@@ -242,7 +242,7 @@ export function PauseOnBlur({
                 if (ok) setReturnBanner(null);
               }}
               disabled={busy !== "idle"}
-              className="rounded-full bg-accent px-3 py-1.5 text-[11px] font-medium text-background disabled:opacity-50"
+              className="w6-btn w6-btn-primary disabled:opacity-50"
             >
               {busy === "pausing" ? "Pausing on-chain…" : "Pause now (≈0.4 s)"}
             </button>

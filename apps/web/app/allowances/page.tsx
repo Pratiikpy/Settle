@@ -327,11 +327,11 @@ export default function AllowancesPage() {
             {view === "parent" && (
               <>
                 {delegatedCards.length === 0 ? (
-                  <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-4 text-xs text-amber-200">
+                  <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-50 p-4 text-xs text-amber-700">
                     No delegated card yet. Allowances need one to fire.{" "}
                     <Link
                       href="/settings/relayer"
-                      className="underline hover:text-amber-100"
+                      className="underline hover:text-amber-700"
                     >
                       Set up delegation →
                     </Link>
@@ -404,7 +404,7 @@ export default function AllowancesPage() {
                     <button
                       onClick={createAllowance}
                       disabled={busy || !kid}
-                      className="rounded-full bg-accent py-2 text-xs font-medium text-background disabled:opacity-50"
+                      className="w6-btn w6-btn-primary disabled:opacity-50"
                     >
                       {busy ? "Creating…" : "Create allowance"}
                     </button>
@@ -492,7 +492,7 @@ export default function AllowancesPage() {
                       </div>
                       <span
                         className={`text-[10px] uppercase tracking-wide ${
-                          a.enabled ? "text-emerald-300" : "text-[#71717a]"
+                          a.enabled ? "text-emerald-700" : "text-[#71717a]"
                         }`}
                       >
                         {a.enabled ? "active" : "paused"}
@@ -511,15 +511,15 @@ export default function AllowancesPage() {
                     {/* C117 — kid card status. If spawned, show card pubkey
                         + cap-active badge. If not, offer the spawn button. */}
                     {a.kid_card ? (
-                      <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/[0.05] px-3 py-1 text-[10px] text-emerald-300">
+                      <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/[0.05] px-3 py-1 text-[10px] text-emerald-700">
                         <span>✓ spending card active</span>
-                        <code className="text-emerald-300/70">
+                        <code className="text-emerald-700/70">
                           {a.kid_card.slice(0, 6)}…{a.kid_card.slice(-4)}
                         </code>
                       </div>
                     ) : (
-                      <div className="mt-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.04] p-3">
-                        <p className="text-[11px] text-amber-200">
+                      <div className="mt-3 rounded-lg border border-amber-400/30 bg-amber-50 p-3">
+                        <p className="text-[11px] text-amber-700">
                           Your parent set up the allowance, but you haven&apos;t
                           spawned your spending card yet. Without it, the
                           daily cap isn&apos;t enforced on-chain.
@@ -527,7 +527,7 @@ export default function AllowancesPage() {
                         <button
                           onClick={() => spawnKidCard(a)}
                           disabled={spawningKidCard[a.allowance_id] || !connected}
-                          className="mt-2 rounded-full bg-accent px-3 py-1 text-[11px] font-medium text-background disabled:opacity-50"
+                          className="mt-2 w6-btn w6-btn-primary disabled:opacity-50"
                         >
                           {spawningKidCard[a.allowance_id]
                             ? "Spawning…"

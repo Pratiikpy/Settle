@@ -45,9 +45,9 @@ export function VerifiableBuildBadge({ className }: { className?: string }) {
 
   const tone =
     state === "ok"
-      ? "border-emerald-400/30 text-emerald-300"
+      ? "border-emerald-400/30 text-emerald-700"
       : state === "warn"
-        ? "border-amber-400/30 text-amber-300"
+        ? "border-amber-400/30 text-amber-700"
         : state === "fail"
           ? "border-red-400/30 text-red-300"
           : "border-[#e4e4e7] text-[#52525b]";
