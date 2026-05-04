@@ -15,6 +15,11 @@ jobs:
   ts:
     name: typescript (typecheck + lint + indexer-handler audit)
     runs-on: ubuntu-latest
+    # Depend on anchor-build so the drift detector compares the FRESH IDL JSON
+    # against idl.ts, not the (possibly stale) committed JSON. Anchor 0.31.x
+    # IDL formatting has shifted across patch releases; pinning to "fresh"
+    # avoids stale-baseline drift.
+    needs: anchor-build
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,13 +30,19 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Download fresh IDL JSON from anchor-build job
+        uses: actions/download-artifact@v4
+        with:
+          name: anchor-build-artifacts
+          path: programs/settle-agent-card/target
       # turbo-orchestrated typecheck across every workspace package: web, indexer,
       # sdk, ui, and (post-Bucket A) the anchor-tests package itself.
       - run: pnpm typecheck
       - run: pnpm lint
-      # Codama-equivalent IDL drift detector: compares the committed Anchor-generated
-      # IDL JSON against the hand-maintained packages/sdk/src/idl.ts literal. Fails red
-      # if Rust struct edits aren't reflected in TS, or vice-versa.
+      # Codama-equivalent IDL drift detector: compares the FRESH Anchor-generated
+      # IDL JSON (downloaded above) against the hand-maintained
+      # packages/sdk/src/idl.ts literal. Fails red if Rust struct edits aren't
+      # reflected in TS, or vice-versa.
       - name: Verify IDL hasn't drifted (Codama-equivalent)
         run: pnpm verify:idl
       # Indexer event-handler regression check — every byte parse in apps/indexer/
@@ -150,6 +161,12 @@ jobs:
           name: anchor-build-artifacts
           path: programs/settle-agent-card/target
       - run: pnpm install --frozen-lockfile
+      # Solana CLI v3.x doesn't auto-create a default keypair on first invocation
+      # (v2.x did); `anchor test --skip-build` calls `anchor deploy` which then
+      # fails with "No default signer found". Generate a throwaway keypair before
+      # the test step.
+      - name: Generate throwaway keypair for the runner
+        run: solana-keygen new --no-bip39-passphrase --force --silent -o "$HOME/.config/solana/id.json"
       # `anchor test` spins up solana-test-validator, deploys the program, and runs
       # all 24 mocha tests. Linux runners have SeCreateSymbolicLinkPrivilege
       # equivalent (no special config needed); on Windows local dev, see TESTING.md.
