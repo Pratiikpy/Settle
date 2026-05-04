@@ -1,6 +1,6 @@
 {
   "name": "create-settle-merchant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Scaffold a new Settle merchant: keypair + webhook secret + capability hash + .env template.",
   "type": "module",
   "bin": {

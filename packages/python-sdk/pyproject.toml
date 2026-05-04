@@ -1,6 +1,6 @@
 [project]
 name = "settle-protocol-sdk"
-version = "0.2.0"
+version = "0.2.1"
 description = "Settle protocol SDK for Python — receipt kernel, verifyReceipt, and LangChain + CrewAI adapters."
 readme = "README.md"
 requires-python = ">=3.9"
