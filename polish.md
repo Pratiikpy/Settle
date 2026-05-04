@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 68 = TEST PASS (every 4th). Reconcile passes 65, 66, 67 with full Playwright.
+Pass 69 — pick next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 68 = TEST PASS (every 4th). Reconcile passes 65, 66, 67 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 65 input hints, pass 66 noindex one-time URLs, pass 67 noindex embed widgets). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: waitlist input hints, /claim + /pay/[token] noindex, /embed + /pay/widget noindex + robots.
+- Polish passes since last full-E2E: 0 (pass 68 ran 577/577).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 68 — TEST PASS: full E2E reconciliation of passes 65-67
+- Items previously pending: waitlist input HTML hints (p65), /claim + /pay/[token] noindex (p66), /embed + /pay/widget noindex + robots disallow (p67).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 577 specs.
+- **Result: 577/577 green in 7.1m.** No regressions.
+- All previously pending items now fully verified.
 
 ### Pass 67 — security + product feel (G + H): noindex embed widgets
 Files added:
