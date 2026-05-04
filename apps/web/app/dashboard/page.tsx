@@ -168,11 +168,150 @@ export default function DashboardPage() {
       <Hero handle={handle} />
       <BalanceStrip balance={balance} />
       <BentoTodayAgents data={data} loading={loading} error={error} />
+      <CrosschainCustodyPanel pubkey={publicKey?.toBase58() ?? null} />
       <RecentReceipts data={data} loading={loading} />
       <BentoPactsAndUpcoming data={data} loading={loading} />
       <ProtocolFooter />
     </W6AppShell>
   );
+}
+
+/* ============================================================ */
+/* Cross-chain custody panel — additive (Settle x Ika sidetrack) */
+/* ============================================================ */
+
+interface CrosschainCardRow {
+  card_pubkey: string;
+  label: string | null;
+  target_chain: string;
+  daily_cap_minor: string;
+  per_call_max_minor: string;
+  used_today_minor: string;
+  expiry_slot: string | null;
+  revoked: boolean;
+  policy_version: number;
+}
+
+function CrosschainCustodyPanel({ pubkey }: { pubkey: string | null }) {
+  const [cards, setCards] = useState<CrosschainCardRow[] | null>(null);
+
+  useEffect(() => {
+    if (!pubkey) return;
+    let cancelled = false;
+    fetch(`/api/crosschain/cards?pubkey=${encodeURIComponent(pubkey)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { cards?: CrosschainCardRow[] } | null) => {
+        if (!cancelled && j) setCards(j.cards ?? []);
+      })
+      .catch(() => {
+        // Indexer unreachable — silent. The panel just stays hidden.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pubkey]);
+
+  // Conditional render — hidden when no cross-chain card. Same pattern as
+  // /dashboard's other "only-shown-when-relevant" cells.
+  if (!cards || cards.length === 0) return null;
+
+  return (
+    <div data-testid="dashboard-crosschain-panel" style={{ marginBottom: 28 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          marginBottom: 12,
+        }}
+      >
+        <h2 className="w6-heading" style={{ fontSize: 20, margin: 0 }}>
+          Cross-chain custody
+        </h2>
+        <span
+          data-testid="ika-badge"
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            padding: "4px 8px",
+            borderRadius: 6,
+            background: "rgba(99,102,241,0.12)",
+            color: "rgb(99,102,241)",
+            border: "1px solid rgba(99,102,241,0.3)",
+          }}
+        >
+          IKA
+        </span>
+      </div>
+      <div style={{ display: "grid", gap: 10 }}>
+        {cards.map((c) => (
+          <Link
+            key={c.card_pubkey}
+            href={`/cards/crosschain/${c.card_pubkey}`}
+            data-testid={`cc-card-row-${c.card_pubkey}`}
+            style={{
+              padding: "14px 16px",
+              borderRadius: 12,
+              border: "1px solid rgba(0,0,0,0.08)",
+              background: c.revoked ? "rgba(220,80,80,0.04)" : "rgba(0,0,0,0.02)",
+              textDecoration: "none",
+              color: "inherit",
+              display: "grid",
+              gridTemplateColumns: "1fr auto",
+              gap: 12,
+              alignItems: "baseline",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{c.label ?? "Cross-chain card"}</div>
+              <div
+                style={{
+                  fontSize: 12,
+                  opacity: 0.6,
+                  marginTop: 2,
+                  fontFamily: "ui-monospace, monospace",
+                }}
+              >
+                {c.target_chain} · {c.card_pubkey.slice(0, 8)}…{c.card_pubkey.slice(-4)}
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
+                used {ccWeiToEth(c.used_today_minor)} of {ccWeiToEth(c.daily_cap_minor)} ETH today
+              </div>
+            </div>
+            <span
+              style={{
+                padding: "3px 8px",
+                borderRadius: 999,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                background: c.revoked ? "rgba(220,80,80,0.1)" : "rgba(34,197,94,0.1)",
+                color: c.revoked ? "rgb(180,40,40)" : "rgb(34,140,80)",
+                border: c.revoked
+                  ? "1px solid rgba(220,80,80,0.3)"
+                  : "1px solid rgba(34,197,94,0.3)",
+              }}
+            >
+              {c.revoked ? "REVOKED" : "ACTIVE"}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ccWeiToEth(wei: string): string {
+  try {
+    const n = BigInt(wei);
+    const whole = n / 10n ** 18n;
+    const frac = n % 10n ** 18n;
+    const fracStr = frac.toString().padStart(18, "0").replace(/0+$/, "");
+    return fracStr.length === 0 ? whole.toString() : `${whole}.${fracStr}`;
+  } catch {
+    return "?";
+  }
 }
 
 /* ============================================================ */

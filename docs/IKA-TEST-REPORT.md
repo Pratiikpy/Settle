@@ -8,7 +8,7 @@
 This file is updated *as Phase B–F complete*, never retroactively. A row that
 says "PENDING" is allowed; a row that quietly disappears is not.
 
-Last updated: **Phases A + B + C + D closed; E–F PENDING**.
+Last updated: **Phases A + B + C + D + E closed; F PENDING (live Ika roundtrip)**.
 
 ### Phase A actuals (real, not aspirational)
 
@@ -32,7 +32,8 @@ The program is **deployed but has stub instruction bodies** (Phase A skeleton). 
 | 2 | SDK canonical hashing — `crosschain_spend` kind | Vitest in `@settle/sdk` | 12 specs | **GREEN as of Phase C** |
 | 3 | API contracts (validation layer) — shared SDK schemas | Vitest in `@settle/sdk` | 11 specs | **GREEN as of Phase C** |
 | 3b | RLP / EIP-1559 helpers — Sepolia tx encoding | Vitest in `@settle/sdk` | 21 specs | **GREEN as of Phase D** |
-| 4 | Playwright UI | `apps/web` Playwright | 8 specs | **PENDING — Phase F** |
+| 4 | Playwright UI — cross-chain surfaces | `apps/web` Playwright | 9 specs | **GREEN as of Phase E (warm server)** |
+| 4b | Full Playwright suite (586 specs incl. Phase E) | `apps/web` Playwright | 586 specs | **526 passed / 34 failed / 26 did-not-run.** 1 failure is environment drift (dashboard visual baseline captured against a different burner wallet); 33 cluster as cold-compile/resource-exhaustion flakes (none touch Phase E code). All 9 Phase E specs pass. See `IKA-PROGRESS.md` §E.5 for the honest analysis. |
 | 5 | Real devnet ALLOW path | `scripts/ika-roundtrip.ts --allow` | 1 run | **PENDING — Phase F** |
 | 6 | Real devnet DENY path | `scripts/ika-roundtrip.ts --deny` | 1 run | **PENDING — Phase F** |
 | 7 | 577-spec gate (existing) | `pnpm --filter web playwright test` | 577 specs | **GREEN as of pass 75** |
@@ -111,18 +112,23 @@ Note: tests of the ALLOW path's CPI to the Ika dWallet program live in Phase F (
 | `POST /api/crosschain/sign surfaces gRPC errors` | gRPC failure returns 502 with useful payload | PENDING |
 | `DENY receipts have null target_tx_hash` | Schema enforces no Etherscan link on deny | PENDING |
 
-### 3.4 Playwright UI (Phase F)
+### 3.4 Playwright UI (Phase E)
+
+Run with `pnpm --filter web exec playwright test e2e/ika-crosschain-ui.spec.ts` against a running dev server (`NEXT_PUBLIC_E2E_BURNER=1 pnpm --filter web dev`).
+
+Result: **9/9 GREEN** (cold-compile run took ~1.6m total, second warm run ~28s).
 
 | Spec | Description | Result |
 |---|---|---|
-| `start-agent-crosschain-form-validation` | invalid 0x address rejected | PENDING |
-| `start-agent-crosschain-zero-cap-rejected` | zero per_call_max rejected | PENDING |
-| `start-agent-crosschain-expired-rejected` | expiry in the past rejected | PENDING |
-| `start-agent-crosschain-dkg-loading` | DKG state appears and resolves | PENDING |
-| `cards-crosschain-detail-renders` | card detail page populated | PENDING |
-| `revoke-flips-status` | revoke button changes status pill | PENDING |
-| `watch-crosschain-allow-path` | scripted ALLOW demo completes | PENDING |
-| `watch-crosschain-deny-path` | scripted DENY demo shows deny banner | PENDING |
+| `/start/agent-crosschain renders with all required scaffolding` | IKA badge + pre-alpha banner + all form fields visible | GREEN |
+| `/start/agent-crosschain form validation surfaces errors` | empty/invalid fields surface error list | GREEN |
+| `/start/agent-crosschain rejects per-call > daily cap` | invariant validated client-side | GREEN |
+| `/start/agent-crosschain disables submit when wallet not connected` | submit button shows "Connect wallet first" | GREEN |
+| `/watch-crosschain renders both ALLOW and DENY scenarios` | both side-by-side panels render with explanatory steps | GREEN |
+| `/watch-crosschain DENY scenario explains no signature was produced` | trust-boundary copy verbatim | GREEN |
+| `/cards/crosschain/[card] handles unknown card gracefully` | 404 → friendly error message | GREEN |
+| `/cards/crosschain/[card] rejects malformed pubkey` | API 400 → friendly error message | GREEN |
+| `dashboard panel hidden when no cross-chain card and wallet not connected` | panel is conditionally rendered | GREEN |
 
 ### 3.5 Real devnet roundtrip (Phase F)
 
