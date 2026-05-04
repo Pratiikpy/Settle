@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 47 — next polish target. Categories near saturation; remaining big targets all deferred-risky.
+Pass 48 = TEST PASS (every 4th). Reconcile passes 45, 46, 47 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 47 — next polish target. Categories near saturation; remaining big target
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 45 templates metadata, pass 46 by-pubkey + capabilities cache).
-- Items pending full-E2E verification: agent-template metadata, by-pubkey cache, capabilities cache.
+- Polish passes since last full-E2E: 3 (pass 45 templates metadata, pass 46 by-pubkey + capabilities cache, pass 47 verify + leaderboard layouts). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: agent-template metadata, by-pubkey cache, capabilities cache, verify + leaderboard metadata layouts.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,31 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 47 — SEO + share previews (O + H): metadata-only layouts for client-rendered routes
+Files added:
+- `apps/web/app/verify/layout.tsx`: server-component layout that exists only to export `metadata`. Title: `"Verify any Settle receipt"`. Description: `"Paste any of the 5 commit-chain hashes (receipt, reason, policy, purpose, context) or a Solana transaction signature. Walletless. Recomputes the chain client-side and proves the spend was authorized on-chain."`
+- `apps/web/app/leaderboard/layout.tsx`: same pattern. Title: `"Service leaderboard · Settle"`. Description: `"Live capability/service leaderboard on Solana — ranked by spend volume across verified merchants. Settle's Supabase Realtime aggregation of public ALLOW receipts."`
+
+Why this matters:
+- `/verify` and `/leaderboard` are both `"use client"` (they need useState/useEffect for animation + Realtime). Client components can't directly export `metadata`.
+- The Next.js convention is: route-segment metadata via `layout.tsx` (server component). The layout simply returns its children, but adds the `<head>` tags via Next's metadata API.
+- Without this, both pages were getting the global Settle title in search results and link previews — losing context.
+
+Audited and not yet covered (also "use client"):
+- /at/[handle]: needs both static + dynamic data. Defer to a focused split.
+- /receipts/[requestId]: same.
+
+Light verify:
+- `pnpm exec next build` clean (both layouts in route manifest with metadata).
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /verify` and `curl /leaderboard` both confirm the new `<meta name="description">` tags render in HTML.
+- Targeted Playwright (§14.7 settle-verify + nav-smoke): 16/16 green.
+
+Risk: low. Layouts that return `children` unmodified are a no-op at runtime. Only Next's metadata pipeline runs.
+
+Pending full-E2E (next test pass): no rendering changes; metadata is in `<head>` only.
 
 ### Pass 46 — performance (C): cache /api/handles/by-pubkey + /api/capabilities
 Files changed:
