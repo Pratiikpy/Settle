@@ -13,7 +13,7 @@ Settle is the consumer payment app for the AI age, on Solana — send anyone mon
 
 ## Links
 - **Live URL:** https://settle.so *(or `https://<branch>.vercel.app` until domain locked)*
-- **GitHub:** https://github.com/Pratiikpy/settle-protocol
+- **GitHub:** https://github.com/Pratiikpy/Settle
 - **Demo video (≤3 min, English, public YouTube):** *to be uploaded by Day 11 EOD*
 - **Mainnet proof tx (Solscan):** *to be captured Day 11 — one $0.50 USDC SPL transfer with Solana Pay reference*
 

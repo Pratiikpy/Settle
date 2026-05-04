@@ -102,7 +102,7 @@ When flipping cluster:
 
 ## Things explicitly NOT done in v0.2
 
-These are honest gaps, not silent bugs. We document them so the marketing copy stays honest.
+Documented constraints, not silent bugs. Each row carries the reason and the path to ship.
 
 | # | Item | Why not | Path to ship |
 |---|------|---------|--------------|

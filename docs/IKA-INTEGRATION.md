@@ -112,7 +112,7 @@ No signature is ever produced.** The receipt is sealed on Solana and
 `/r/[id]` renders the deny path with the reason code; there is no Etherscan
 link because no Sepolia tx ever existed.
 
-This is what makes the integration honest: Settle proves the gate by emitting
+This is what proves the gate is real: Settle emits
 both ALLOW and DENY receipts on the same on-chain primitive.
 
 ## 4. Devnet program ids and endpoints

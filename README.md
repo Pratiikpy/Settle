@@ -10,6 +10,8 @@ Settle is the payment app for the AI age. Send USDC to anyone with a `@handle`. 
 [![npm: settle-merchant](https://img.shields.io/npm/v/create-settle-merchant.svg?label=create-settle-merchant)](https://www.npmjs.com/package/create-settle-merchant)
 [![PyPI](https://img.shields.io/pypi/v/settle-protocol-sdk.svg?label=settle-protocol-sdk)](https://pypi.org/project/settle-protocol-sdk/)
 
+![Settle landing — magic-moment terminal mid-flight](docs/screenshots/hero.png)
+
 ---
 
 ## Try it in 2 minutes
@@ -20,6 +22,16 @@ No install needed. All four work on devnet right now:
 2. **Send a payment** → [`/start/consumer`](https://settle.so/start/consumer). Connect Phantom, take an in-app sandbox airdrop, send to `@alice`. Receipt lands at `/r/<id>` with full hash chain and Solscan link.
 3. **Hire your own agent** → [`/start/agent`](https://settle.so/start/agent). Pick a budget. Pick what it can buy. One transaction revokes the credential.
 4. **Verify a receipt without us** → grab any `receipt_hash` from `/r/<id>`, drop it into [`/verify`](https://settle.so/verify). The SDK re-derives the hash chain in your browser.
+
+---
+
+## What it looks like
+
+| Watch (`/watch`) | Receipt poster (`/r/<id>`) |
+|---|---|
+| ![Agent demo](docs/screenshots/panel-watch.png) | ![Receipt poster](docs/screenshots/panel-receipt.png) |
+| **Dashboard (`/dashboard`)** | **Cross-chain (`/watch-crosschain`)** |
+| ![Dashboard](docs/screenshots/panel-dashboard.png) | ![Cross-chain](docs/screenshots/panel-crosschain.png) |
 
 ---
 

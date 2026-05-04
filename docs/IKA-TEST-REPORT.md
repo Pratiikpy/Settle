@@ -18,7 +18,7 @@ Last updated: **Phases A + B + C + D + E + F closed.** Live Ika gRPC + Sepolia b
 - Migration `0051_crosschain_receipts.sql` applied to live Supabase project `nbufrcbqjwlfrodinniy` via Management API. Verified: 9 new columns on `receipts`, 2 new tables (`crosschain_cards`, `crosschain_card_allowlist`).
 - IDL extraction NOT yet run (Phase B item: Anchor's standard layout needed or `anchor idl parse src/lib.rs`).
 
-### Honesty note for any reviewer
+### What's real, what's mocked
 
 The program is **deployed but has stub instruction bodies** (Phase A skeleton). Logic — policy gate, CPI to Ika, deny path emission, allowlist matching, daily cap reset — lands in Phase B. Until Phase B closes, the deployed program does nothing useful at runtime; the deploy itself just proves the toolchain pipeline (build → deploy → verify) works end-to-end and reserves the program id.
 
@@ -57,7 +57,7 @@ used and labelled.
 | Etherscan explorer link | Real | — | — |
 | Receipt rendering | Real | — | — |
 
-**Important honesty note:** "real Ika signing" at pre-alpha means the on-chain
+**Note on what "real Ika signing" means at pre-alpha:** the on-chain
 CPI flow is real and the signature material is produced by the Ika network's
 NOA service. The cryptographic security model differs from production
 (distributed MPC) because the network operates a single mock signer in
@@ -144,7 +144,7 @@ reverify after Ika changes: `pnpm --filter web playwright test`.
 
 ---
 
-## 4. Known gaps (declared, not hidden)
+## 4. Known constraints
 
 | Gap | Impact | Plan |
 |---|---|---|
