@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 52 = TEST PASS (every 4th). Reconcile passes 49, 50, 51 with full Playwright.
+Pass 53 — pick next polish target. After 52 passes, the polish surface area is largely covered. Remaining big targets all deferred-risky (palette I, full code-split C, CSP G, Next bump).
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 52 = TEST PASS (every 4th). Reconcile passes 49, 50, 51 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 49 /at metadata, pass 50 /receipts metadata, pass 51 robots.txt). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: /at + /receipts metadata layouts, robots.txt expanded disallow list.
+- Polish passes since last full-E2E: 0 (pass 52 ran 577/577).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 52 — TEST PASS: full E2E reconciliation of passes 49-51
+- Items previously pending: /at/[handle] dynamic metadata layout (p49), /receipts/[id] dynamic metadata layout (p50), robots.txt expanded disallow list (p51).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 577 specs.
+- **Result: 577/577 green in 7.1m.** No regressions.
+- All previously pending items now fully verified.
 
 ### Pass 51 — repo hygiene (O): robots.txt expanded disallow + stale entry removal
 Files changed:
