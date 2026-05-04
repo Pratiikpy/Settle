@@ -161,9 +161,13 @@ export async function GET() {
     demo_merchants: demoMerchants,
   };
 
-  // Critical = required for the spend flow to function end-to-end
-  const critical = [solana.ok, program.ok, supabase.ok, upstash.ok, facilitator.ok];
-  const allCriticalOk = critical.every((x) => x);
+  // Critical = infrastructure the web app itself needs to serve pages.
+  // program/upstash/facilitator are spend-path requirements but the app
+  // still serves read-only pages without them — don't 503 uptime monitors
+  // when those haven't been deployed yet.
+  const coreCritical = [solana.ok, supabase.ok];
+  const spendCritical = [program.ok, upstash.ok, facilitator.ok];
+  const allCriticalOk = coreCritical.every((x) => x);
 
   return NextResponse.json(
     {
@@ -174,8 +178,10 @@ export async function GET() {
       time: new Date().toISOString(),
       checks,
       summary: {
-        critical_passing: critical.filter(Boolean).length,
-        critical_total: critical.length,
+        critical_passing: coreCritical.filter(Boolean).length,
+        critical_total: coreCritical.length,
+        spend_path_passing: spendCritical.filter(Boolean).length,
+        spend_path_total: spendCritical.length,
         enrichment_passing: [cnft.ready, demoMerchants.ok].filter(Boolean).length,
         enrichment_total: 2,
       },

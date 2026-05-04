@@ -1,5 +1,25 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
+// Wallet adapters require unsafe-eval for their internal WASM/crypto bootstrapping.
+const CSP_DIRECTIVES = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self' https: wss:",
+  "frame-src 'self'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
+// Embed pages live inside merchant iframes — must allow any host to frame them.
+const EMBED_CSP_DIRECTIVES = CSP_DIRECTIVES.replace(
+  "frame-ancestors 'none'",
+  "frame-ancestors *",
+);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -16,20 +36,24 @@ const nextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
-          // HSTS: tell browsers to always use HTTPS for settle.so + subdomains
-          // for the next year. Safe in production (Vercel serves HTTPS by
-          // default); no effect on localhost per the HSTS spec.
           {
             key: "Strict-Transport-Security",
             value: "max-age=31536000; includeSubDomains",
           },
-          // Isolate the browsing context group while still allowing
-          // wallet/Solscan popups via window.open. Without this, a future
-          // CSP audit and Spectre-style isolation are harder to enforce.
           {
             key: "Cross-Origin-Opener-Policy",
             value: "same-origin-allow-popups",
           },
+          { key: "Content-Security-Policy", value: CSP_DIRECTIVES },
+        ],
+      },
+      {
+        // Embed pages are iframed by merchant sites — remove the DENY and
+        // allow any parent origin via frame-ancestors in CSP.
+        source: "/embed/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "ALLOWALL" },
+          { key: "Content-Security-Policy", value: EMBED_CSP_DIRECTIVES },
         ],
       },
     ];
