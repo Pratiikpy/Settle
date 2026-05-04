@@ -37,7 +37,7 @@ export default function WatchCrosschainPage() {
       <div style={{ maxWidth: 1080, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
           <Link href="/" style={{ color: "#9aa0a6", fontSize: 13, textDecoration: "none" }}>
-            ← settle.xyz
+            ← settle.so
           </Link>
           <span data-testid="ika-badge" style={ikaBadge}>IKA</span>
         </div>
@@ -92,7 +92,7 @@ export default function WatchCrosschainPage() {
           style={{
             marginTop: 32,
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))",
             gap: 18,
           }}
         >
@@ -154,15 +154,8 @@ export default function WatchCrosschainPage() {
           <Link
             href="/start/agent-crosschain"
             data-testid="wcc-cta-link"
-            style={{
-              padding: "12px 20px",
-              borderRadius: 10,
-              background: "#fff",
-              color: "#0a0a0c",
-              fontWeight: 700,
-              fontSize: 15,
-              textDecoration: "none",
-            }}
+            className="w6-btn w6-btn-onstrip w6-btn-lg"
+            style={{ fontWeight: 700, textDecoration: "none" }}
           >
             Hire a cross-chain agent →
           </Link>

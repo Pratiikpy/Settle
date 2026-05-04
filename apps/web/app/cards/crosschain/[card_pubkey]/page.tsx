@@ -112,7 +112,20 @@ export default function CrosschainCardDetailPage() {
         </div>
 
         {loading ? (
-          <p style={{ marginTop: 32, opacity: 0.6 }}>Loading…</p>
+          <div style={{ marginTop: 32, display: "grid", gap: 12 }} aria-label="Loading card">
+            {[200, 140, 160, 120, 180].map((w, i) => (
+              <div
+                key={i}
+                className="animate-pulse"
+                style={{
+                  height: 18,
+                  width: w,
+                  borderRadius: 6,
+                  background: "rgba(0,0,0,0.07)",
+                }}
+              />
+            ))}
+          </div>
         ) : error ? (
           <p data-testid="cc-error" style={{ marginTop: 32, color: "rgb(220,80,80)" }}>{error}</p>
         ) : !card ? (
@@ -153,6 +166,9 @@ export default function CrosschainCardDetailPage() {
 
             <h2 style={{ fontSize: 16, fontWeight: 700, marginTop: 28 }}>Allowlist ({card.allowlist.length})</h2>
             <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
+              {card.allowlist.length === 0 && (
+                <p style={{ fontSize: 13, opacity: 0.5, padding: "10px 0" }}>No allowlist entries — agent can send to any recipient.</p>
+              )}
               {card.allowlist.map((entry, i) => (
                 <div
                   key={i}
@@ -180,15 +196,11 @@ export default function CrosschainCardDetailPage() {
                 data-testid="cc-revoke"
                 onClick={onRevoke}
                 disabled={card.revoked || busy || !connected}
+                className="w6-btn w6-btn-secondary"
                 style={{
-                  padding: "10px 14px",
-                  borderRadius: 10,
+                  borderColor: card.revoked ? undefined : "rgba(220,80,80,0.3)",
+                  color: card.revoked ? undefined : "rgb(180,40,40)",
                   fontWeight: 700,
-                  fontSize: 13,
-                  border: "1px solid rgba(220,80,80,0.3)",
-                  background: card.revoked ? "rgba(0,0,0,0.05)" : "rgba(220,80,80,0.05)",
-                  color: card.revoked ? "rgba(0,0,0,0.4)" : "rgb(180,40,40)",
-                  cursor: card.revoked || busy ? "not-allowed" : "pointer",
                 }}
               >
                 {card.revoked ? "Already revoked" : busy ? "Revoking…" : "Revoke card"}

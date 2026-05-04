@@ -239,7 +239,7 @@ export default async function ReceiptPoster({
             </div>
             <div
               data-testid="receipt-amount"
-              style={{ fontSize: 56, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 4 }}
+              style={{ fontSize: "clamp(32px, 10vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", marginTop: 4 }}
             >
               ${amount} <span style={{ fontSize: 22, color: "#5a5f66" }}>USDC</span>
             </div>
@@ -494,7 +494,7 @@ function CrosschainReceiptPoster({ r }: { r: ReceiptDto }) {
             href="/"
             style={{ fontSize: 13, color: "#0a0a0c", textDecoration: "none" }}
           >
-            ← settle.xyz
+            ← settle.so
           </Link>
           <span
             data-testid="ika-badge"
@@ -561,7 +561,7 @@ function CrosschainReceiptPoster({ r }: { r: ReceiptDto }) {
             <div style={{ fontSize: 12, color: "#5a5f66", fontWeight: 600 }}>AMOUNT</div>
             <div
               data-testid="cc-receipt-amount"
-              style={{ fontSize: 56, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 4 }}
+              style={{ fontSize: "clamp(32px, 10vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", marginTop: 4 }}
             >
               {amount} <span style={{ fontSize: 22, color: "#5a5f66" }}>{symbol}</span>
             </div>
@@ -629,15 +629,8 @@ function CrosschainReceiptPoster({ r }: { r: ReceiptDto }) {
                 href={explorerUrl}
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: 10,
-                  background: "#0a0a0c",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: 14,
-                  textDecoration: "none",
-                }}
+                className="w6-btn w6-btn-primary"
+                style={{ fontWeight: 600, textDecoration: "none" }}
               >
                 View tx on explorer ↗
               </a>
@@ -658,16 +651,8 @@ function CrosschainReceiptPoster({ r }: { r: ReceiptDto }) {
             )}
             <Link
               href={`/verify?h=${encodeURIComponent((r.receipt_hash || "").replace(/^\\x/, ""))}`}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 10,
-                background: "#fff",
-                color: "#0a0a0c",
-                fontWeight: 600,
-                fontSize: 14,
-                textDecoration: "none",
-                border: "1px solid rgba(0,0,0,0.12)",
-              }}
+              className="w6-btn w6-btn-secondary"
+              style={{ fontWeight: 600, textDecoration: "none" }}
             >
               Verify hashes →
             </Link>

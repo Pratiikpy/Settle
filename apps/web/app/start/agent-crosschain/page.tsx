@@ -281,7 +281,7 @@ export default function StartCrosschainAgentPage() {
             <span style={hintStyle}>Agent can only send to this address. Native ETH, no token contracts.</span>
           </Field>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: 16 }}>
             <Field label="Per-call cap (ETH)">
               <input
                 data-testid="cc-per-call-eth"
@@ -325,16 +325,8 @@ export default function StartCrosschainAgentPage() {
             data-testid="cc-hire-agent"
             type="submit"
             disabled={busy || errors.length > 0 || !connected}
-            style={{
-              padding: "14px 20px",
-              borderRadius: 12,
-              fontWeight: 700,
-              fontSize: 15,
-              background: busy || !connected ? "rgba(0,0,0,0.08)" : "rgb(15,15,15)",
-              color: busy || !connected ? "rgba(0,0,0,0.5)" : "white",
-              cursor: busy || !connected || errors.length > 0 ? "not-allowed" : "pointer",
-              border: "none",
-            }}
+            className="w6-btn w6-btn-primary w6-btn-lg"
+            style={{ width: "100%", justifyContent: "center", borderRadius: 12, fontWeight: 700 }}
           >
             {!connected
               ? "Connect wallet first"
