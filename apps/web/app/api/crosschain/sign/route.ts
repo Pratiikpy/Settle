@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { validateSignRequest } from "@settle/sdk";
+import { awaitSignature } from "../../../../lib/ika/sign-flow";
 
 export const runtime = "nodejs";
 
@@ -65,19 +67,85 @@ export async function POST(req: NextRequest) {
   }
   const body = validated.data;
 
-  // ── Phase C stub. Phase D fills in the gRPC client + polling loop. ──
-  return NextResponse.json(
-    {
-      error: "not_implemented",
-      phase: "C",
-      note: "The Ika gRPC bridge lands in Phase D. Phase C confirmed payload validation works; the sign loop itself runs in Phase D.",
-      received: {
-        card_pubkey: body.card_pubkey,
+  // ── Phase D: poll the on-chain MessageApproval PDA for the signature ──
+  //
+  // The client has already submitted the `request_crosschain_sign` Solana ix
+  // (which CPI'd `approve_message` on the Ika dWallet program, allocating
+  // the approval PDA). The Ika network's NOA writes the signature into that
+  // PDA when it has been produced. This endpoint polls until status flips
+  // to `signed` or the timeout expires, then returns the signature bytes.
+  //
+  // We do this server-side rather than client-side for two reasons:
+  //   1. The default Solana RPC may rate-limit a polling browser tab;
+  //      we use a private RPC via the SOLANA_RPC_URL env var.
+  //   2. Some client polling environments (notably Brave's network shield
+  //      and corporate proxies) interfere with long-poll semantics; doing
+  //      it server-side gives us a single fetch call from the browser.
+  //
+  // A 202 response means "still pending after timeout — call us again".
+  // The client should use exponential backoff on subsequent polls.
+
+  const rpcUrl = process.env.SOLANA_RPC_URL ?? process.env.NEXT_PUBLIC_RPC_URL ?? "https://api.devnet.solana.com";
+  const connection = new Connection(rpcUrl, "confirmed");
+
+  let approval: Awaited<ReturnType<typeof awaitSignature>>;
+  try {
+    approval = await awaitSignature(
+      connection,
+      new PublicKey(body.approval_pda),
+      { timeoutMs: body.timeout_ms ?? 15_000, intervalMs: 800 },
+    );
+  } catch (err) {
+    // Network error reaching Solana RPC — surface clearly so the UI shows a
+    // useful message instead of a generic 500.
+    return NextResponse.json(
+      {
+        error: "solana_rpc_unreachable",
+        message: err instanceof Error ? err.message : String(err),
+      },
+      { status: 502 },
+    );
+  }
+
+  if (approval.status === "signed" && approval.signature) {
+    const sigHex = Array.from(approval.signature)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    return NextResponse.json(
+      {
+        ok: true,
+        status: "signed",
+        signature_hex: sigHex,
+        signature_scheme: approval.signatureScheme,
+        epoch: approval.epoch !== null ? approval.epoch.toString() : null,
         request_id: body.request_id,
-        signature_scheme: body.signature_scheme,
+      },
+      { status: 200 },
+    );
+  }
+
+  if (approval.status === "missing") {
+    // The on-chain ix that creates this PDA hasn't landed yet, or the PDA
+    // was passed wrong. Either way we can't produce a signature for this
+    // request id, so 404 is more accurate than 202.
+    return NextResponse.json(
+      {
+        error: "approval_pda_missing",
+        message:
+          "The MessageApproval PDA does not exist on chain. Ensure the request_crosschain_sign ix has confirmed before polling.",
         approval_pda: body.approval_pda,
       },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json(
+    {
+      ok: false,
+      status: "pending",
+      retry_after_ms: 1500,
+      request_id: body.request_id,
     },
-    { status: 501 },
+    { status: 202 },
   );
 }

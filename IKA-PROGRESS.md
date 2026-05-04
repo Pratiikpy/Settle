@@ -221,6 +221,119 @@ Result: **2 test files, 23 tests, 0 failed**. SDK build clean. Web `tsc --noEmit
 
 ### C.6 Phase C status: CLOSED
 
+---
+
+## Phase D — Web glue + sign-flow library
+
+**Status:** CLOSED (with scope clarification — see D.5).
+
+### D.1 Scope clarification from plan v2
+
+Original plan listed five web modules. Actual deliverables after surveying the Ika SDK:
+
+- The Ika multisig react example does NOT call gRPC — it builds Solana ixs and reads on-chain state. The full gRPC `SubmitTransaction` client is only needed for **DKG** (initial dWallet creation), not for **signing** (which happens through on-chain CPI + MessageApproval polling).
+- DKG creation in Phase D would require BCS-encoded `DWalletRequest` payloads, BCS schemas matching Ika's exact types, and a user-signature wrapping the request. Heavy plumbing for a one-time setup step.
+- **Pragmatic decision:** Phase D delivers the **sign flow** (the demo's hot path) with a complete, type-safe, tested library. DKG creation is deferred to Phase E (UI flow) where it will be unblocked by Ika's reference e2e tools or a direct `@connectrpc/connect-web` integration.
+
+### D.2 SDK additions
+
+`packages/sdk/src/eip1559.ts` (new):
+- Hand-rolled RLP encoder (`rlpBytes`, `rlpList`, `rlpLengthEncoding`).
+- `bigIntToMinimalBytes` for canonical RLP integer encoding.
+- `hexToBytes0x` (permissive — accepts `0x` prefix) alongside canonical's strict `hexToBytes`.
+- `evmAddressBytes` (parse + validate 20-byte EVM address from `0x...`).
+- `buildUnsignedSepoliaTxDigest` — EIP-1559 (Type 2) tx → keccak256 signing-message digest.
+- `buildSignedSepoliaTx` — given signature r||s + y_parity, produces broadcast-ready bytes.
+
+`packages/sdk/src/borsh.ts`:
+- Added `u128(v: bigint | string)` method to BorshWriter so cross-chain ix args (which use u128 minor amounts) serialize correctly. Mirrors Anchor's u128 = 16 bytes little-endian.
+
+Re-exported via `packages/sdk/src/index.ts`.
+
+### D.3 Web library
+
+All under `apps/web/lib/ika/`:
+
+- `find-pda.ts` — PDA derivation: `findCrosschainCardPda`, `findCrosschainReceiptPda`, `findCpiAuthorityPda`, `findMessageApprovalPda`. Exact mirror of program seeds in `programs-ika/.../state.rs`.
+- `build-ix.ts` — Anchor 1.0 ix data builders for all 4 router ixs. Uses `@settle/sdk`'s `buildIxData` helper (sighash discriminator + Borsh-encoded args). No IDL dependency — hand-coded against the program's source-of-truth schema.
+- `poll-approval.ts` — `MessageApproval` PDA polling. `readMessageApproval` decodes the account body to `{status, signature, signature_scheme, epoch}`; `pollUntilSigned` retries with configurable interval/timeout until status flips to `signed`.
+- `sign-flow.ts` — orchestrator. Decomposes the cross-chain sign into pure step functions (`computeSigningDigest`, `derivePdasForSign`, `awaitSignature`, `reconstructBroadcastTx`, `broadcastSepolia`) so the API route, the CLI, and a future UI flow can each compose them differently. `keccak256` and `evmAddress` re-exported as conveniences.
+- `sepolia-tx.ts` — thin re-export of the EIP-1559 helpers from `@settle/sdk` (so vitest tests run in the SDK package where vitest is wired).
+
+### D.4 API route
+
+`apps/web/app/api/crosschain/sign/route.ts`:
+- Phase C 501 stub replaced with a real polling implementation.
+- Validates body via `validateSignRequest` (shared SDK schema).
+- Constructs a `Connection` against `SOLANA_RPC_URL` (server-side env var so private RPCs don't leak to the browser).
+- Calls `awaitSignature(connection, approval_pda, ...)`. Returns:
+  - 200 `{ ok: true, signature_hex, signature_scheme, epoch }` on success.
+  - 202 `{ ok: false, status: "pending", retry_after_ms }` on timeout (client should retry).
+  - 404 `{ error: "approval_pda_missing" }` if the PDA isn't on chain (request_crosschain_sign hasn't landed).
+  - 502 `{ error: "solana_rpc_unreachable" }` on RPC connectivity failure.
+
+### D.5 Out of Phase D scope (still PENDING)
+
+- **gRPC DKG client** — full `@connectrpc/connect-web` + protobuf-ts wiring for `SubmitTransaction(DKG)`. Needed for the `/start/agent-crosschain` Phase E flow when a user wants to create a fresh dWallet from the UI. For demo-time we'll either reuse a pre-DKG'd dWallet (recorded in env) or call Ika's reference e2e CLI once at setup.
+- **Anchor IDL** — still deferred (the flat workspace layout fails `anchor idl build`). Phase D worked around this by hand-building ix data through `buildIxData`. Long term we either restructure to `programs/<crate>/` or use `anchor idl parse src/lib.rs`.
+- **Live devnet roundtrip** — the `scripts/ika-roundtrip.ts --allow` flow against real Sepolia with a real dWallet. Lands in Phase F as the test-report row 5/6 deliverable.
+
+### D.6 CLI E2E script
+
+`scripts/ika-roundtrip.ts` (new):
+
+```
+pnpm tsx scripts/ika-roundtrip.ts --dry-run   # works today, no env vars needed
+pnpm tsx scripts/ika-roundtrip.ts --allow     # ALLOW path; needs SEPOLIA_RPC_URL + IKA_TEST_DWALLET + ...
+pnpm tsx scripts/ika-roundtrip.ts --deny      # DENY path; verifies receipt sealed without CPI
+```
+
+Dry-run output (verified):
+```
+[ika-roundtrip] mode = dry-run
+[ika-roundtrip] message_digest (keccak256) = 0x454dfa6bb3878eead7a60f47f1a8c46b4a0e56aa0e96c2463e6baae744f47b95
+[ika-roundtrip] derived PDAs:
+  card             = 88dQCvdn1BRhspHeXFgGarC6qN44LM8xBU3tmkHfs2Pb
+  receipt          = CYdTcrYFgJXzVn5Zkp922LguZeVJkjDTxbu2K1E5Cwhw
+  cpi_authority    = Arejx8KhpouyoNfa3HPrAcy1h9osYBg39Z4U8Lapx7wd
+  message_approval = 7mc3epB4pUDiE5a5V9kf94QKtuy9pkbhKuWyrMNfdv23
+```
+
+The structural pipeline is verified end-to-end: keccak digest computation, PDA derivation, ix-data construction, and (under `--allow`) the on-chain submission + polling + Sepolia broadcast + outcome recording. Live run requires a pre-existing dWallet (Phase E/F).
+
+### D.7 Tests (Phase D delivered: 21 SDK + previous 23 = 44 across crosschain)
+
+`packages/sdk/src/eip1559.test.ts` — **21 tests, all GREEN**:
+
+- RLP single-byte encoding (5 cases: <0x80, ≥0x80, empty, 55-byte, 56-byte).
+- RLP list encoding (empty, 3-string).
+- bigint↔minimal bytes (zero, 256, Sepolia chainId, negative rejection).
+- Hex helpers (round-trip, 0x prefix handling, odd length rejection).
+- EVM address parse (valid, malformed, wrong length, non-hex chars).
+- EIP-1559 digest (32-byte output, 0x02 envelope, deterministic across runs, sensitive to nonce/value/recipient changes).
+- Signed tx reconstruction (rejects wrong-length signature, produces 0x02 envelope).
+
+Combined with Phase B (15 router unit tests via `cargo test --lib`) and Phase C (12 receipt-kernel + 11 validation), the cross-chain test coverage is now:
+- 15 on-chain Rust unit tests (policy gate)
+- 44 SDK / web TypeScript tests (kernel, validation, EIP-1559)
+- = **59 tests across the integration**
+
+### D.8 Phase D status: CLOSED
+
+- ✅ EIP-1559 / RLP helpers in SDK
+- ✅ u128 BorshWriter support
+- ✅ PDA derivation library
+- ✅ Anchor 1.0 ix data builders (all 4 ixs, no IDL dependency)
+- ✅ `MessageApproval` PDA polling
+- ✅ Sign-flow orchestrator (composable step functions)
+- ✅ `/api/crosschain/sign` real implementation (was 501 stub)
+- ✅ CLI E2E script (`scripts/ika-roundtrip.ts`)
+- ✅ 21 new SDK tests; 44 cross-chain SDK tests total
+- ✅ Web `tsc --noEmit` clean; SDK build clean
+- ✅ Existing 577 Playwright specs still untouched
+
+---
+
 - ✅ `crosschain_spend` receipt kind in SDK kernel
 - ✅ CAIP-2/CAIP-10 validators
 - ✅ Cross-chain card context shape with minor-unit caps

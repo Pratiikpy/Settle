@@ -80,6 +80,24 @@ export class BorshWriter {
     return this.u8(v ? 1 : 0);
   }
 
+  /**
+   * u128 little-endian (16 bytes). Anchor encodes u128 as 16 bytes little-endian.
+   * Accepts bigint or string (decimal) — no JS `number` because mantissa is too small.
+   */
+  u128(v: bigint | string): this {
+    const big = typeof v === "bigint" ? v : BigInt(v);
+    if (big < 0n) throw new Error("u128 must be non-negative");
+    if (big >= 1n << 128n) throw new Error("u128 overflow");
+    this.ensure(16);
+    // Two u64 halves, low first.
+    const lo = big & ((1n << 64n) - 1n);
+    const hi = big >> 64n;
+    this.buf.writeBigUInt64LE(lo, this.len);
+    this.buf.writeBigUInt64LE(hi, this.len + 8);
+    this.len += 16;
+    return this;
+  }
+
   bytes(b: Uint8Array): this {
     this.ensure(b.length);
     Buffer.from(b).copy(this.buf, this.len);

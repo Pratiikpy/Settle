@@ -8,7 +8,7 @@
 This file is updated *as Phase B–F complete*, never retroactively. A row that
 says "PENDING" is allowed; a row that quietly disappears is not.
 
-Last updated: **Phases A + B + C closed; D–F PENDING**.
+Last updated: **Phases A + B + C + D closed; E–F PENDING**.
 
 ### Phase A actuals (real, not aspirational)
 
@@ -31,6 +31,7 @@ The program is **deployed but has stub instruction bodies** (Phase A skeleton). 
 | 1 | On-chain (router) — policy gate | `cargo test --lib` against `policy::evaluate_policy` | 15 specs (3 ALLOW + 9 DENY + 3 priority-order) | **GREEN as of Phase B** |
 | 2 | SDK canonical hashing — `crosschain_spend` kind | Vitest in `@settle/sdk` | 12 specs | **GREEN as of Phase C** |
 | 3 | API contracts (validation layer) — shared SDK schemas | Vitest in `@settle/sdk` | 11 specs | **GREEN as of Phase C** |
+| 3b | RLP / EIP-1559 helpers — Sepolia tx encoding | Vitest in `@settle/sdk` | 21 specs | **GREEN as of Phase D** |
 | 4 | Playwright UI | `apps/web` Playwright | 8 specs | **PENDING — Phase F** |
 | 5 | Real devnet ALLOW path | `scripts/ika-roundtrip.ts --allow` | 1 run | **PENDING — Phase F** |
 | 6 | Real devnet DENY path | `scripts/ika-roundtrip.ts --deny` | 1 run | **PENDING — Phase F** |
