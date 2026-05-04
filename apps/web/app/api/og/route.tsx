@@ -18,8 +18,12 @@ export async function GET() {
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "space-between",
-          background:
-            "radial-gradient(120% 100% at 0% 0%, rgba(153, 69, 255, 0.35) 0%, transparent 50%), radial-gradient(120% 100% at 100% 100%, rgba(20, 241, 149, 0.25) 0%, transparent 50%), #0A0A0A",
+          // Satori (next/og engine) rejects mixed solid-color + multi-
+          // gradient background shorthand. Split into solid backgroundColor
+          // + gradient-only backgroundImage.
+          backgroundColor: "#0A0A0A",
+          backgroundImage:
+            "radial-gradient(120% 100% at 0% 0%, rgba(153, 69, 255, 0.35) 0%, transparent 50%), radial-gradient(120% 100% at 100% 100%, rgba(20, 241, 149, 0.25) 0%, transparent 50%)",
           padding: "80px",
           fontFamily: "system-ui, sans-serif",
         }}
@@ -78,6 +82,16 @@ export async function GET() {
         </div>
       </div>
     ),
-    { width: 1200, height: 630 },
+    {
+      width: 1200,
+      height: 630,
+      headers: {
+        // OG image is fully static (no params, no dynamic data).
+        // Long-cache it: 1h s-maxage + 1d SWR. Reduces edge runtime
+        // hits — Twitter/Slack/Discord scrapers refetch each share.
+        "Cache-Control":
+          "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    },
   );
 }

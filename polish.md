@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 71 — next polish target.
+Pass 72 = TEST PASS (every 4th). Reconcile passes 69, 70, 71 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 71 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 69 themeColor, pass 70 metadataBase).
-- Items pending full-E2E verification: viewport.themeColor on root layout, metadataBase root metadata.
+- Polish passes since last full-E2E: 3 (pass 69 themeColor, pass 70 metadataBase, pass 71 /api/og bug-fix + cache). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: viewport.themeColor, metadataBase, /api/og 500-fix + cache header.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,29 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 71 — REAL BUG FIX (B + C): /api/og was 500-erroring + added cache headers
+Files changed:
+- `apps/web/app/api/og/route.tsx`:
+  - **Real bug fix**: `background: "radial-gradient(...), radial-gradient(...), #0A0A0A"` was throwing `Invalid background image: "#0A0A0A"` from Satori (the engine behind `next/og`'s `ImageResponse`). The route returned 500 to every caller, which means **the home page's primary `og:image` (referenced from root metadata) has been broken since this code was written**. Combined with pass 70's metadataBase fix, this is the second half of fully restoring social share previews for `/`.
+  - Fix: split the CSS shorthand — `backgroundColor: "#0A0A0A"` (solid) + `backgroundImage: "radial-gradient(...), radial-gradient(...)"` (gradients only). Satori parses both correctly.
+  - **Performance**: also added `Cache-Control: public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400`. The image is fully static (no params, no dynamic data) — 1h s-maxage with 1d SWR is appropriate. Reduces edge runtime cold-start overhead since Twitter/Slack/Discord scrapers refetch each share.
+
+Why this matters:
+- Without the bug fix, /api/og returned 500 → home page social previews showed nothing on every share.
+- Combined with pass 70's metadataBase, the home page's `og:image` now correctly resolves AND renders.
+- Cache header keeps the static-content edge function from running every time a share is scraped.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- Direct `curl /api/og` now returns `200 image/png 118725 bytes` (was empty reply / 500 before).
+- `curl -I /api/og` confirms `Cache-Control: public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400`.
+- Targeted Playwright `section-23g-poster-watch`: 15/15 green.
+
+Risk: low (CSS property split + cache header addition; no semantic change).
+
+Pending full-E2E (next test pass): nothing rendering changes; this fixes a 500 that wasn't covered by existing specs.
 
 ### Pass 70 — REAL BUG FIX (H): metadataBase resolves OG images to production URL
 Files changed:
