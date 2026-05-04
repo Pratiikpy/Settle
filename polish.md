@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 65 — pick next polish target. Public-surface metadata coverage now extends to /send + /send/link + /request + /pay (pass 63), the consumer payment flow.
+Pass 66 — next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 65 — pick next polish target. Public-surface metadata coverage now extend
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 64 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 65 landing waitlist input a11y/UX hints).
+- Items pending full-E2E verification: w6-landing-waitlist input attribute additions.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,35 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 65 — accessibility + UX (N + A): landing email input HTML hints
+Files changed:
+- `apps/web/components/w6-landing-waitlist.tsx`: added 5 input attributes to the work-email field:
+  - `autoComplete="email"` — browsers auto-fill saved emails (massive UX upgrade for returning visitors)
+  - `autoCapitalize="off"` — disables iOS auto-cap on first char
+  - `autoCorrect="off"` — disables iOS spell-correct on email
+  - `spellCheck={false}` — explicit no spellcheck
+  - `inputMode="email"` — phones show the email keyboard variant (with `@` and `.com` keys)
+
+Why this matters:
+- The landing page's "Request access" form is the primary lead-capture surface. Without `autoComplete="email"`, browsers + password managers can't pre-fill, costing real conversions on mobile.
+- iOS in particular auto-capitalizes + spell-checks email inputs by default, then submits something like "Test@Gmail.Com" with red squiggles — janky UX. These hints fix that.
+- All 5 attributes are pure HTML hints. Zero behavior change for the React/JS layer.
+
+Audited but skipped:
+- `target="_blank"` external links repo-wide: searched for ones missing `rel=` and found 0. All instances already have `rel="noreferrer"` (which implies noopener). No tabnabbing risk.
+- `/send` amount input already has `inputMode="decimal"` + `aria-label="Amount"`. Good.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /` confirms the input renders with all 5 attributes correctly.
+- Targeted Playwright (§23f magic-moment + nav-smoke): 20/20 green.
+
+Risk: very low (HTML hint attributes only).
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 64 — TEST PASS: full E2E reconciliation of passes 61-63
 - Items previously pending: /onboarding metadata + robots fix (p61), sitemap with 7 new public routes (p62), /send + /send/link + /request + /pay metadata layouts (p63).

@@ -89,6 +89,11 @@ export function LandingWaitlistForm({ source = "landing" }: Props) {
         type="email"
         required
         placeholder="Work email"
+        autoComplete="email"
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
+        inputMode="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         disabled={state === "submitting"}
