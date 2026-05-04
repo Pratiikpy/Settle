@@ -3,7 +3,29 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 72 = TEST PASS (every 4th). Reconcile passes 69, 70, 71 with full Playwright.
+Pass 73+ — REBALANCE per user directive (2026-05-04): too many recent passes have been SEO/metadata/cache. Prioritize real user-facing UX, functionality, data correctness, security, responsiveness, final product feel. Avoid further SEO/metadata work unless unique signal.
+
+## Category coverage (last 20 passes 53–72)
+- **O (repo hygiene/SEO/sitemap):** ×9 — over-saturated
+- **H (product feel — including share previews):** ×9 — over-saturated
+- **C (performance — caching):** ×4
+- **G (security — noindex / HSTS / COOP):** ×3
+- **D (error handling):** ×1
+- **M (observability):** ×1
+- **B (data correctness):** ×1
+- **A (UI/UX functionality):** ×1
+- **F (copywriting):** ×1
+- **N (a11y):** ×1
+- **I, J, K, L, E:** 0 (under-touched)
+
+## Refocused priorities (next 10 passes — pick from these only)
+- **A** UI/UX: scan dashboards/forms for any dead controls or broken-on-empty paths
+- **B** Data correctness: cross-user freshness on /m/[handle] when an authed merchant updates webhook/capability
+- **D** Error handling: ledger / activity / receipts client-side error states (toast + recovery copy)
+- **E** Responsiveness: real 390/768/1024 hand-test of key flows
+- **J** Animation: any janky transition (route changes, modal mount, confetti timing)
+- **K** Placeholders: scan for any remaining "TODO" / "Coming soon" copy in production routes
+- **L** Code health: unused exports in components/, packages/ui
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +48,8 @@ Pass 72 = TEST PASS (every 4th). Reconcile passes 69, 70, 71 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 69 themeColor, pass 70 metadataBase, pass 71 /api/og bug-fix + cache). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: viewport.themeColor, metadataBase, /api/og 500-fix + cache header.
+- Polish passes since last full-E2E: 0 (pass 72 ran 577/577).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +202,14 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 72 — TEST PASS: full E2E reconciliation of passes 69-71
+- Items previously pending: viewport.themeColor (p69), metadataBase root metadata (p70), /api/og 500-fix + cache (p71).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 577 specs.
+- **Result: 577/577 green in 7.7m.** No regressions despite the /api/og fix correcting a 500.
+- All previously pending items now fully verified.
+
+**User directive received during run**: rebalance future passes — too much SEO/metadata/cache work; prioritize user-facing UX, functionality, data correctness, security, responsiveness, final product feel. Refocused priority list added at top.
 
 ### Pass 71 — REAL BUG FIX (B + C): /api/og was 500-erroring + added cache headers
 Files changed:
