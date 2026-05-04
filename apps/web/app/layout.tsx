@@ -10,6 +10,14 @@ import { ThemeProvider } from "../components/theme-provider";
 import { RouteTransition } from "../components/route-transition";
 
 export const metadata: Metadata = {
+  // Resolves all relative metadata URLs (og:image, twitter:image,
+  // alternates) against this base when bots scrape the page in
+  // production. Without it, Next emits a build warning and resolves
+  // to http://localhost:3000 — which breaks Twitter/Slack/Discord
+  // previews when the site is deployed.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://settle.so",
+  ),
   title: "Settle — Pay anyone. Hire any AI. Trust the receipts.",
   description:
     "The payment app for the AI age. On Solana. Send anyone money. Hire AI agents to spend on your behalf with cryptographically scoped permissions. Every cent provable on-chain.",

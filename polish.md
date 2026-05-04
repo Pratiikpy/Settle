@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 70 — next polish target.
+Pass 71 — next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 70 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 69 viewport themeColor).
-- Items pending full-E2E verification: viewport.themeColor on root layout.
+- Polish passes since last full-E2E: 2 (pass 69 themeColor, pass 70 metadataBase).
+- Items pending full-E2E verification: viewport.themeColor on root layout, metadataBase root metadata.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,27 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 70 — REAL BUG FIX (H): metadataBase resolves OG images to production URL
+Files changed:
+- `apps/web/app/layout.tsx`: added `metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://settle.so")` to root metadata. Without this, Next emits a build warning AND resolves all relative metadata URLs (og:image, twitter:image, alternates) against `http://localhost:3000` in production HTML.
+
+Why this matters (real bug):
+- The build was emitting `⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000"` on every build — a warning easy to ignore but with real production impact.
+- Twitter/Slack/Discord scrapers fetching the production HTML would see `<meta property="og:image" content="http://localhost:3000/api/og">` — which is unreachable for them. **Every social share preview was likely broken in production.**
+- Now the URL resolves correctly: `<meta property="og:image" content="https://settle.so/api/og">` (verified via curl). All other OG/twitter images on dynamic routes (passes 22, 43, 45, 47, 49, 50, 53, 54, 55, 57) now resolve relative to this base.
+- Honors `NEXT_PUBLIC_SITE_URL` env var override for staging/preview deployments.
+
+Light verify:
+- `pnpm exec next build` — `metadataBase` warning gone. Only remaining warning is unrelated (`Using edge runtime on a page currently disables static generation` for OG image routes — that's intentional and correct, `next/og` requires edge).
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /` confirms `<meta property="og:image" content="https://settle.so/api/og"/>` (was localhost:3000 before).
+- Targeted Playwright `section-23g-poster-watch`: 15/15 green.
+
+Risk: very low. Pure metadata baseline declaration; doesn't change page render path.
+
+Pending full-E2E (next test pass): no rendering changes; all dynamic OG image URLs now resolve to the production base.
 
 ### Pass 69 — final product feel (H + I): viewport themeColor on root layout
 Files changed:
