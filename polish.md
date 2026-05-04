@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 54 — next polish target. After 53 passes, polish surface largely covered.
+Pass 55 — next polish target. After 54 passes, polish surface largely covered. Most gaps now require focused branches with full visual-regression (palette, code-split, CSP, Next bump).
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 54 — next polish target. After 53 passes, polish surface largely covered.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 53 /agents + /agents/templates metadata).
-- Items pending full-E2E verification: /agents layout + /agents/templates metadata.
+- Polish passes since last full-E2E: 2 (pass 53 /agents metadata, pass 54 /stats + /feed metadata + sitemap/robots reconciliation).
+- Items pending full-E2E verification: /agents + /stats + /feed metadata layouts, /activity removed from sitemap, /feed removed from robots disallow.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,32 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 54 — SEO + share previews (O + H): /stats + /feed metadata + sitemap/robots reconciliation
+Files added/changed:
+- `apps/web/app/stats/layout.tsx`: NEW. Title `"Network stats · Settle"`, description about live receipts/volume/capability ranking.
+- `apps/web/app/feed/layout.tsx`: NEW. Title `"Public agent activity · Settle"`, description about live feed of public agent payments on Solana.
+- `apps/web/app/robots.ts`: removed `/feed/` from disallow — it's a public surface.
+- `apps/web/app/sitemap.ts`: removed `/activity` from staticRoutes — it's per-user authed; bots can't auth.
+
+Why this matters:
+- Found a real consistency bug: `/feed` and `/activity` were BOTH in sitemap.xml (advertising "crawl me") AND in robots.txt disallow ("don't crawl"). Crawlers got mixed signals.
+- Resolved: `/feed` is genuinely public (no auth required, fetches /api/feed which serves public ALLOW receipts). Sitemap keeps it, robots no longer blocks.
+- `/activity` is the user's personal activity (notifications/inbox) — needs auth. Sitemap drops it, robots keeps blocking.
+- Both pages now have unique title/description metadata for the fraction of users / search bots that resolve to them.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /stats` and `curl /feed` confirm new metadata renders.
+- `curl /robots.txt` shows `/activity/` still disallowed but `/feed/` is now allowed.
+- `curl /sitemap.xml` shows `/feed` still listed but `/activity` removed.
+- Targeted Playwright nav-smoke: 14/14 green.
+
+Risk: very low. Layouts return children unchanged. The robots/sitemap reshuffle aligns intent with implementation.
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 53 — SEO + share previews (O + H): metadata for /agents + /agents/templates
 Files changed:

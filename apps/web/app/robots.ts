@@ -22,7 +22,6 @@ export default function robots(): MetadataRoute.Robots {
           "/audit/",
           "/notifications/",
           "/activity/",
-          "/feed/",
           "/allowances/",
           "/groups/",
           "/wishes/",

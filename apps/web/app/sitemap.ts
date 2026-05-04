@@ -11,7 +11,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/agents",
     "/agents/templates",
     "/feed",
-    "/activity",
+    // /activity removed: it's per-user authed content; bots can't auth
+    // and the page would just show wallet-disconnect prompts.
     "/help",
     "/docs",
     "/security",
