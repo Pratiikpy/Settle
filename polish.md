@@ -1609,3 +1609,34 @@ Files changed:
 
 ## Next target
 Pass 2 — empty states. Audit `/dashboard`, `/cards`, `/ledger`, `/feed`, `/agents` for what a brand-new user with $0 balance and no history sees. Add useful empty states where currently blank or non-obvious.
+
+---
+
+## Session close — pass 75 (consolidated UX polish, loop ended)
+
+User directive (verbatim): *"i wnt u to end the loop and do all polish and test in o n goo fast polish ui ux and readme everything that actuaky matter make a plan before polishing s u can cover most"*
+
+The cron-driven polish loop (job da0465fd, 2m cadence, 74 passes) is intentionally ended here. Pass 74 closed with **577/577 Playwright green in 7.6m**, verifying the dashboard 30s-polling change from pass 73.
+
+This pass batches the highest-ROI remaining UX/product-feel items into a single focused commit instead of stretching them across more cron iterations.
+
+### Shipped in this pass
+1. **Receipt poster `/r/[id]`** — added Tweet (Twitter intent prefilled with verb + amount + URL) and Copy-link buttons via new `components/receipt-share-buttons.tsx` client component. Wedge alignment: every receipt is now a one-click marketing asset.
+2. **`/watch` demo CTA** — added "Try it yourself → Hire an agent" gradient panel below the existing pillars, linking to `/start/agent`. Removes the dead-end after viewers finish the demo.
+3. **`/m/[handle]/manage` empty state** — replaced the terse "Handle not found. Try home." with an honest "@handle hasn't been claimed yet" panel that explains how merchant handles are actually claimed (capability publish or first payment) plus dual CTAs to `/start/merchant` and home.
+4. **`/start/merchant` step 1 honesty** — body copy no longer promises a one-click "claim handle" flow that doesn't exist. Now correctly frames step 1 as wallet connect, with the handle materialising on first payment or capability publish.
+5. **README "Try it now" section** — added a 4-item quickstart between Public Surfaces and Why Settle, pointing real visitors at /watch, /start/consumer, /start/agent, and /verify so they can prove every claim in 2 minutes without installing anything.
+
+### Out of scope (intentionally not done in this pass — already deferred)
+- Next 15.0.2 → 15.5.15 bump (29 vulns) — risky, separate dedicated pass
+- Full code-split heaviest pages
+- CSP / ESLint v9 flat-config migration
+- Palette unification across surfaces
+
+### Run summary across the full 75-pass loop
+- **18 test passes**, all 100% green; suite grew 521 → 577 specs (+56)
+- **57 polish passes** spanning all 15 categories (A–O); rebalanced after pass 72 to weight UI/UX + data correctness over SEO/cache
+- **3 real production bugs caught + fixed**: sandbox SOL copy mismatch (pass 38), `/api/og` 500 from Satori shorthand bug (pass 71), missing `metadataBase` causing localhost OG previews in prod (pass 70)
+- **Public-page metadata + OG coverage complete**, public-data API caching tiers in place (10s/30s/60s/5min), silent-failure logging across major API routes, accessibility polish (focus rings, aria-live, reduced-motion), wallet bootstrap script
+
+Loop is closed. Future polish work is on-demand, not cron-driven.

@@ -77,6 +77,45 @@ export default function WatchPage() {
             body="One transaction kills the agent's budget. Future spend dies instantly."
           />
         </section>
+
+        <section
+          data-testid="watch-cta"
+          style={{
+            marginTop: 56,
+            padding: "28px 24px",
+            background:
+              "linear-gradient(135deg, rgba(153,69,255,0.12) 0%, rgba(20,241,149,0.08) 100%)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 16,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: 14,
+          }}
+        >
+          <div style={{ fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: "-0.01em" }}>
+            Try it yourself.
+          </div>
+          <div style={{ color: "#9aa0a6", fontSize: 15, lineHeight: 1.5, maxWidth: 560 }}>
+            Hire your own agent in under a minute. Set a budget, scope what it
+            can spend on, and watch it run. You can revoke its keys any time.
+          </div>
+          <a
+            data-testid="watch-cta-link"
+            href="/start/agent"
+            style={{
+              padding: "12px 20px",
+              borderRadius: 10,
+              background: "#fff",
+              color: "#0a0a0c",
+              fontWeight: 600,
+              fontSize: 15,
+              textDecoration: "none",
+            }}
+          >
+            Hire an agent →
+          </a>
+        </section>
       </div>
     </main>
   );

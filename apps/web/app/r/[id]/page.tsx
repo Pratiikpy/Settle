@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSolscanUrl, getSolscanAccountUrl } from "../../../lib/solana";
+import { ReceiptShareButtons } from "../../../components/receipt-share-buttons";
 
 /**
  * Public receipt poster page — beautiful, shareable, server-rendered.
@@ -298,6 +299,11 @@ export default async function ReceiptPoster({
             >
               Verify hashes →
             </Link>
+            <ReceiptShareButtons
+              receiptId={r.request_id}
+              amountUsdc={amount}
+              decision={r.decision}
+            />
           </div>
 
           <footer

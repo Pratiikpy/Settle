@@ -16,9 +16,9 @@ export default function MerchantOnboarding() {
       steps={[
         {
           n: 1,
-          title: "Claim your merchant handle",
-          body: "Pick a name customers will see — like settle.xyz/m/yourname.",
-          ctaText: "Claim handle",
+          title: "Connect your wallet",
+          body: "Your wallet becomes your merchant identity. Customers will see settle.xyz/m/<handle> once you take your first payment or publish a capability.",
+          ctaText: "Open manage",
           ctaHref: "/m/me/manage",
         },
         {

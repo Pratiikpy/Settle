@@ -120,13 +120,34 @@ export default function MerchantManagePage() {
         {loading ? (
           <p className="text-sm text-[#52525b]">Loading…</p>
         ) : !profile ? (
-          <p className="text-sm text-[#52525b]">
-            Handle not found. Try{" "}
-            <Link href="/" className="text-accent">
-              home
-            </Link>
-            .
-          </p>
+          <div
+            data-testid="manage-handle-unclaimed"
+            className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5"
+          >
+            <h2 className="text-sm font-medium text-[#0a0a0c]">
+              @{params.handle} hasn&apos;t been claimed yet.
+            </h2>
+            <p className="mt-2 text-xs text-[#52525b]">
+              Merchant handles are claimed when a wallet first publishes a
+              capability or receives a payment under that handle. Once that
+              happens, the manage surfaces (disputes, webhook, capabilities,
+              analytics) unlock here.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href="/start/merchant"
+                className="rounded-lg border border-[#0a0a0c] bg-[#0a0a0c] px-3 py-1.5 text-xs font-medium text-white"
+              >
+                Get started as a merchant →
+              </Link>
+              <Link
+                href="/"
+                className="rounded-lg border border-[#e4e4e7] bg-white px-3 py-1.5 text-xs font-medium text-[#0a0a0c]"
+              >
+                Back to home
+              </Link>
+            </div>
+          </div>
         ) : !connected ? (
           <div className="rounded-2xl border border-[#e4e4e7] bg-[#fafafa] p-5 text-sm text-[#52525b]">
             Connect the wallet that owns @{params.handle} to manage. Public

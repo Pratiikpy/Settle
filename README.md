@@ -19,6 +19,17 @@ Settle is a payment app for the AI age — built on Solana. Send money to anyone
 - `/m/<handle>` — public merchant profile with trust badge (receipts × revenue × disputes)
 - `/leaderboard` — service usage leaderboard
 
+## Try it now (2 minutes, devnet)
+
+You can prove every claim above without installing anything.
+
+1. **Watch an agent spend** → [`/watch`](https://settle.so/watch). A real card on devnet. The terminal shows live ALLOW / DENY decisions; click any row to see the on-chain receipt.
+2. **Send a payment** → [`/start/consumer`](https://settle.so/start/consumer). Connect Phantom on devnet, get an airdrop from the in-app sandbox, send to `@alice`. Watch your receipt land at `/r/<id>` with full hash chain + Solscan link.
+3. **Hire your own agent** → [`/start/agent`](https://settle.so/start/agent). Pick a budget. Pick what it can buy. Hit go. Revoke any time — one transaction kills the credential.
+4. **Verify a receipt without us** → grab any `receipt_hash` from `/r/<id>`, drop it into [`/verify`](https://settle.so/verify). The SDK function (`@settle/sdk` `verifyReceipt`) re-derives the hash chain in your browser — no Settle servers required.
+
+Running the full stack locally? Skip to [Run locally](#run-locally) below.
+
 ---
 
 ## Why Settle
