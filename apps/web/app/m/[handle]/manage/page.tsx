@@ -72,6 +72,7 @@ export default function MerchantManagePage() {
           setPendingDisputes(pending);
         }
       })
+      .catch(() => { /* network error */ })
       .finally(() => setLoading(false));
   }, [params.handle]);
 
@@ -85,7 +86,8 @@ export default function MerchantManagePage() {
     // dedicated page for the full state.
     void fetch(`/api/merchants/${params.handle}/profile`)
       .then((r) => (r.ok ? r.json() : null))
-      .then(() => setWebhook(null));
+      .then(() => setWebhook(null))
+      .catch(() => { /* webhook state is best-effort */ });
   }, [profile, connected, owner, params.handle]);
 
   const isMerchant = profile && owner === profile.pubkey;

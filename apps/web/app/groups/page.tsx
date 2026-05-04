@@ -77,22 +77,30 @@ export default function GroupsPage() {
 
   async function reload() {
     if (!me || !PUBKEY_RE.test(me)) return;
-    const r = await fetch(`/api/group-accounts?member=${me}`);
-    if (!r.ok) return;
-    const j = (await r.json()) as { groups?: Group[] };
-    const gs = j.groups ?? [];
-    setGroups(gs);
-    if (gs.length > 0 && !active) setActive(gs[0]!.group_id);
-    const byGroup: Record<string, SpendRequest[]> = {};
-    await Promise.all(
-      gs.map(async (g) => {
-        const rr = await fetch(`/api/group-accounts/${g.group_id}/requests`);
-        if (!rr.ok) return;
-        const jj = (await rr.json()) as { requests?: SpendRequest[] };
-        byGroup[g.group_id] = jj.requests ?? [];
-      }),
-    );
-    setRequestsByGroup(byGroup);
+    try {
+      const r = await fetch(`/api/group-accounts?member=${me}`);
+      if (!r.ok) return;
+      const j = (await r.json()) as { groups?: Group[] };
+      const gs = j.groups ?? [];
+      setGroups(gs);
+      if (gs.length > 0 && !active) setActive(gs[0]!.group_id);
+      const byGroup: Record<string, SpendRequest[]> = {};
+      await Promise.all(
+        gs.map(async (g) => {
+          try {
+            const rr = await fetch(`/api/group-accounts/${g.group_id}/requests`);
+            if (!rr.ok) return;
+            const jj = (await rr.json()) as { requests?: SpendRequest[] };
+            byGroup[g.group_id] = jj.requests ?? [];
+          } catch {
+            /* per-group fetch failure — show group without requests */
+          }
+        }),
+      );
+      setRequestsByGroup(byGroup);
+    } catch {
+      /* network error — leave current state */
+    }
   }
 
   useEffect(() => {

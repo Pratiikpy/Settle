@@ -61,6 +61,7 @@ export default function SpendingPage() {
       .then((data) => {
         if (data.ok) setInsights(data);
       })
+      .catch(() => { /* network error — leave current state */ })
       .finally(() => setLoading(false));
   }, [connected, publicKey, days]);
 

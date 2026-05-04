@@ -40,7 +40,8 @@ export default function RelayerSettingsPage() {
   useEffect(() => {
     fetch("/api/relayer")
       .then((r) => r.json())
-      .then((j: { relayer: RelayerInfo }) => setInfo(j.relayer));
+      .then((j: { relayer: RelayerInfo }) => setInfo(j.relayer))
+      .catch(() => { /* relayer info is decorative — silent */ });
   }, []);
 
   return (

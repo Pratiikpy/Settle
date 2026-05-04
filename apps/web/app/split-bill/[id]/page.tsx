@@ -52,14 +52,19 @@ export default function SplitBillPage() {
     let channel: RealtimeChannel | null = null;
 
     async function hydrate() {
-      const r = await fetch(`/api/split-bills/${params.id}`);
-      const d = await r.json();
-      if (cancelled) return;
-      if (r.ok) {
-        setBill(d.bill);
-        setPayments(d.payments ?? []);
+      try {
+        const r = await fetch(`/api/split-bills/${params.id}`);
+        const d = await r.json();
+        if (cancelled) return;
+        if (r.ok) {
+          setBill(d.bill);
+          setPayments(d.payments ?? []);
+        }
+      } catch {
+        /* network error — leave loading false so UI doesn't spin forever */
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     }
 
     void hydrate();

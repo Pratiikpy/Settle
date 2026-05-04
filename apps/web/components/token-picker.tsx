@@ -107,7 +107,7 @@ export function TokenPicker({
       >
         {value.logoURI ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={value.logoURI} alt="" className="h-4 w-4 rounded-full" />
+          <img src={value.logoURI} alt={value.symbol} className="h-4 w-4 rounded-full" />
         ) : (
           <span className="grid h-4 w-4 place-items-center rounded-full bg-[#e4e4e7] text-[8px]">
             {value.symbol.slice(0, 2)}

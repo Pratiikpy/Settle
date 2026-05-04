@@ -366,7 +366,7 @@ export default function AllowancesPage() {
                       onChange={(e) => setKid(e.target.value)}
                       className="rounded-lg border border-[#e4e4e7] bg-transparent px-3 py-2 text-sm"
                     />
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div>
                         <p className="text-[10px] uppercase tracking-wide text-[#71717a]">
                           Weekly USDC

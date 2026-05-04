@@ -83,7 +83,8 @@ export default function CardDetailPage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((j: { pacts?: CardPact[] } | null) => {
         if (j?.pacts) setPacts(j.pacts);
-      });
+      })
+      .catch(() => { /* pacts are decorative — silent */ });
   }, [params.id]);
 
   async function closePact(pactPubkey: string) {

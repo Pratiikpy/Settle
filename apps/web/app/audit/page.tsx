@@ -99,6 +99,7 @@ export default function AuditPage() {
     fetch(`/api/audit/phase5?wallet=${publicKey.toBase58()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((j: AuditResponse | null) => setData(j))
+      .catch(() => { /* audit fetch failed — show empty state */ })
       .finally(() => setLoading(false));
   }, [publicKey]);
 

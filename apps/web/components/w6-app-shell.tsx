@@ -45,12 +45,11 @@ export function W6AppShell({
   const showDevnet =
     showBanner ?? (cluster === "devnet" || cluster === "localnet");
 
-  // Set body[data-w6] so the CSS overrides only apply to opted-in pages.
+  // Set body[data-w6] so the CSS overrides apply. Never removed — all app
+  // pages use this shell, so tearing it down on unmount causes a style
+  // flash during client-side navigation.
   useEffect(() => {
     document.body.setAttribute("data-w6", "1");
-    return () => {
-      document.body.removeAttribute("data-w6");
-    };
   }, []);
 
   return (

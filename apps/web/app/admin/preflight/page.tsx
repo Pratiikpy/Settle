@@ -53,6 +53,7 @@ export default function PreflightPage() {
     fetch("/api/preflight")
       .then((r) => (r.ok ? r.json() : null))
       .then((j: PreflightResponse | null) => setData(j))
+      .catch(() => { /* preflight fetch failed */ })
       .finally(() => setLoading(false));
   }, [connected]);
 

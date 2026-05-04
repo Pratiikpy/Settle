@@ -77,7 +77,8 @@ export default function MerchantCapabilitiesPage() {
           const j = (await resp.json()) as { pubkey?: string };
           if (j.pubkey) setMerchantPubkey(j.pubkey);
         }
-      });
+      })
+      .catch(() => { /* handle resolution failed — show unauthenticated view */ });
   }, [params.handle]);
 
   // Pull existing entries for the merchant's domain (or all if no
