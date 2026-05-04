@@ -66,4 +66,16 @@ pub enum RouterError {
 
     #[msg("Authority does not match the card.authority")]
     AuthorityMismatch,
+
+    #[msg("Initialisation parameters fail invariant checks (zero caps, per_call > daily, etc.)")]
+    InvalidParams,
+
+    #[msg("Card is already revoked")]
+    AlreadyRevoked,
+
+    #[msg("Cannot record an on-chain tx hash on a DENY receipt; no signature was produced")]
+    CannotRecordOutcomeOnDeny,
+
+    #[msg("Outcome already recorded for this receipt")]
+    OutcomeAlreadyRecorded,
 }

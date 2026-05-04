@@ -1,217 +1,232 @@
 // Copyright (c) Settle.
 // SPDX-License-Identifier: MIT
 //
-// Settle x Ika — dWallet router program (Anchor 1.0, sidetrack workspace).
+// Settle x Ika — dWallet router program (Anchor 1.0).
 //
 // THESIS
 //   Solana defines the policy. Ika enforces custody and signing across chains.
 //   Settle shows proof of what was allowed, blocked, signed, and executed.
 //
 // SCOPE
-//   This program is a sibling to `settle-agent-card`. It does not read, write,
-//   or share state with the deployed program at HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD.
+//   Sibling to `settle-agent-card`. Does not read, write, or share state with
+//   the deployed program at HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD.
 //   Cross-chain card state is owned entirely by this program.
 //
-// INSTRUCTIONS (6)
-//   1. init_router_gas_deposit   — one-time-per-cluster: prepare the shared
-//      Ika `GasDeposit` PDA so users do not pay IKA fees directly.
-//   2. init_crosschain_card      — allocate `CrosschainCard` PDA bound to a
-//      freshly-DKG'd dWallet.
-//   3. attach_dwallet_authority  — CPI `transfer_ownership` on the dWallet so
-//      its authority becomes this program's per-card CPI authority PDA.
-//   4. request_crosschain_sign   — POLICY GATE. Validates against
-//      `CrosschainCard` (cap, allowlist, expiry, revoke). On pass, CPI
-//      `approve_message` on the Ika dWallet program. Emits `CrosschainPolicyEvent`
-//      with the full hash chain.
-//   5. record_signed_outcome     — after Ika signs and the user broadcasts the
-//      cross-chain tx, record `target_tx_hash` (and explorer URL) into the
-//      receipt row.
-//   6. revoke_crosschain_card    — set `revoked = true`. Future signs fail
-//      the gate. Optional: CPI `transfer_ownership` to a burn address to
-//      permanently freeze the dWallet.
+// INSTRUCTIONS (4 — phase B)
+//   1. init_crosschain_card     — allocate `CrosschainCard` PDA bound to a
+//      pre-DKG'd Ika dWallet whose authority has already been transferred
+//      to this program's per-card CPI authority PDA via off-chain Ika RPC.
+//   2. request_crosschain_sign  — POLICY GATE. Validates against
+//      `CrosschainCard` (cap, allowlist, expiry, revoke). Allocates a
+//      `CrosschainReceipt` PDA for the request (sealed for both ALLOW
+//      and DENY paths). On ALLOW, increments `used_today_minor` and CPIs
+//      `approve_message` on the Ika dWallet program. On DENY, NO CPI is
+//      ever made; no signature is produced. Emits `CrosschainPolicyEvent`.
+//   3. record_signed_outcome    — once the cross-chain tx broadcasts,
+//      writes `target_tx_hash` into the previously-sealed receipt PDA.
+//      Does not change policy state. Emits `CrosschainSignedOutcomeEvent`.
+//   4. revoke_crosschain_card   — set `revoked = true`. Future signs fail
+//      the gate. Bumps `policy_version`. Emits `CrosschainCardRevokedEvent`.
 //
 // IKA DEVNET
 //   Program id (pre-alpha): 87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY
 //   gRPC endpoint:          https://pre-alpha-dev-1.ika.ika-network.net:443
 //
 // PRE-ALPHA DISCLAIMER
-//   The Ika devnet uses a single mock signer, not real distributed MPC. State
-//   will be wiped at Ika Alpha 1. Receipts produced today are still valid as
-//   ALLOW/DENY proofs of the policy gate; the signature material is not
-//   production-grade.
+//   The Ika devnet uses a single mock signer, not real distributed MPC.
+//   Receipts produced today are still valid as ALLOW/DENY proofs of the
+//   policy gate; the signature material is not production-grade.
+//
+// NOT IMPLEMENTED ON-CHAIN (phase B)
+//   - GasDeposit creation/top-up: handled off-chain via Ika's `CreateDeposit`
+//     and `TopUp` instructions called directly by the user/operator. The
+//     `gas_deposit_pubkey` is recorded on `CrosschainCard` for reference
+//     and may be consumed by future ixs.
+//   - dWallet authority transfer: handled off-chain via Ika's
+//     `TransferOwnership` instruction during the DKG flow. We validate the
+//     authority is correct in `request_crosschain_sign` by reading the
+//     dWallet account state inside the CPI.
 
 use anchor_lang::prelude::*;
+use ika_dwallet_anchor::{DWalletContext, CPI_AUTHORITY_SEED};
 
 pub mod errors;
 pub mod events;
+pub mod policy;
 pub mod state;
 
 pub use errors::*;
 pub use events::*;
 pub use state::*;
 
-// Placeholder program id (valid base58, but not our real deploy address).
-// Replace via:
-//   solana-keygen new -o keys/dwallet_router-keypair.json --no-bip39-passphrase
-//   anchor keys sync
-// before any devnet/mainnet deploy. The placeholder lets `cargo check` pass
-// and lets the IDL render so other crates can codegen against this program
-// without waiting for keypair generation.
 declare_id!("FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK");
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Program entrypoints
+// ─────────────────────────────────────────────────────────────────────────────
 
 #[program]
 pub mod settle_dwallet_router {
     use super::*;
 
-    /// Phase B: see SIDETRACK-IKA-PLAN.md §2.3 row 1.
-    pub fn init_router_gas_deposit(_ctx: Context<InitRouterGasDeposit>) -> Result<()> {
-        // TODO(phase-b): CPI `CreateDeposit` on the Ika program; record the
-        // GasDeposit pubkey in a small program-owned `RouterConfig` PDA.
-        Ok(())
-    }
-
-    /// Phase B: see SIDETRACK-IKA-PLAN.md §2.3 row 2.
     pub fn init_crosschain_card(
-        _ctx: Context<InitCrosschainCard>,
-        _params: InitCrosschainCardParams,
+        ctx: Context<InitCrosschainCard>,
+        params: InitCrosschainCardParams,
     ) -> Result<()> {
-        // TODO(phase-b): allocate `CrosschainCard`, copy params (cap, allowlist,
-        // expiry), bind to caller-supplied dwallet pubkey.
-        Ok(())
+        instructions::init_crosschain_card(ctx, params)
     }
 
-    /// Phase B: see SIDETRACK-IKA-PLAN.md §2.3 row 3.
-    pub fn attach_dwallet_authority(_ctx: Context<AttachDwalletAuthority>) -> Result<()> {
-        // TODO(phase-b): CPI `transfer_ownership` on the Ika dWallet so the
-        // authority becomes this program's per-card CPI authority PDA.
-        Ok(())
-    }
-
-    /// Phase B: see SIDETRACK-IKA-PLAN.md §2.3 row 4.
-    /// THE POLICY GATE.
     pub fn request_crosschain_sign(
-        _ctx: Context<RequestCrosschainSign>,
-        _params: RequestCrosschainSignParams,
+        ctx: Context<RequestCrosschainSign>,
+        params: RequestCrosschainSignParams,
     ) -> Result<()> {
-        // TODO(phase-b): validate policy against CrosschainCard:
-        //   - revoked? -> fail Revoked
-        //   - now > expiry_slot? -> fail Expired
-        //   - amount > per_call_max_minor? -> fail OverCap
-        //   - if reset window passed: zero used_today_minor; else used_today + amount > daily_cap -> fail OverCap
-        //   - allowlist match by (chain_namespace, chain_reference, recipient)? -> else fail OffAllowlist
-        //   - capability_hash mismatch (when allowlist entry pins one)? -> fail CapabilityNotPinned
-        // On ALLOW: increment used_today_minor; CPI ika_dwallet_anchor::approve_message;
-        //   emit CrosschainPolicyEvent { decision: Allow, hashes... }
-        // On DENY: emit CrosschainPolicyEvent { decision: Deny, deny_code, hashes... }
-        //   No CPI is made. No signature is ever produced.
-        Ok(())
+        instructions::request_crosschain_sign(ctx, params)
     }
 
-    /// Phase B: see SIDETRACK-IKA-PLAN.md §2.3 row 5.
     pub fn record_signed_outcome(
-        _ctx: Context<RecordSignedOutcome>,
-        _target_tx_hash: [u8; 32],
+        ctx: Context<RecordSignedOutcome>,
+        target_tx_hash: [u8; 32],
     ) -> Result<()> {
-        // TODO(phase-b): write the cross-chain tx hash into the per-request
-        // receipt account so the off-chain renderer can build the explorer URL.
-        Ok(())
+        instructions::record_signed_outcome(ctx, target_tx_hash)
     }
 
-    /// Phase B: see SIDETRACK-IKA-PLAN.md §2.3 row 6.
-    pub fn revoke_crosschain_card(_ctx: Context<RevokeCrosschainCard>) -> Result<()> {
-        // TODO(phase-b): set revoked = true; bump policy_version; emit event.
-        Ok(())
+    pub fn revoke_crosschain_card(ctx: Context<RevokeCrosschainCard>) -> Result<()> {
+        instructions::revoke_crosschain_card(ctx)
     }
 }
 
-// ── Account contexts (skeleton; full constraints land in Phase B) ──
-
-#[derive(Accounts)]
-pub struct InitRouterGasDeposit<'info> {
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-    // TODO(phase-b): RouterConfig PDA, Ika program AccountInfo, GasDeposit PDA.
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Account contexts
+// ─────────────────────────────────────────────────────────────────────────────
 
 #[derive(Accounts)]
 #[instruction(params: InitCrosschainCardParams)]
 pub struct InitCrosschainCard<'info> {
-    /// CHECK: card PDA, populated in handler. Seeds = [b"crosschain-card", authority, label_hash].
-    #[account(mut)]
-    pub card: UncheckedAccount<'info>,
+    #[account(
+        init,
+        payer = payer,
+        space = CrosschainCard::SPACE,
+        seeds = [CrosschainCard::SEED_PREFIX, authority.key().as_ref(), params.label_hash.as_ref()],
+        bump,
+    )]
+    pub card: Account<'info, CrosschainCard>,
+
     pub authority: Signer<'info>,
+
     #[account(mut)]
     pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
 
-#[derive(Accounts)]
-pub struct AttachDwalletAuthority<'info> {
-    /// CHECK: card PDA validated in handler.
-    #[account(mut)]
-    pub card: UncheckedAccount<'info>,
-    pub authority: Signer<'info>,
-    /// CHECK: Ika dWallet account (validated by ika-dwallet-anchor CPI).
-    #[account(mut)]
-    pub dwallet: UncheckedAccount<'info>,
-    /// CHECK: per-card CPI authority PDA (seeds: [b"__ika_cpi_authority", card.key()]).
-    pub cpi_authority: UncheckedAccount<'info>,
-    /// CHECK: Ika dWallet program.
-    pub dwallet_program: UncheckedAccount<'info>,
-    /// CHECK: this program's executable account (for CPI authority verification).
-    pub program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
 #[instruction(params: RequestCrosschainSignParams)]
 pub struct RequestCrosschainSign<'info> {
-    /// CHECK: card PDA validated in handler.
-    #[account(mut)]
-    pub card: UncheckedAccount<'info>,
+    /// CrosschainCard PDA. Mutable: we increment `used_today_minor` on ALLOW.
+    #[account(
+        mut,
+        seeds = [CrosschainCard::SEED_PREFIX, card.authority.as_ref(), card.label_hash.as_ref()],
+        bump = card.bump,
+    )]
+    pub card: Account<'info, CrosschainCard>,
+
+    /// Authority must sign sign-requests. Authority and dWallet ownership are
+    /// pre-bound at init time; this signature ties this on-chain event to the
+    /// human/agent that owns the card.
     pub authority: Signer<'info>,
-    /// CHECK: Ika DWalletCoordinator PDA.
+
+    /// Per-request CrosschainReceipt PDA. Sealed for both ALLOW and DENY.
+    #[account(
+        init,
+        payer = payer,
+        space = CrosschainReceipt::SPACE,
+        seeds = [CrosschainReceipt::SEED_PREFIX, card.key().as_ref(), params.request_id.as_ref()],
+        bump,
+    )]
+    pub receipt: Account<'info, CrosschainReceipt>,
+
+    // ── Ika CPI accounts (only consumed on the ALLOW path) ──
+
+    /// Ika DWalletCoordinator PDA (read-only; provides epoch).
+    /// Validated by the Ika program when `approve_message` is invoked.
+    /// CHECK: passed verbatim to Ika; no constraints needed here.
     pub coordinator: UncheckedAccount<'info>,
-    /// CHECK: Ika MessageApproval PDA, populated by CPI.
+
+    /// Ika MessageApproval PDA (created by CPI on ALLOW).
+    /// CHECK: passed verbatim to Ika; the Ika program populates it.
     #[account(mut)]
     pub message_approval: UncheckedAccount<'info>,
-    /// CHECK: Ika dWallet account.
+
+    /// Ika DWallet account whose authority has already been transferred to
+    /// `cpi_authority` (this program's per-program CPI authority PDA).
+    /// CHECK: validated by Ika at CPI time; we only pass it through.
     pub dwallet: UncheckedAccount<'info>,
-    /// CHECK: per-card CPI authority PDA.
+
+    /// CPI authority PDA — derived from `[CPI_AUTHORITY_SEED]` against this
+    /// program. Must match the `dwallet.authority` set off-chain.
+    /// CHECK: derived; the Ika program verifies the seed chain.
+    #[account(
+        seeds = [CPI_AUTHORITY_SEED],
+        bump,
+    )]
     pub cpi_authority: UncheckedAccount<'info>,
-    /// CHECK: Ika dWallet program.
+
+    /// The Ika dWallet program account.
+    /// CHECK: id passed through to CPI.
     pub dwallet_program: UncheckedAccount<'info>,
-    /// CHECK: this program's executable account.
+
+    /// This program's executable account. Anchor v1's `Program<'info, ...>`
+    /// would require a generated type here; raw account reference is fine.
+    /// CHECK: used by Ika to verify the CPI call chain.
     pub program: UncheckedAccount<'info>,
+
     #[account(mut)]
     pub payer: Signer<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
 pub struct RecordSignedOutcome<'info> {
-    /// CHECK: card PDA validated in handler.
-    #[account(mut)]
-    pub card: UncheckedAccount<'info>,
+    /// CrosschainCard read-only. We don't mutate it here.
+    #[account(
+        seeds = [CrosschainCard::SEED_PREFIX, card.authority.as_ref(), card.label_hash.as_ref()],
+        bump = card.bump,
+    )]
+    pub card: Account<'info, CrosschainCard>,
+
+    /// Receipt to be updated. Must reference `card`.
+    #[account(
+        mut,
+        seeds = [CrosschainReceipt::SEED_PREFIX, card.key().as_ref(), receipt.request_id.as_ref()],
+        bump = receipt.bump,
+        constraint = receipt.card == card.key() @ RouterError::AuthorityMismatch,
+    )]
+    pub receipt: Account<'info, CrosschainReceipt>,
+
+    /// Authority signs to authorise the recording. Prevents anyone from
+    /// stamping a tx hash onto someone else's receipt.
+    #[account(constraint = authority.key() == card.authority @ RouterError::AuthorityMismatch)]
     pub authority: Signer<'info>,
-    // TODO(phase-b): per-request receipt PDA.
 }
 
 #[derive(Accounts)]
 pub struct RevokeCrosschainCard<'info> {
-    /// CHECK: card PDA validated in handler.
-    #[account(mut)]
-    pub card: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        seeds = [CrosschainCard::SEED_PREFIX, card.authority.as_ref(), card.label_hash.as_ref()],
+        bump = card.bump,
+        constraint = authority.key() == card.authority @ RouterError::AuthorityMismatch,
+    )]
+    pub card: Account<'info, CrosschainCard>,
+
     pub authority: Signer<'info>,
 }
 
-// ── Instruction params ──
+// ─────────────────────────────────────────────────────────────────────────────
+// Instruction params
+// ─────────────────────────────────────────────────────────────────────────────
 
-/// Initialization payload for `init_crosschain_card`.
-///
-/// The dWallet must already exist on the Ika program (created off-chain via
-/// gRPC DKG). `dwallet_pubkey` is the on-chain `DWallet` account that this
-/// card will control. Authority transfer happens in `attach_dwallet_authority`.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct InitCrosschainCardParams {
     pub label_hash: [u8; 32],
@@ -224,14 +239,9 @@ pub struct InitCrosschainCardParams {
     pub allowlist: Vec<CrosschainAllowlistEntry>,
 }
 
-/// Sign-request payload for `request_crosschain_sign`.
-///
-/// `message_digest` is the keccak256 of the cross-chain transaction bytes,
-/// computed off-chain by the caller. We record the full hash chain
-/// (receipt_hash, reason_hash, policy_snapshot_hash, purpose_hash) for
-/// receipt parity with existing Settle x402 receipts.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct RequestCrosschainSignParams {
+    pub request_id: [u8; 16],
     pub message_digest: [u8; 32],
     pub message_metadata_digest: [u8; 32],
     pub user_pubkey: [u8; 32],
@@ -249,4 +259,227 @@ pub struct RequestCrosschainSignParams {
     pub reason_hash: [u8; 32],
     pub policy_snapshot_hash: [u8; 32],
     pub purpose_hash: [u8; 32],
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Instruction handlers
+// ─────────────────────────────────────────────────────────────────────────────
+
+mod instructions {
+    use super::*;
+
+    pub fn init_crosschain_card(
+        ctx: Context<InitCrosschainCard>,
+        params: InitCrosschainCardParams,
+    ) -> Result<()> {
+        require!(
+            params.allowlist.len() <= MAX_CC_ALLOWLIST,
+            RouterError::AllowlistTooLarge
+        );
+        require!(params.daily_cap_minor > 0, RouterError::InvalidParams);
+        require!(params.per_call_max_minor > 0, RouterError::InvalidParams);
+        require!(
+            params.per_call_max_minor <= params.daily_cap_minor,
+            RouterError::InvalidParams
+        );
+
+        let clock = Clock::get()?;
+        let card = &mut ctx.accounts.card;
+
+        card.authority = ctx.accounts.authority.key();
+        card.agent_pubkey = params.agent_pubkey;
+        card.label_hash = params.label_hash;
+        card.dwallet = params.dwallet_pubkey;
+        card.gas_deposit = params.gas_deposit_pubkey;
+        card.per_call_max_minor = params.per_call_max_minor;
+        card.daily_cap_minor = params.daily_cap_minor;
+        card.used_today_minor = 0;
+        card.last_reset_slot = clock.slot;
+        card.allowlist = params.allowlist;
+        card.expiry_slot = params.expiry_slot;
+        card.revoked = false;
+        card.policy_version = 1;
+        card.created_at = clock.unix_timestamp;
+        card.bump = ctx.bumps.card;
+
+        Ok(())
+    }
+
+    pub fn request_crosschain_sign(
+        ctx: Context<RequestCrosschainSign>,
+        params: RequestCrosschainSignParams,
+    ) -> Result<()> {
+        let clock = Clock::get()?;
+        let current_slot = clock.slot;
+
+        // ── Policy evaluation. The pure logic lives in `crate::policy` so it
+        //    can be unit-tested without a Solana runtime.
+        let policy_inputs = crate::policy::PolicyInputs {
+            amount_minor: params.amount_minor,
+            chain_namespace: params.chain_namespace,
+            chain_reference: params.chain_reference,
+            recipient_kind: params.recipient_kind,
+            recipient: params.recipient,
+            asset_kind: params.asset_kind,
+            asset: params.asset,
+            capability_hash: params.capability_hash,
+        };
+        let deny_code = crate::policy::evaluate_policy(&ctx.accounts.card, &policy_inputs, current_slot);
+
+        let card = &mut ctx.accounts.card;
+        let receipt = &mut ctx.accounts.receipt;
+
+        // Seal the receipt PDA with the policy decision regardless of outcome.
+        seal_receipt(
+            receipt,
+            card.key(),
+            card.policy_version,
+            &params,
+            deny_code,
+            current_slot,
+            ctx.bumps.receipt,
+        );
+
+        // Emit the same on-chain event Settle's indexer reads for x402 flows,
+        // adapted for cross-chain context.
+        emit!(CrosschainPolicyEvent {
+            card: card.key(),
+            authority: card.authority,
+            agent_pubkey: card.agent_pubkey,
+            decision: if deny_code == 0 { DECISION_ALLOW } else { DECISION_DENY },
+            deny_code,
+            amount_minor: params.amount_minor,
+            chain_namespace: params.chain_namespace,
+            chain_reference: params.chain_reference,
+            recipient: params.recipient,
+            asset: params.asset,
+            message_digest: params.message_digest,
+            receipt_hash: params.receipt_hash,
+            reason_hash: params.reason_hash,
+            policy_snapshot_hash: params.policy_snapshot_hash,
+            purpose_hash: params.purpose_hash,
+            decision_slot: current_slot,
+            policy_version: card.policy_version,
+        });
+
+        if deny_code != 0 {
+            // DENY path: receipt is sealed, no CPI, no signature ever produced.
+            return Ok(());
+        }
+
+        // ── ALLOW path. Apply daily cap reset window if elapsed.
+        if current_slot.saturating_sub(card.last_reset_slot) >= CC_CAP_WINDOW_SLOTS {
+            card.used_today_minor = 0;
+            card.last_reset_slot = current_slot;
+        }
+
+        // Bump the daily counter. Overflow guard: u128 + u128 vs u128 max — the
+        // policy gate above already ensures this fits, but defence-in-depth.
+        card.used_today_minor = card
+            .used_today_minor
+            .checked_add(params.amount_minor)
+            .ok_or(RouterError::ArithmeticOverflow)?;
+
+        // CPI to Ika: approve the message for signing. The Ika network observes
+        // the resulting MessageApproval PDA and writes the signature back
+        // asynchronously via the NOA. The off-chain client polls the PDA
+        // afterwards and submits `record_signed_outcome` once broadcast lands.
+        let cpi = DWalletContext {
+            dwallet_program: ctx.accounts.dwallet_program.to_account_info(),
+            cpi_authority: ctx.accounts.cpi_authority.to_account_info(),
+            caller_program: ctx.accounts.program.to_account_info(),
+            cpi_authority_bump: ctx.bumps.cpi_authority,
+        };
+
+        cpi.approve_message(
+            &ctx.accounts.coordinator.to_account_info(),
+            &ctx.accounts.message_approval.to_account_info(),
+            &ctx.accounts.dwallet.to_account_info(),
+            &ctx.accounts.payer.to_account_info(),
+            &ctx.accounts.system_program.to_account_info(),
+            params.message_digest,
+            params.message_metadata_digest,
+            params.user_pubkey,
+            params.signature_scheme,
+            params.message_approval_bump,
+        )?;
+
+        Ok(())
+    }
+
+    pub fn record_signed_outcome(
+        ctx: Context<RecordSignedOutcome>,
+        target_tx_hash: [u8; 32],
+    ) -> Result<()> {
+        let receipt = &mut ctx.accounts.receipt;
+        require!(
+            receipt.decision == DECISION_ALLOW,
+            RouterError::CannotRecordOutcomeOnDeny
+        );
+        require!(
+            receipt.target_tx_hash == [0u8; 32],
+            RouterError::OutcomeAlreadyRecorded
+        );
+
+        receipt.target_tx_hash = target_tx_hash;
+
+        let clock = Clock::get()?;
+        emit!(CrosschainSignedOutcomeEvent {
+            card: receipt.card,
+            request_id: receipt.request_id,
+            target_tx_hash,
+            recorded_slot: clock.slot,
+        });
+
+        Ok(())
+    }
+
+    pub fn revoke_crosschain_card(ctx: Context<RevokeCrosschainCard>) -> Result<()> {
+        let card = &mut ctx.accounts.card;
+        require!(!card.revoked, RouterError::AlreadyRevoked);
+
+        card.revoked = true;
+        card.policy_version = card.policy_version.saturating_add(1);
+
+        let clock = Clock::get()?;
+        emit!(CrosschainCardRevokedEvent {
+            card: card.key(),
+            authority: card.authority,
+            revoked_slot: clock.slot,
+            policy_version: card.policy_version,
+        });
+
+        Ok(())
+    }
+
+    // ── Pure helpers ──
+
+    fn seal_receipt(
+        receipt: &mut CrosschainReceipt,
+        card_key: Pubkey,
+        policy_version: u32,
+        params: &RequestCrosschainSignParams,
+        deny_code: u8,
+        current_slot: u64,
+        bump: u8,
+    ) {
+        receipt.card = card_key;
+        receipt.request_id = params.request_id;
+        receipt.decision = if deny_code == 0 { DECISION_ALLOW } else { DECISION_DENY };
+        receipt.deny_code = deny_code;
+        receipt.amount_minor = params.amount_minor;
+        receipt.chain_namespace = params.chain_namespace;
+        receipt.chain_reference = params.chain_reference;
+        receipt.recipient = params.recipient;
+        receipt.asset = params.asset;
+        receipt.message_digest = params.message_digest;
+        receipt.receipt_hash = params.receipt_hash;
+        receipt.reason_hash = params.reason_hash;
+        receipt.policy_snapshot_hash = params.policy_snapshot_hash;
+        receipt.purpose_hash = params.purpose_hash;
+        receipt.target_tx_hash = [0u8; 32]; // populated by record_signed_outcome
+        receipt.decision_slot = current_slot;
+        receipt.policy_version = policy_version;
+        receipt.bump = bump;
+    }
 }

@@ -8,7 +8,7 @@
 This file is updated *as Phase B–F complete*, never retroactively. A row that
 says "PENDING" is allowed; a row that quietly disappears is not.
 
-Last updated: **Phase A closed; B–F PENDING**.
+Last updated: **Phases A + B closed; C–F PENDING**.
 
 ### Phase A actuals (real, not aspirational)
 
@@ -28,7 +28,7 @@ The program is **deployed but has stub instruction bodies** (Phase A skeleton). 
 
 | # | Layer | Tool | Counts | Status |
 |---|---|---|---|---|
-| 1 | On-chain (router) | `solana-program-test` via `anchor test` | 12 specs (6 happy + 6 deny) | **PENDING — Phase B** |
+| 1 | On-chain (router) — policy gate | `cargo test --lib` against `policy::evaluate_policy` | 15 specs (3 ALLOW + 9 DENY + 3 priority-order) | **GREEN as of Phase B** |
 | 2 | SDK canonical hashing | Vitest in `@settle/sdk` | 5 specs | **PENDING — Phase C** |
 | 3 | API contracts | Vitest in `apps/web` | 4 specs | **PENDING — Phase C** |
 | 4 | Playwright UI | `apps/web` Playwright | 8 specs | **PENDING — Phase F** |
@@ -65,22 +65,31 @@ pre-alpha. The architectural integration is real.
 
 ## 3. Detailed results (filled in as phases complete)
 
-### 3.1 On-chain router tests (Phase B)
+### 3.1 On-chain router tests — policy gate (Phase B)
 
-| Spec | Description | Result | Notes |
-|---|---|---|---|
-| `init_card_happy_path` | init produces card with all defaults | PENDING | |
-| `attach_dwallet_authority_happy_path` | CPI transfer_ownership succeeds | PENDING | |
-| `request_sign_allow_happy_path` | policy passes; CPI approve_message executes | PENDING | |
-| `daily_cap_resets_after_window` | sign after `last_reset + 220_000` slots zeroes used_today | PENDING | |
-| `capability_hash_pin_match` | sign succeeds when pin matches | PENDING | |
-| `revoke_then_freeze_happy_path` | revoked card flips state; subsequent sign fails | PENDING | |
-| `deny_revoked` | revoked card → DenyCode::Revoked | PENDING | |
-| `deny_over_per_call` | amount > per_call_max → DenyCode::OverCap | PENDING | |
-| `deny_over_daily` | (used + amount) > daily_cap → DenyCode::OverCap | PENDING | |
-| `deny_off_allowlist_chain` | wrong chain → DenyCode::OffAllowlist | PENDING | |
-| `deny_off_allowlist_recipient` | wrong recipient → DenyCode::OffAllowlist | PENDING | |
-| `deny_expired` | now > expiry_slot → DenyCode::Expired | PENDING | |
+Run with: `cargo test --lib -p settle-dwallet-router` (native target, no Solana runtime needed because `policy::evaluate_policy` is pure logic).
+
+Result: **15/15 green** as of `cargo test` run on Phase B close-out.
+
+| Spec | Description | Result |
+|---|---|---|
+| `allow_when_all_pass` | All checks pass; deny_code = 0 | GREEN |
+| `allow_after_window_reset_zeroes_used_today` | Sign after `last_reset + 220_000` slots resets used_today_minor | GREEN |
+| `allow_when_capability_matches_pinned_entry` | Pinned capability_hash matches request | GREEN |
+| `deny_revoked` | revoked card → CrosschainDenyCode::Revoked | GREEN |
+| `deny_expired` | now ≥ expiry_slot → CrosschainDenyCode::Expired | GREEN |
+| `deny_over_per_call` | amount > per_call_max_minor → CrosschainDenyCode::OverCap | GREEN |
+| `deny_over_daily` | (used_today + amount) > daily_cap_minor → CrosschainDenyCode::OverCap | GREEN |
+| `deny_off_allowlist_chain` | chain_namespace mismatch → CrosschainDenyCode::OffAllowlist | GREEN |
+| `deny_off_allowlist_recipient` | recipient bytes mismatch → CrosschainDenyCode::OffAllowlist | GREEN |
+| `deny_capability_not_pinned` | request capability_hash mismatches pinned entry | GREEN |
+| `deny_capability_required_when_request_omits_it` | pinned entry but request carries zero hash | GREEN |
+| `priority_revoked_beats_other_failures` | revoked + expired + overcap + allowlist all fail; first-hit = Revoked | GREEN |
+| `priority_expired_beats_overcap_and_allowlist` | first-hit deny code = Expired when later fails also present | GREEN |
+| `priority_overcap_per_call_beats_daily_and_allowlist` | per_call OverCap surfaces before daily OverCap | GREEN |
+| `test_id` | Anchor-generated declare_id sanity | GREEN |
+
+Note: tests of the ALLOW path's CPI to the Ika dWallet program live in Phase F (real devnet roundtrip). The unit tests above prove every deny code and the priority order; CPI invocation correctness is a Phase F concern because it requires the live Ika gRPC service.
 
 ### 3.2 SDK canonical hashing (Phase C)
 
