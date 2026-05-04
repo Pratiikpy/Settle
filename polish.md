@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 56 = TEST PASS (every 4th). Reconcile passes 53, 54, 55 with full Playwright.
+Pass 57 — pick next polish target. After 56 passes, polish surface largely covered; nearly every public surface has unique metadata.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 56 = TEST PASS (every 4th). Reconcile passes 53, 54, 55 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 53 /agents, pass 54 /stats+/feed+sitemap, pass 55 /capabilities). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: /agents + /stats + /feed + /capabilities metadata layouts, sitemap/robots reconciliation.
+- Polish passes since last full-E2E: 0 (pass 56 ran 577/577).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 56 — TEST PASS: full E2E reconciliation of passes 53-55
+- Items previously pending: /agents + /agents/templates metadata (p53), /stats + /feed metadata + sitemap/robots reconciliation (p54), /capabilities + /capabilities/discover metadata (p55).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 577 specs.
+- **Result: 577/577 green in 7.1m.** No regressions.
+- All previously pending items now fully verified.
 
 ### Pass 55 — SEO + share previews (O + H): /capabilities + /capabilities/discover metadata
 Files added:
