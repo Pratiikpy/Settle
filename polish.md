@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 73+ — REBALANCE per user directive (2026-05-04): too many recent passes have been SEO/metadata/cache. Prioritize real user-facing UX, functionality, data correctness, security, responsiveness, final product feel. Avoid further SEO/metadata work unless unique signal.
+Pass 74 — continue rebalanced loop (no more SEO/metadata/cache unless unique signal). Pass 73 = dashboard 30s polling (B). Next options: D, E, J, K, L, A.
 
 ## Category coverage (last 20 passes 53–72)
 - **O (repo hygiene/SEO/sitemap):** ×9 — over-saturated
@@ -48,8 +48,8 @@ Pass 73+ — REBALANCE per user directive (2026-05-04): too many recent passes h
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 72 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 73 dashboard polling).
+- Items pending full-E2E verification: dashboard 30s setInterval polling (touches a critical user surface — risky enough to test with full suite).
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -202,6 +202,31 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 73 — data correctness (B): /dashboard 30s polling closes "data not updating from action" gap
+Files changed:
+- `apps/web/app/dashboard/page.tsx`: refactored the data-fetching `useEffect` to:
+  - Pull the three fetches into a `refresh(showSpinner)` function
+  - Show the loading spinner only on the first fetch (subsequent polls are silent)
+  - Add a `setInterval(refresh(false), 30_000)` that re-fetches `/api/dashboard/v6` + `/api/balance` every 30s
+  - Skip the handle fetch from the polled refresh — handle is decorative + immutable per session
+  - Cleanup `clearInterval(id)` on unmount
+
+Why this matters:
+- A user who sends a payment from /send while /dashboard is open in another tab WAS seeing stale balance + stale recent_receipts forever. They had to manually reload.
+- This is exactly the "data not updating from action" bug class the user flagged in early sessions.
+- The previous comment in `e2e/w6-cascade-audit.spec.ts` even said "/dashboard polls the balance API on a long-poll interval" — the polling didn't actually exist; the spec waited for `data-w6` flag instead. This implements the polling the spec already assumed.
+- Cache shapes: /api/balance has 10s s-maxage (pass 15) so most polls hit the edge cache. /api/dashboard/v6 is per-user authed (no shared cache) so each poll = 1 Supabase round-trip per active dashboard user — bounded.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- Targeted Playwright (w6-dashboard + w6-cascade-audit + section-23a-real-ui-tx — 25 specs total): **25/25 green**, including the long real-on-chain spec that validates dashboard freshness after a real send.
+
+Risk: medium. /dashboard is the most-used authed surface. The setInterval is bounded + cleaned up on unmount; refresh path doesn't trigger spinner so no UI jank. But the change is meaningful — flagging full-E2E.
+
+Pending full-E2E (next test pass): the polling interval may interact with longer-running specs that hold dashboard open while doing other things; full suite will catch it.
 
 ### Pass 72 — TEST PASS: full E2E reconciliation of passes 69-71
 - Items previously pending: viewport.themeColor (p69), metadataBase root metadata (p70), /api/og 500-fix + cache (p71).

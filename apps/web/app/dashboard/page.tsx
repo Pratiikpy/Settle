@@ -90,19 +90,41 @@ export default function DashboardPage() {
     if (!connected || !publicKey) return;
     let cancelled = false;
     const pk = publicKey.toBase58();
-    setLoading(true);
-    setError(false);
-    fetch(`/api/dashboard/v6?pubkey=${encodeURIComponent(pk)}`)
-      .then((r) => r.json())
-      .then((j: DashboardData) => {
-        if (!cancelled) setData(j);
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+
+    // First-fetch path shows the spinner; subsequent polls don't.
+    function refresh(showSpinner: boolean) {
+      if (showSpinner) {
+        setLoading(true);
+        setError(false);
+      }
+      fetch(`/api/dashboard/v6?pubkey=${encodeURIComponent(pk)}`)
+        .then((r) => r.json())
+        .then((j: DashboardData) => {
+          if (!cancelled) setData(j);
+        })
+        .catch(() => {
+          if (!cancelled && showSpinner) setError(true);
+        })
+        .finally(() => {
+          if (!cancelled && showSpinner) setLoading(false);
+        });
+      fetch(`/api/balance?pubkey=${encodeURIComponent(pk)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j: { usdc?: string; sol?: string; cluster?: string } | null) => {
+          if (!cancelled && j) {
+            setBalance({
+              usdc: j.usdc ?? "0.00",
+              sol: j.sol ?? "0.00",
+              cluster: j.cluster ?? "devnet",
+            });
+          }
+        })
+        .catch(() => {
+          /* balance is best-effort — RPC may be down */
+        });
+    }
+
+    // Handle is decorative + immutable per session — fetched once.
     fetch(`/api/handles/by-pubkey?pubkey=${encodeURIComponent(pk)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((j: { handle?: string } | null) => {
@@ -111,22 +133,18 @@ export default function DashboardPage() {
       .catch(() => {
         /* ignore — handle is decorative */
       });
-    fetch(`/api/balance?pubkey=${encodeURIComponent(pk)}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j: { usdc?: string; sol?: string; cluster?: string } | null) => {
-        if (!cancelled && j) {
-          setBalance({
-            usdc: j.usdc ?? "0.00",
-            sol: j.sol ?? "0.00",
-            cluster: j.cluster ?? "devnet",
-          });
-        }
-      })
-      .catch(() => {
-        /* balance is best-effort — RPC may be down */
-      });
+
+    // Initial fetch with spinner.
+    refresh(true);
+    // Poll every 30s so the dashboard reflects on-chain actions
+    // (sends, receives) without forcing the user to reload. The
+    // /api/balance route has 10s s-maxage so most polls hit the
+    // edge cache; /api/dashboard/v6 is per-user authed so each
+    // poll = one Supabase round-trip per active dashboard user.
+    const id = setInterval(() => refresh(false), 30_000);
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
   }, [connected, publicKey]);
 
