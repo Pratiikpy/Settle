@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 57 — pick next polish target. After 56 passes, polish surface largely covered; nearly every public surface has unique metadata.
+Pass 58 — pick next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 57 — pick next polish target. After 56 passes, polish surface largely cov
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 56 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 57 /docs/pay-component metadata layout).
+- Items pending full-E2E verification: /docs/pay-component metadata.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,28 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 57 — SEO + share previews (O + H): /docs/pay-component metadata layout
+Files added:
+- `apps/web/app/docs/pay-component/layout.tsx`: NEW server-component layout. Page is "use client" (live demo state) so it can't directly export metadata.
+  - Title: `"<settle-pay> · Settle web component"`
+  - Description: `"Drop-in <settle-pay> web component for any HTML page. One <script> tag, one element, real Solana payment with cryptographic receipt — no React required."`
+
+Why this matters:
+- /docs/pay-component is a developer-facing public surface — devs evaluating Settle's embed components search for this directly. Without a unique title, it inherited the global Settle title.
+- Sister doc `/docs/verify-component` already had server-side metadata; pay-component was the only outlier.
+- Now both web-component docs pages have parallel, descriptive titles for SEO.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /docs/pay-component` confirms `<title>&lt;settle-pay&gt; · Settle web component</title>` (HTML-escaped angle brackets; correct).
+- Targeted Playwright `23e.pay-component-page`: 1/1 green.
+
+Risk: very low. Layout returns children unchanged.
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 56 — TEST PASS: full E2E reconciliation of passes 53-55
 - Items previously pending: /agents + /agents/templates metadata (p53), /stats + /feed metadata + sitemap/robots reconciliation (p54), /capabilities + /capabilities/discover metadata (p55).
