@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 58 — pick next polish target.
+Pass 59 — pick next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 58 — pick next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 57 /docs/pay-component metadata layout).
-- Items pending full-E2E verification: /docs/pay-component metadata.
+- Polish passes since last full-E2E: 2 (pass 57 docs metadata, pass 58 /api/verify cache).
+- Items pending full-E2E verification: /docs/pay-component metadata, /api/verify/[hash] cache header.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,27 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 58 — performance (C): cache /api/verify/[hash] for shared verifier flow
+Files changed:
+- `apps/web/app/api/verify/[hash]/route.ts`: success response now carries `Cache-Control: public, s-maxage=60, stale-while-revalidate=300`. Receipts are immutable once committed (the 4-hash chain never changes). 60s edge cache makes the `/verify?h=<hash>` auto-fill flow (added in pass 30) instant on second hit.
+
+Why this matters:
+- The /verify page now auto-prefills + auto-runs the verifier when it receives `?h=<hash>` from the receipt poster's CTA (pass 30). Every viral receipt-poster share that ends in a verify-click hits this endpoint.
+- Without the cache, every viewer was running the same 5-table-lookup against Supabase. Now: first viewer hits DB, next 60s served from edge cache, 5min SWR keeps it warm.
+- 404 path (no_receipt_found) and 400 path (invalid_hash_format) are intentionally NOT cached — they need to flip when a new receipt with that hash gets indexed.
+- Continues the systematic public-data caching policy from passes 33 (receipt poster), 41 (profile APIs), 46 (handles + capabilities lookups).
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl -I /api/verify/<real-hash>` confirms `Cache-Control: public, s-maxage=60, stale-while-revalidate=300`.
+- Targeted Playwright (§14.7 settle-verify + §23g poster-watch): 17/17 green.
+
+Risk: low. Same caching tier as pass 33 — proven safe.
+
+Pending full-E2E (next test pass): no rendering changes; cache only affects DB hit rate.
 
 ### Pass 57 — SEO + share previews (O + H): /docs/pay-component metadata layout
 Files added:

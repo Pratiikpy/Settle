@@ -130,5 +130,12 @@ export async function GET(
       created_at: matched.row.created_at,
       narration_text: matched.row.narration_text,
     },
+  }, {
+    // Public verifier — receipt-by-hash lookup. Receipts are immutable
+    // once committed (the 4-hash chain never changes). 60s edge cache
+    // makes the /verify?h=<hash> auto-fill flow (pass 30) instant.
+    headers: {
+      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    },
   });
 }
