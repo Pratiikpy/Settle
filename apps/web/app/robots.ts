@@ -36,6 +36,9 @@ export default function robots(): MetadataRoute.Robots {
           // would just see the connect prompt. /start/* is the
           // public, informational alternative.
           "/onboarding/",
+          // /embed/* are iframe widgets — no standalone product
+          // meaning. The hosting page is what should be discoverable.
+          "/embed/",
         ],
       },
     ],

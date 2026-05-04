@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 67 — next polish target.
+Pass 68 = TEST PASS (every 4th). Reconcile passes 65, 66, 67 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 67 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 65 input hints, pass 66 /claim + /pay/[token] noindex).
-- Items pending full-E2E verification: input hints, claim metadata, pay/[token] noindex.
+- Polish passes since last full-E2E: 3 (pass 65 input hints, pass 66 noindex one-time URLs, pass 67 noindex embed widgets). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: waitlist input hints, /claim + /pay/[token] noindex, /embed + /pay/widget noindex + robots.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,30 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 67 — security + product feel (G + H): noindex embed widgets
+Files added:
+- `apps/web/app/embed/layout.tsx`: NEW. /embed/* are iframe widgets with no standalone product meaning. Title `"Settle embed"` + `robots: { index: false, follow: false }` so they don't appear as bare iframe URLs in search results.
+- `apps/web/app/pay/widget/layout.tsx`: NEW. Same logic for the iframe-embeddable variant of /pay. Title `"Pay widget · Settle"` + `noindex, nofollow`.
+- `apps/web/app/robots.ts`: added `/embed/` to disallow list with comment explaining the rationale (the host page is what should be discoverable, not the bare widget URL).
+
+Why this matters:
+- Embeddable widgets that show up in search results give users a confusing experience — they click the result expecting a page, get a context-less iframe content URL.
+- Same defense-in-depth pattern as pass 66: robots.txt + per-page meta robots noindex. Bots that ignore robots.txt still respect the meta tag.
+- /pay/widget gets a unique title (overrides the parent /pay's "Pay with Settle") so it's distinguishable in browser tabs during dev/embed-test.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /embed/pay` confirms `<title>Settle embed</title>` + `noindex, nofollow`.
+- `curl /pay/widget` confirms `<title>Pay widget · Settle</title>` + `noindex, nofollow`.
+- `curl /robots.txt` confirms `/embed/` in disallow list.
+- Targeted Playwright `embed-pay`: 6/6 green (D2 regression suite for the iframe widget).
+
+Risk: very low. Layouts return children unchanged. Robots addition is conservative (block more, not less).
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 66 — security + product feel (G + H): /claim and /pay/[token] noindex
 Files added:
