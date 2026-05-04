@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 63 — next polish target.
+Pass 64 = TEST PASS (every 4th). Reconcile passes 61, 62, 63 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 63 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 61 /onboarding fix, pass 62 sitemap expansion).
-- Items pending full-E2E verification: /onboarding metadata + robots fix, sitemap with 7 new public routes.
+- Polish passes since last full-E2E: 3 (pass 61 /onboarding, pass 62 sitemap, pass 63 send/request/pay layouts). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: /onboarding metadata + robots fix, sitemap with 7 new public routes, /send + /send/link + /request + /pay metadata layouts.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,29 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 63 — SEO + share previews (O + H): metadata for /send, /request, /pay surfaces
+Files added:
+- `apps/web/app/send/layout.tsx`: NEW. Default for `/send/*`. Title `"Send money on Solana · Settle"` + USDC + receipt-anchored description.
+- `apps/web/app/send/link/layout.tsx`: NEW. Override for the one-time payment link generator. Title `"Send by link · Settle"` + DM/email/QR sharing copy.
+- `apps/web/app/request/layout.tsx`: NEW. Title `"Request money · Settle"` + Phantom Blink description.
+- `apps/web/app/pay/layout.tsx`: NEW. Title `"Pay with Settle"` + sub-second-confirmation + tamper-proof receipt copy.
+
+Why this matters:
+- All 4 routes are public, shareable URLs that someone might paste into X/Discord/Slack. Without dedicated metadata they inherited the global Settle title — fungible previews.
+- Each now has a concise, value-prop description for SEO + share preview.
+- /send/link in particular is built to be shared (one-time payment URLs); a unique title is critical so the recipient can scan and trust the preview.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /send`, `curl /send/link`, `curl /request`, `curl /pay` all confirm unique titles render correctly.
+- Targeted Playwright (§3 send + nav-smoke): 20/20 green.
+
+Risk: very low. Layouts return children unchanged.
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 62 — repo hygiene (O): sitemap.ts adds 7 missed public routes
 Files changed:
