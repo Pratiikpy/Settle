@@ -18,6 +18,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CapabilityHeatmap } from "../../components/capability-heatmap";
 import { W6AppShell } from "../../components/w6-app-shell";
 import { lamportsToUsdc, timeAgo } from "../../lib/format";
@@ -43,6 +44,7 @@ function hashHexFromBytea(s: string): string {
 }
 
 export default function LeaderboardIndexPage() {
+  const router = useRouter();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [origins, setOrigins] = useState<FederationOrigin[] | null>(null);
@@ -170,7 +172,7 @@ export default function LeaderboardIndexPage() {
                         key={hashHex}
                         style={{ cursor: "pointer" }}
                         onClick={() => {
-                          window.location.href = `/leaderboard/${hashHex}`;
+                          router.push(`/leaderboard/${hashHex}`);
                         }}
                       >
                         <td className="w6-mono" style={{ fontSize: 12 }}>

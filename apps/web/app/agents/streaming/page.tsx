@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
@@ -356,9 +357,9 @@ function OpenStreamForm({
           {cards.length === 0 && (
             <p className="mt-1 text-[11px] text-[#71717a]">
               No cards yet —{" "}
-              <a className="text-accent hover:underline" href="/cards/new">
+              <Link className="text-accent hover:underline" href="/cards/new">
                 create one first
-              </a>
+              </Link>
               .
             </p>
           )}

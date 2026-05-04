@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   PublicKey,
@@ -44,6 +45,7 @@ const HEX_RE = /^(0x)?[0-9a-fA-F]+$/;
 const EVM_ADDR_RE = /^0x[0-9a-fA-F]{40}$/;
 
 export default function StartCrosschainAgentPage() {
+  const router = useRouter();
   const { connected, publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
 
@@ -160,7 +162,7 @@ export default function StartCrosschainAgentPage() {
       // pasted by the user (dwalletKey hex is recorded for future Ika ix calls).
       void dwalletKey;
       // Navigate to the card detail page.
-      window.location.assign(`/cards/crosschain/${cardPda.toBase58()}`);
+      router.push(`/cards/crosschain/${cardPda.toBase58()}`);
     } catch (err) {
       console.warn("[start/agent-crosschain] init failed:", err);
       toast.error(err instanceof Error ? err.message : String(err));

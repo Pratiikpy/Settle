@@ -7,7 +7,6 @@ import { Providers } from "./providers";
 import { Header } from "../components/header";
 import { CommandPalette } from "../components/command-palette";
 import { ThemeProvider } from "../components/theme-provider";
-import { RouteTransition } from "../components/route-transition";
 
 export const metadata: Metadata = {
   // Resolves all relative metadata URLs (og:image, twitter:image,
@@ -57,6 +56,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${w6Sans.variable} ${w6Heading.variable} ${w6Mono.variable}`}
+      style={{ background: "var(--w6-bg-2)" }}
     >
       <head>
         {/* F1.7 — sync theme bootstrap. Must run BEFORE React hydrates so
@@ -75,7 +75,7 @@ export default function RootLayout({
         <ThemeProvider>
           <Providers>
             <Header />
-            <RouteTransition>{children}</RouteTransition>
+            {children}
             {/* F1.6 — global Cmd+K palette mounts at root so the keyboard
                 shortcut works on every page without per-page wiring. */}
             <CommandPalette />

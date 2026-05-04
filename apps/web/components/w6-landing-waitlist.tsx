@@ -82,13 +82,13 @@ export function LandingWaitlistForm({ source = "landing" }: Props) {
       style={{ display: "flex", gap: 10, maxWidth: 460, flexWrap: "wrap" }}
     >
       <label htmlFor="w6-email" className="sr-only">
-        Work email
+        Email
       </label>
       <input
         id="w6-email"
         type="email"
         required
-        placeholder="Work email"
+        placeholder="you@email.com"
         autoComplete="email"
         autoCapitalize="off"
         autoCorrect="off"
@@ -105,7 +105,7 @@ export function LandingWaitlistForm({ source = "landing" }: Props) {
         disabled={state === "submitting"}
         className="w6-btn w6-btn-primary w6-btn-lg"
       >
-        {state === "submitting" ? "Submitting…" : "Request access"}
+        {state === "submitting" ? "Submitting…" : "Get early access"}
       </button>
       {errorMsg ? (
         <div

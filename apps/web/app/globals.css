@@ -910,10 +910,6 @@
     border-radius: var(--w6-r-input) !important;
   }
 
-  .w6-route-transition {
-    min-height: inherit;
-  }
-
   .wallet-adapter-modal-wrapper {
     border: 1.5px solid var(--w6-rule) !important;
     border-radius: var(--w6-r-card) !important;

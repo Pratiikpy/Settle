@@ -25,6 +25,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { formatUsdc } from "@settle/sdk";
 import { W6AppShell } from "../../components/w6-app-shell";
@@ -102,6 +103,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function LedgerPage() {
+  const router = useRouter();
   const { connected, publicKey } = useWallet();
   const me = publicKey?.toBase58() ?? null;
   const [data, setData] = useState<LedgerResponse | null>(null);
@@ -514,7 +516,7 @@ export default function LedgerPage() {
                       key={r.request_id}
                       style={{ cursor: "pointer" }}
                       onClick={() => {
-                        window.location.href = href;
+                        router.push(href);
                       }}
                     >
                       {rowContent}

@@ -137,7 +137,7 @@ function NavMarketing() {
         </Link>
         <LandingWalletAdapter />
         <Link href="#request-access" className="w6-btn w6-btn-primary w6-btn-sm">
-          Request access →
+          Get early access →
         </Link>
       </div>
     </nav>
@@ -881,7 +881,7 @@ function FinalCTA() {
               className="w6-heading"
               style={{ fontSize: 36, margin: "12px 0 0", lineHeight: 1.1 }}
             >
-              Request access.
+              Get early access.
             </h2>
           </div>
           <div style={{ minWidth: 380, flex: 1 }}>
