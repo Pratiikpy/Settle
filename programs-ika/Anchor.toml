@@ -13,10 +13,10 @@ skip-lint = false
 [programs.devnet]
 # Phase A: placeholder. Replace via `anchor keys sync` after generating
 # `keys/dwallet_router-keypair.json` (see keys/.gitkeep for steps).
-settle_dwallet_router = "D1WaLLetRouterProgRamID11111111111111111111"
+settle_dwallet_router = "FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK"
 
 [programs.localnet]
-settle_dwallet_router = "D1WaLLetRouterProgRamID11111111111111111111"
+settle_dwallet_router = "FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK"
 
 [registry]
 url = "https://api.apr.dev"

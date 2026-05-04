@@ -57,7 +57,7 @@ pub use state::*;
 // before any devnet/mainnet deploy. The placeholder lets `cargo check` pass
 // and lets the IDL render so other crates can codegen against this program
 // without waiting for keypair generation.
-declare_id!("7wj8oHHfEM8wxQ9RYZz4rwp4HArDT3RLMiMtzPfabNzD");
+declare_id!("FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK");
 
 #[program]
 pub mod settle_dwallet_router {

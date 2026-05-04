@@ -8,7 +8,19 @@
 This file is updated *as Phase B–F complete*, never retroactively. A row that
 says "PENDING" is allowed; a row that quietly disappears is not.
 
-Last updated: **Phase A complete; B–F PENDING**.
+Last updated: **Phase A closed; B–F PENDING**.
+
+### Phase A actuals (real, not aspirational)
+
+- Program deployed to Solana devnet at `FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK`.
+- Deploy tx: `4ZDjqZfo1grF2nHMokNKGKeyAzeJfJ3UVPFFHWYGaBoyXZr7ykpeDZtRgf8Pt4LgjtNAnXnHCRa1pE2JzmeigDcY`.
+- BPF artifact: 101480 bytes, built from WSL Ubuntu 22.04 with anchor-cli 1.0.0 + cargo-build-sbf 3.1.14 (platform-tools v1.52). Windows toolchain (cargo-build-sbf 2.2.16) was unable to install platform-tools v1.48 due to a Windows symlink/CREATE_NEW bug; WSL fallback used.
+- Migration `0051_crosschain_receipts.sql` applied to live Supabase project `nbufrcbqjwlfrodinniy` via Management API. Verified: 9 new columns on `receipts`, 2 new tables (`crosschain_cards`, `crosschain_card_allowlist`).
+- IDL extraction NOT yet run (Phase B item: Anchor's standard layout needed or `anchor idl parse src/lib.rs`).
+
+### Honesty note for any reviewer
+
+The program is **deployed but has stub instruction bodies** (Phase A skeleton). Logic — policy gate, CPI to Ika, deny path emission, allowlist matching, daily cap reset — lands in Phase B. Until Phase B closes, the deployed program does nothing useful at runtime; the deploy itself just proves the toolchain pipeline (build → deploy → verify) works end-to-end and reserves the program id.
 
 ---
 

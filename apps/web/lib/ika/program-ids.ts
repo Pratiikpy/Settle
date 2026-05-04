@@ -24,7 +24,7 @@ export const IKA_DWALLET_PROGRAM_ID =
  */
 export const SETTLE_DWALLET_ROUTER_PROGRAM_ID =
   process.env.NEXT_PUBLIC_SETTLE_DWALLET_ROUTER_PROGRAM_ID ??
-  "D1WaLLetRouterProgRamID11111111111111111111";
+  "FNpdUSsk9xzrFR1qsDnE17KaAYA95YwGCtiuKbTa7qSK";
 
 /**
  * Ika gRPC endpoint for DKG and signing.
