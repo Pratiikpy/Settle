@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 48 = TEST PASS (every 4th). Reconcile passes 45, 46, 47 with full Playwright.
+Pass 49 — pick next polish target. Categories near saturation; remaining big targets all deferred-risky (palette I, code-split C, CSP G, Next bump).
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 48 = TEST PASS (every 4th). Reconcile passes 45, 46, 47 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 45 templates metadata, pass 46 by-pubkey + capabilities cache, pass 47 verify + leaderboard layouts). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: agent-template metadata, by-pubkey cache, capabilities cache, verify + leaderboard metadata layouts.
+- Polish passes since last full-E2E: 0 (pass 48 ran 577/577).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 48 — TEST PASS: full E2E reconciliation of passes 45-47
+- Items previously pending: /agents/templates/[slug] generateMetadata (p45), /api/handles/by-pubkey + /api/capabilities cache headers (p46), /verify + /leaderboard metadata layouts (p47).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 577 specs.
+- **Result: 577/577 green in 7.1m.** No regressions.
+- All previously pending items now fully verified.
 
 ### Pass 47 — SEO + share previews (O + H): metadata-only layouts for client-rendered routes
 Files added:
