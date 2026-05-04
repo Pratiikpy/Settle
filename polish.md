@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 50 — next polish target. Categories near saturation; remaining big targets all deferred-risky.
+Pass 51 — next polish target. All "use client" public pages now have metadata layouts. Remaining big targets are all deferred-risky.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 50 — next polish target. Categories near saturation; remaining big target
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 49 /at/[handle] dynamic metadata layout).
-- Items pending full-E2E verification: /at/[handle] generateMetadata layout.
+- Polish passes since last full-E2E: 2 (pass 49 /at/[handle] metadata, pass 50 /receipts/[id] metadata).
+- Items pending full-E2E verification: /at/[handle] + /receipts/[id] dynamic metadata layouts.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,34 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 50 — SEO + share previews (O + H): dynamic metadata for /receipts/[requestId]
+Files added:
+- `apps/web/app/receipts/[requestId]/layout.tsx`: server-component layout with `generateMetadata({ params })`. Validates UUID format, fetches the receipt via `/api/receipts/[id]` (uses `next: { revalidate: 60 }` to honor pass-33 upstream cache). Returns:
+  - `title`: `Receipt · <Verified|Blocked> · $<amount> USDC · Settle`
+  - `description`: `Cryptographic receipt #<8-hex> on Solana — <verified|blocked> spend, full 4-hash chain verifiable.`
+  - `openGraph` with `type: "article"`
+  - `twitter` summary card
+- Falls back to `{ title: "Receipt · Settle" }` for malformed or unknown ids.
+
+Why this matters:
+- /receipts/[requestId] is the authed receipt detail page (parallel to the public /r/[id] poster, which got dynamic metadata + OG image in passes 10 + 22). Was sharing the global Settle title for every receipt.
+- Now any time someone shares an authed-receipt URL (rare but happens — e.g., for narration/tagging context), the preview shows decision + amount.
+- The dedicated /r/[id] route remains the primary shareable surface (with proper OG image), but /receipts/[id] now degrades gracefully on platforms that get the URL.
+
+This completes the metadata coverage for **all** "use client" public pages: /verify (p47), /leaderboard (p47), /at/[handle] (p49), /receipts/[requestId] (p50). Combined with server-rendered metadata on /m/[handle] (p43) and /agents/templates/[slug] (p45), every public surface now has unique share previews.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /receipts/<real id>` → dynamic `<title>Receipt · Verified · $0.10 USDC · Settle</title>` + matching description.
+- `curl /receipts/not-a-uuid` → fallback `<title>Receipt · Settle</title>`.
+- Targeted Playwright `23a.receipt-detail-renders`: 1/1 green.
+
+Risk: low. Layout returns children unchanged; only `<head>` differs. Pattern proven in passes 47, 49.
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 49 — SEO + share previews (O + H): dynamic metadata for /at/[handle]
 Files added:
