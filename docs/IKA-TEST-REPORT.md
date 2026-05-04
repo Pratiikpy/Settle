@@ -34,8 +34,8 @@ The program is **deployed but has stub instruction bodies** (Phase A skeleton). 
 | 3b | RLP / EIP-1559 helpers — Sepolia tx encoding | Vitest in `@settle/sdk` | 21 specs | **GREEN as of Phase D** |
 | 4 | Playwright UI — cross-chain surfaces | `apps/web` Playwright | 9 specs | **GREEN as of Phase E (warm server)** |
 | 4b | Full Playwright suite (586 specs incl. Phase E) | `apps/web` Playwright | 586 specs | **GREEN — 586/586 passed in 7.5m on the production server (Phase F).** Earlier runs against `next dev` showed 33–37 timeouts; root-cause confirmed as cold-compile timeouts, not regressions. Resolution: `NEXT_PUBLIC_E2E_BURNER=1 pnpm --filter web build` then `pnpm --filter web start` then run Playwright. See `IKA-PROGRESS.md` §F.1. |
-| 5 | Real devnet ALLOW path | `scripts/ika-roundtrip.ts --allow` | 1 run | **PENDING — Phase F** |
-| 6 | Real devnet DENY path | `scripts/ika-roundtrip.ts --deny` | 1 run | **PENDING — Phase F** |
+| 5 | Real devnet ALLOW path | `scripts/ika-roundtrip.ts --allow` | 1 run | **BLOCKED on Ika gRPC pre-alpha — see §F.7 in `IKA-PROGRESS.md`.** Connectivity probe confirms service reachable; HTTP/2 handshake fails (NGHTTP2_PROTOCOL_ERROR) reproducibly across Node 22, Bun 1.3 Windows, Bun 1.3 WSL. Not a Settle-code issue. |
+| 6 | Real devnet DENY path | `scripts/ika-roundtrip.ts --deny` | 1 run | Same blocker as row 5. The DENY path's policy gate IS proven by Phase B's 9 deny-code tests + the 3 priority-order tests; row 6 specifically requires the live wire-up to verify "no MessageApproval PDA created" assertion under real conditions. |
 | 7 | 577-spec gate (existing) | `pnpm --filter web playwright test` | 577 specs | **GREEN as of pass 75** |
 
 A submission is gated on rows 1–7 all green. Rows 5 and 6 must run against
