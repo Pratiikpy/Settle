@@ -35,5 +35,14 @@
     "merchant",
     "scaffold"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pratiikpy/Settle.git",
+    "directory": "packages/create-settle-merchant"
+  },
+  "homepage": "https://github.com/Pratiikpy/Settle/tree/main/packages/create-settle-merchant#readme",
+  "bugs": {
+    "url": "https://github.com/Pratiikpy/Settle/issues"
+  }
 }

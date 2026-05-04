@@ -36,5 +36,14 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pratiikpy/Settle.git",
+    "directory": "packages/web-components"
+  },
+  "homepage": "https://github.com/Pratiikpy/Settle/tree/main/packages/web-components#readme",
+  "bugs": {
+    "url": "https://github.com/Pratiikpy/Settle/issues"
   }
 }
