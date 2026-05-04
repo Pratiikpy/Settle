@@ -31,6 +31,11 @@ export default function robots(): MetadataRoute.Robots {
           "/control-center/",
           "/admin/",
           "/sandbox/",
+          // /onboarding/ is the guided wallet-flow page; it requires
+          // a connected wallet to do anything meaningful, so bots
+          // would just see the connect prompt. /start/* is the
+          // public, informational alternative.
+          "/onboarding/",
         ],
       },
     ],

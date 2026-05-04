@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 61 — pick next polish target. After 60 passes, public-data caching, public-surface metadata, silent-failure logging, plain-English UI rename, accessibility, repo hygiene, security headers, and SEO are all near-saturated. Remaining big targets all deferred-risky (palette, full code-split, CSP, Next bump).
+Pass 62 — next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 61 — pick next polish target. After 60 passes, public-data caching, publi
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 60 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 61 /onboarding metadata + robots fix).
+- Items pending full-E2E verification: /onboarding metadata layout, robots.txt /onboarding/ re-add.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,28 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 61 — fix pass-51 regression: /onboarding metadata + robots disallow
+Files changed/added:
+- `apps/web/app/robots.ts`: re-added `/onboarding/` to disallow list with a comment explaining why. **In pass 51 I removed `/onboarding/` from the disallow list believing it was a stale entry — but `/onboarding/page.tsx` actually exists.** It's a guided wallet-required first-run flow (Phantom → airdrop → create AgentCard). Bots can't authenticate, so search engines crawling it just see the connect prompt.
+- `apps/web/app/onboarding/layout.tsx`: NEW server-component metadata layout. Page is "use client" (wallet hooks). Title `"Get started · Settle"`, description about the 60-second guided first-run.
+
+Why this matters:
+- Pass 51 introduced a small regression: `/onboarding/` got crawled because I removed its disallow entry by mistake. Now correctly blocked again.
+- Comment in robots.ts now distinguishes: `/onboarding/` (auth-required, blocked) vs `/start/*` (informational, crawlable) — pass 5's 3-fork picker is the public alternative.
+- Even though blocked from crawl, the page now has a meaningful tab title (`Get started · Settle`) for connected users.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /onboarding` → `<title>Get started · Settle</title>` + correct description.
+- `curl /robots.txt | grep onboarding` → `Disallow: /onboarding/` confirmed.
+- Targeted Playwright `section-2-onboarding`: 3/3 green.
+
+Risk: very low. robots.txt addition is conservative (block more, not less). Layout returns children unchanged.
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 60 — TEST PASS: full E2E reconciliation of passes 57-59
 - Items previously pending: /docs/pay-component metadata layout (p57), /api/verify/[hash] cache headers (p58), /api/feed cache headers (p59).
