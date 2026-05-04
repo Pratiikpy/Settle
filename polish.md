@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 64 = TEST PASS (every 4th). Reconcile passes 61, 62, 63 with full Playwright.
+Pass 65 — pick next polish target. Public-surface metadata coverage now extends to /send + /send/link + /request + /pay (pass 63), the consumer payment flow.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 64 = TEST PASS (every 4th). Reconcile passes 61, 62, 63 with full Playwrigh
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 3 (pass 61 /onboarding, pass 62 sitemap, pass 63 send/request/pay layouts). NEXT PASS = TEST PASS.
-- Items pending full-E2E verification: /onboarding metadata + robots fix, sitemap with 7 new public routes, /send + /send/link + /request + /pay metadata layouts.
+- Polish passes since last full-E2E: 0 (pass 64 ran 577/577).
+- Items pending full-E2E verification: NONE.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,12 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 64 — TEST PASS: full E2E reconciliation of passes 61-63
+- Items previously pending: /onboarding metadata + robots fix (p61), sitemap with 7 new public routes (p62), /send + /send/link + /request + /pay metadata layouts (p63).
+- Ran `pnpm exec playwright test --reporter=line --workers=4` — full suite of 577 specs.
+- **Result: 577/577 green in 7.1m.** No regressions.
+- All previously pending items now fully verified.
 
 ### Pass 63 — SEO + share previews (O + H): metadata for /send, /request, /pay surfaces
 Files added:
