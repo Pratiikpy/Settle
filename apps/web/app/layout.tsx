@@ -27,6 +27,19 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Mobile browser chrome color — matches the W6 light bg so the
+ * address bar tints correctly on iOS Safari + Android Chrome.
+ * Two values respect light/dark preference. Note: in Next 15+
+ * themeColor lives on `viewport` (separate export), not metadata.
+ */
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafaf7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0c" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: {

@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 69 — pick next polish target.
+Pass 70 — next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 69 — pick next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 0 (pass 68 ran 577/577).
-- Items pending full-E2E verification: NONE.
+- Polish passes since last full-E2E: 1 (pass 69 viewport themeColor).
+- Items pending full-E2E verification: viewport.themeColor on root layout.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,28 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 69 — final product feel (H + I): viewport themeColor on root layout
+Files changed:
+- `apps/web/app/layout.tsx`: added `export const viewport = { themeColor: [...] }` with two values:
+  - `(prefers-color-scheme: light)` → `#fafaf7` (matches W6 light bg)
+  - `(prefers-color-scheme: dark)` → `#0a0a0c` (matches W6 dark / magic-moment terminal bg)
+
+Why this matters:
+- iOS Safari + Android Chrome tint their address bar / browser chrome with the page's `theme-color`. Without it, browsers default to white (light) or pure black (dark), which clashes with Settle's W6 palette.
+- Two media-scoped values respect the user's color-scheme preference automatically.
+- In Next 15+ this lives on the `viewport` export, not `metadata` (build would warn "Unsupported metadata themeColor" if put on the wrong export).
+
+Light verify:
+- `pnpm exec next build` clean (no warning about themeColor placement).
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /` shows both `<meta name="theme-color">` tags rendering with correct media queries + colors.
+- Targeted Playwright visual-regression: 27/27 green (visual snapshots unchanged because theme-color is browser-chrome only, not page content).
+
+Risk: very low. Pure mobile browser-chrome tinting; doesn't affect any rendered DOM.
+
+Pending full-E2E (next test pass): visual-regression already passed; nothing else expected to change.
 
 ### Pass 68 — TEST PASS: full E2E reconciliation of passes 65-67
 - Items previously pending: waitlist input HTML hints (p65), /claim + /pay/[token] noindex (p66), /embed + /pay/widget noindex + robots disallow (p67).
