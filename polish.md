@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 66 — next polish target.
+Pass 67 — next polish target.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 66 — next polish target.
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 1 (pass 65 landing waitlist input a11y/UX hints).
-- Items pending full-E2E verification: w6-landing-waitlist input attribute additions.
+- Polish passes since last full-E2E: 2 (pass 65 input hints, pass 66 /claim + /pay/[token] noindex).
+- Items pending full-E2E verification: input hints, claim metadata, pay/[token] noindex.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,28 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 66 — security + product feel (G + H): /claim and /pay/[token] noindex
+Files added:
+- `apps/web/app/claim/layout.tsx`: NEW. /claim/[escrow] is a one-time-use claim URL — secret in URL fragment, single-use idempotency lock. Already disallowed in robots.txt, but added defense-in-depth: `robots: { index: false, follow: false }` so even if a bot ignores robots.txt or the URL leaks into a public space (X mention, Slack), the page itself signals "don't index". Also adds title `"Claim USDC · Settle"` + descriptive copy for the recipient who actually opens it.
+- `apps/web/app/pay/[token]/layout.tsx`: NEW. Inherits the parent /pay layout's title + description (pass 63) but overrides with `robots: { index: false, follow: false }`. Same logic — one-time-use payment tokens shouldn't be indexed.
+
+Why this matters:
+- robots.txt is convention; not all bots honor it. Adding `<meta name="robots" content="noindex, nofollow">` is the per-page directive that bypassing robots.txt still respects.
+- Reduces risk of one-time-use URLs accidentally appearing in Google's index, archive sites, or LLM training corpora — which would be both a privacy issue and a way to brick payment links via premature claim attempts.
+- /claim recipient now sees `Claim USDC · Settle` in their browser tab instead of the global Settle title.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `pnpm exec next lint` zero warnings.
+- `curl /claim/<test-id>` confirms `<title>Claim USDC · Settle</title>` + `<meta name="robots" content="noindex, nofollow">`.
+- `curl /pay/<test-token>` confirms inherited "Pay with Settle" title + `noindex, nofollow` robots.
+- Targeted Playwright (gift-claim-link + savings + nav-smoke): 3/3 green.
+
+Risk: very low. Layouts return children unchanged; only `<head>` differs.
+
+Pending full-E2E (next test pass): no rendering changes.
 
 ### Pass 65 — accessibility + UX (N + A): landing email input HTML hints
 Files changed:
