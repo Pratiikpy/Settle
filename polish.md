@@ -3,7 +3,7 @@
 Single source of truth for ongoing repo polish. Updated each pass.
 
 ## Current focus
-Pass 51 — next polish target. All "use client" public pages now have metadata layouts. Remaining big targets are all deferred-risky.
+Pass 52 = TEST PASS (every 4th). Reconcile passes 49, 50, 51 with full Playwright.
 
 ## Deferred
 - **Rate-limit middleware on /api/\* routes** — only 1 of 133 routes
@@ -26,8 +26,8 @@ Pass 51 — next polish target. All "use client" public pages now have metadata 
 - Polish passes do light-verify (lint + tsc + build + targeted spec).
 - Test pass runs full Playwright (workers=4, all 572 specs).
 - Risky changes always trigger a test pass right after.
-- Polish passes since last full-E2E: 2 (pass 49 /at/[handle] metadata, pass 50 /receipts/[id] metadata).
-- Items pending full-E2E verification: /at/[handle] + /receipts/[id] dynamic metadata layouts.
+- Polish passes since last full-E2E: 3 (pass 49 /at metadata, pass 50 /receipts metadata, pass 51 robots.txt). NEXT PASS = TEST PASS.
+- Items pending full-E2E verification: /at + /receipts metadata layouts, robots.txt expanded disallow list.
 
 ## Deferred — needs review (risky to do without isolated verification)
 
@@ -180,6 +180,27 @@ Each pass MUST consider every category before declaring "no more targets":
 - `/receipts/[id]/print`: receipt-print label "Pact" → "Spending rule"
 - **Verified:** next build clean, tsc --noEmit clean, 46/46 targeted Playwright (rename + nav-smoke + misc-routes) green
 - **Risk:** none (UI copy only)
+
+### Pass 51 — repo hygiene (O): robots.txt expanded disallow + stale entry removal
+Files changed:
+- `apps/web/app/robots.ts`:
+  - **Removed** stale `/onboarding/` from disallow list — that route doesn't exist (the onboarding flow is at `/start/*` per pass 5, which is intentionally crawlable as a marketing surface).
+  - **Added** to disallow: `/dashboard/`, `/audit/`, `/notifications/`, `/activity/`, `/feed/`, `/allowances/`, `/groups/`, `/wishes/`, `/agents/new/`, `/agents/streaming/`, `/agents/collab/`, `/control-center/`, `/admin/`, `/sandbox/`. All wallet-gated or per-user — not useful for search anyway.
+  - Updated comment to explicitly list which public surfaces stay crawlable: `/`, `/watch`, `/start/*`, `/r/*`, `/m/[handle]`, `/at/[handle]`, `/verify`, `/leaderboard`, `/docs/*`, `/help`, `/security`, `/public-goods`, `/agents`, `/agents/templates`.
+
+Why this matters:
+- Search bots were potentially crawling authed routes and getting empty/error responses, wasting crawl budget on routes that 404 without auth.
+- Public surfaces (which now all have unique metadata via passes 22 + 43 + 45 + 47 + 49 + 50) get the full crawl quota.
+- Removing the stale `/onboarding/` cleanup makes the policy match reality.
+
+Light verify:
+- `pnpm exec next build` clean.
+- `pnpm exec tsc --noEmit` clean.
+- `curl /robots.txt` shows all 20 disallow lines + sitemap + host correctly.
+
+Risk: very low. robots.txt only affects crawler behavior; runtime app is unaffected.
+
+Pending full-E2E (next test pass): nothing rendering changes; robots.txt isn't tested by E2E specs.
 
 ### Pass 50 — SEO + share previews (O + H): dynamic metadata for /receipts/[requestId]
 Files added:

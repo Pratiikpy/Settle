@@ -7,8 +7,32 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        // Don't crawl wallet-protected or API endpoints; they're not useful in search anyway.
-        disallow: ["/api/", "/claim/", "/cards/", "/spending/", "/settings/", "/onboarding/"],
+        // Don't crawl wallet-protected or per-user surfaces — not useful
+        // in search and bots can't authenticate. Public surfaces stay
+        // crawlable: /, /watch, /start/*, /r/*, /m/[handle],
+        // /at/[handle], /verify, /leaderboard, /docs/*, /help,
+        // /security, /public-goods, /agents, /agents/templates.
+        disallow: [
+          "/api/",
+          "/claim/",
+          "/cards/",
+          "/spending/",
+          "/settings/",
+          "/dashboard/",
+          "/audit/",
+          "/notifications/",
+          "/activity/",
+          "/feed/",
+          "/allowances/",
+          "/groups/",
+          "/wishes/",
+          "/agents/new/",
+          "/agents/streaming/",
+          "/agents/collab/",
+          "/control-center/",
+          "/admin/",
+          "/sandbox/",
+        ],
       },
     ],
     sitemap: `${base}/sitemap.xml`,
