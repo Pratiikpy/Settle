@@ -5,10 +5,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Wave 6.2 — `/api/dashboard/v6?pubkey=<base58>`
+ * Wave 6.2 — `/api/dashboard/v6?pubkey=<base58>` — UPDATED 2026-05-05 v3
  *
  * Returns the bento-grid-shaped payload the redesigned consumer home
  * consumes. Single round-trip; six small SQL queries combined.
+ *
+ * Adds _diag block for prod debugging when ?diag=1 query param is set.
  *
  * See WAVE_6_DATA.md §3 for the data contract. Empty wallets get a
  * zeroed payload — the UI renders "Welcome — fills in as you transact"
