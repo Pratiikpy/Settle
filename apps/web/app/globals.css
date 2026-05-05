@@ -860,6 +860,27 @@
   html body [data-w6-page] .text-white {
     color: var(--w6-ink) !important;
   }
+  /* Restore white text on intentionally-dark surfaces. The global override
+     above flips text-white → ink so legacy dark-theme classes on a light
+     body don't disappear. But buttons/badges that explicitly use a dark
+     background (#0a0a0c, accent, .bg-black) genuinely need white text;
+     otherwise the label disappears (Bug found by Pratiik on /m/me/manage's
+     "Get started as a merchant →" CTA — fully black button, invisible
+     text). Re-pin those to white. */
+  html body[data-w6="1"] .bg-\[\#0a0a0c\].text-white,
+  html body[data-w6="1"] .bg-\[\#09090b\].text-white,
+  html body[data-w6="1"] .bg-black.text-white,
+  html body[data-w6="1"] .bg-accent.text-white,
+  html body[data-w6="1"] .bg-zinc-900.text-white,
+  html body[data-w6="1"] .bg-neutral-900.text-white,
+  html body [data-w6-page] .bg-\[\#0a0a0c\].text-white,
+  html body [data-w6-page] .bg-\[\#09090b\].text-white,
+  html body [data-w6-page] .bg-black.text-white,
+  html body [data-w6-page] .bg-accent.text-white,
+  html body [data-w6-page] .bg-zinc-900.text-white,
+  html body [data-w6-page] .bg-neutral-900.text-white {
+    color: #ffffff !important;
+  }
   html body[data-w6="1"] .text-white\/80,
   html body[data-w6="1"] .text-white\/70,
   html body[data-w6="1"] .text-white\/60,
