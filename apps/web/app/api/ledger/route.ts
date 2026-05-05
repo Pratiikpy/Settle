@@ -67,14 +67,27 @@ export async function GET(req: NextRequest) {
   const sb = createClient(supabaseUrl, key, { auth: { persistSession: false } });
 
   // ─── 1. Native receipts (kernel + imported in same table) ───
-  const { data: receipts } = await sb
+  // Schema reality: `receipts` has card_pubkey (sender for direct_send;
+  // funding card for x402_spend) and merchant_pubkey (recipient). It has
+  // NO separate sender_pubkey / recipient_pubkey columns. The earlier
+  // version of this filter referenced columns that don't exist, which
+  // made the query 400 → fall through to `data = null` → ledger always
+  // empty. That was the silent-failure half of "Bug #10" — even after
+  // we started inserting receipt rows, this query couldn't read them.
+  const { data: receipts, error: receiptsErr } = await sb
     .from("receipts")
     .select(
-      "request_id, receipt_kind, amount_lamports, sender_pubkey, recipient_pubkey, merchant_pubkey, decision, import_source, created_at, imported_at",
+      "request_id, receipt_kind, amount_lamports, card_pubkey, merchant_pubkey, decision, import_source, created_at, imported_at",
     )
-    .or(`sender_pubkey.eq.${wallet},recipient_pubkey.eq.${wallet},merchant_pubkey.eq.${wallet}`)
+    .or(`card_pubkey.eq.${wallet},merchant_pubkey.eq.${wallet}`)
     .order("created_at", { ascending: false })
     .limit(100);
+  if (receiptsErr) {
+    return NextResponse.json(
+      { error: "receipts_query_failed", message: receiptsErr.message },
+      { status: 502 },
+    );
+  }
 
   const nativeKernel: LedgerEntry[] = [];
   const nativeImported: LedgerEntry[] = [];
@@ -84,8 +97,8 @@ export async function GET(req: NextRequest) {
       request_id: r.request_id,
       amount_lamports: r.amount_lamports,
       asset: "USDC",
-      sender_pubkey: r.sender_pubkey,
-      recipient_pubkey: r.recipient_pubkey ?? r.merchant_pubkey,
+      sender_pubkey: r.card_pubkey,
+      recipient_pubkey: r.merchant_pubkey,
       occurred_at: r.imported_at ?? r.created_at,
       receipt_kind: r.receipt_kind,
       decision: r.decision,
