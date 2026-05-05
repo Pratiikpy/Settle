@@ -35,13 +35,24 @@ interface Profile {
 }
 
 async function fetchProfile(handle: string): Promise<Profile | null> {
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const res = await fetch(`${base}/api/merchants/${handle}/profile`, {
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  const j = await res.json();
-  return j.profile as Profile;
+  // On Vercel server-side, NEXT_PUBLIC_BASE_URL may not be set. Prefer
+  // VERCEL_URL (host without protocol) and fall back to localhost in dev.
+  const base = process.env.NEXT_PUBLIC_BASE_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+    ?? "http://localhost:3000";
+  try {
+    const res = await fetch(`${base}/api/merchants/${handle}/profile`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const j = await res.json();
+    return j.profile as Profile;
+  } catch {
+    // Server fetch can throw (e.g. network unreachable on cold start).
+    // Treat as "no profile" so the page renders the not-found state
+    // instead of crashing the server component.
+    return null;
+  }
 }
 
 function formatUsdc(lamportsStr: string): string {

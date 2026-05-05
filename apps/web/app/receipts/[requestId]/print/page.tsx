@@ -58,14 +58,20 @@ interface ReceiptResponse {
 }
 
 async function fetchReceipt(requestId: string): Promise<ReceiptResponse | null> {
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const r = await fetch(`${base}/api/receipts/${requestId}`, {
-    cache: "no-store",
-  });
-  if (!r.ok) return null;
-  const j = (await r.json()) as ReceiptResponse | { error: string };
-  if ("ok" in j && j.ok) return j;
-  return null;
+  const base = process.env.NEXT_PUBLIC_BASE_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+    ?? "http://localhost:3000";
+  try {
+    const r = await fetch(`${base}/api/receipts/${requestId}`, {
+      cache: "no-store",
+    });
+    if (!r.ok) return null;
+    const j = (await r.json()) as ReceiptResponse | { error: string };
+    if ("ok" in j && j.ok) return j;
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 function formatUsdc(lamports: string): string {
