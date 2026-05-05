@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
@@ -70,6 +70,7 @@ function timeAgo(iso: string): string {
 
 export default function MerchantDisputesPage() {
   const params = useParams<{ handle: string }>();
+  const router = useRouter();
   const { publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
   const [data, setData] = useState<DisputesResponse | null>(null);
@@ -77,9 +78,32 @@ export default function MerchantDisputesPage() {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [denyText, setDenyText] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<Record<string, boolean>>({});
+  const [meRedirected, setMeRedirected] = useState(false);
+
+  // Bug #28: when the route is /m/me/disputes (the literal "me" placeholder)
+  // and the user is connected, look up their actual handle and redirect to
+  // /m/<handle>/disputes. If they have no handle, surface a friendly CTA
+  // instead of a raw "handle_not_found" stripe.
+  useEffect(() => {
+    if (params.handle !== "me") return;
+    if (!publicKey) return;
+    let cancelled = false;
+    fetch(`/api/handles/by-pubkey?pubkey=${publicKey.toBase58()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { handle?: string } | null) => {
+        if (cancelled) return;
+        if (j?.handle) router.replace(`/m/${j.handle}/disputes`);
+        else setMeRedirected(true); // signal: connected but no handle
+      })
+      .catch(() => setMeRedirected(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [params.handle, publicKey, router]);
 
   async function reload() {
     if (!params.handle) return;
+    if (params.handle === "me") return; // Wait for redirect resolution
     setLoading(true);
     const r = await fetch(`/api/merchants/${params.handle}/disputes`);
     const j = (await r.json()) as DisputesResponse;
