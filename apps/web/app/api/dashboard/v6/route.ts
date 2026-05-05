@@ -214,11 +214,16 @@ export async function GET(req: NextRequest): Promise<Response> {
     created_at: string;
   };
   let recentRows: ReceiptRow[] = [];
-  if (cardPubkeys.length > 0 || pubkey) {
-    const orFilter =
-      cardPubkeys.length > 0
-        ? `card_pubkey.in.(${cardPubkeys.map((k) => `"${k}"`).join(",")}),merchant_pubkey.eq.${pubkey}`
-        : `merchant_pubkey.eq.${pubkey}`;
+  // Bug #21 (real fix): include receipts where card_pubkey == user's wallet
+  // (direct sends store the sender there) AND owned-agent-card sets AND
+  // merchant_pubkey == user. Previously /send → confirmed → dashboard
+  // 'No receipts yet' because direct_send wasn't in any of the buckets.
+  const cardKeysForFilter = [pubkey, ...cardPubkeys];
+  const cardKeyClause = cardKeysForFilter
+    .map((k) => `card_pubkey.eq.${k}`)
+    .join(",");
+  const orFilter = `${cardKeyClause},merchant_pubkey.eq.${pubkey}`;
+  {
     const { data, error } = await sb
       .from("receipts")
       .select(
