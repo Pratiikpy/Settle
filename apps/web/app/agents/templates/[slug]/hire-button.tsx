@@ -33,8 +33,16 @@ export function TemplateHireButton({ slug }: { slug: string }) {
         body: JSON.stringify({ account: publicKey.toBase58() }),
       });
       if (!buildRes.ok) {
-        const err = await buildRes.json();
-        throw new Error(err.error ?? "build_failed");
+        let err: { error?: string; message?: string } = {};
+        try {
+          err = await buildRes.json();
+        } catch {
+          /* non-JSON body — keep generic message */
+        }
+        // Surface the friendlier message (which the API includes for known
+        // failure modes like missing merchant allowlist config), falling
+        // back to the error code, then a generic.
+        throw new Error(err.message ?? err.error ?? `build_failed_${buildRes.status}`);
       }
       const { transaction } = (await buildRes.json()) as { transaction: string };
 
