@@ -98,7 +98,11 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
       items: [
         { icon: "activity", label: "Decisions", href: "/audit" },
         { icon: "receipt", label: "Receipts", href: "/ledger?role=agent" },
-        { icon: "shield", label: "Caps & rules", href: "/audit" },
+        // Bug #45 root-cause fix: previously also pointed to /audit which
+        // duplicated "Decisions" and lit two sidebar items at once. The
+        // actual caps + rules live on /cards (each card row exposes its
+        // daily cap, expiry, allowlist).
+        { icon: "shield", label: "Caps & rules", href: "/cards" },
       ],
     },
   ],
@@ -171,7 +175,13 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
         { icon: "hash", label: "Verify", href: "/verify" },
         { icon: "grid", label: "Heatmap", href: "/leaderboard" },
         { icon: "layers", label: "Capabilities", href: "/capabilities/discover" },
-        { icon: "globe", label: "Federation", href: "/admin/federation/origins" },
+        // Bug #47 fix: previously "Federation" → /admin/federation/origins,
+        // an operator-only admin page that asks for CRON_SECRET. A judge
+        // clicking this from the public sidebar saw a broken admin form,
+        // not a public artifact. Federation status is already visible on
+        // /leaderboard ("Federation · Trusted origins" panel), so the
+        // public Federation entry is redundant. Removed for demo safety;
+        // the operator surface still keeps the admin entry.
         { icon: "activity", label: "Stats", href: "/stats" },
         { icon: "eye", label: "Public feed", href: "/feed" },
       ],

@@ -110,7 +110,7 @@ export function W6Sidebar({
             </div>
           ) : null}
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {section.items.map((item) => {
+            {section.items.map((item, itemIndex) => {
               // A nav item is "active" only when:
               //   - exact path match, OR
               //   - the current path is a sub-path of this item (so /cards/[id]
@@ -126,11 +126,24 @@ export function W6Sidebar({
                     .filter((h) => pathname === h || (pathname.startsWith(h + "/")))
                     .sort((a, b) => b.length - a.length)[0]
                 : undefined;
+              // Bug #45 fix: when two sidebar items share the same href
+              // (e.g. agent surface "Decisions" and "Caps & rules" both
+              // point to /audit), we'd otherwise highlight BOTH at once.
+              // Make the FIRST item with the matching href the unique
+              // active one, so only one row glows at any time.
+              const firstMatchingIndex = section.items.findIndex(
+                (i) => i.href === longestPrefixMatch,
+              );
+              const isExactExclusiveMatch =
+                pathname === item.href &&
+                section.items.findIndex((i) => i.href === item.href) ===
+                  itemIndex;
               const active =
-                pathname === item.href ||
+                isExactExclusiveMatch ||
                 (item.href !== "/" &&
                   item.href !== "/dashboard" &&
-                  longestPrefixMatch === item.href);
+                  longestPrefixMatch === item.href &&
+                  firstMatchingIndex === itemIndex);
 
               // Bug #25: profile/merchant nav items hardcoded to /at/me and
               // /m/me — but those aren't pubkey/handle-aware. Rewrite at

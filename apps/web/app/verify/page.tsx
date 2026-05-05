@@ -326,8 +326,20 @@ export default function VerifierPage() {
                 const order = ["fetching", "computing", "done"];
                 const stageIdx = order.indexOf(stage);
                 const sIdx = order.indexOf(s.id);
+                // Terminal "done" stage means all steps are complete —
+                // including the third step itself. The previous logic
+                // marked the last step as "active" when stage="done",
+                // leaving a stuck "running" pill next to a verified
+                // result. (Judge-visible visual bug found during the
+                // pre-demo audit.)
                 const status =
-                  sIdx < stageIdx ? "done" : sIdx === stageIdx ? "active" : "pending";
+                  stage === "done"
+                    ? "done"
+                    : sIdx < stageIdx
+                      ? "done"
+                      : sIdx === stageIdx
+                        ? "active"
+                        : "pending";
                 return (
                   <div
                     key={s.id}
