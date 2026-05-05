@@ -236,7 +236,6 @@ export async function GET(req: NextRequest): Promise<Response> {
     ...cardKeysForFilter.map((k) => `card_pubkey.eq.${k}`),
     `merchant_pubkey.eq.${pubkey}`,
   ].join(",");
-  let diagRecentErr: string | null = null;
   {
     const { data, error } = await sb
       .from("receipts")
@@ -247,7 +246,6 @@ export async function GET(req: NextRequest): Promise<Response> {
       .order("created_at", { ascending: false })
       .limit(5);
     logErr("recentRows", error);
-    if (error) diagRecentErr = error.message;
     recentRows = (data ?? []) as ReceiptRow[];
   }
 
@@ -371,19 +369,5 @@ export async function GET(req: NextRequest): Promise<Response> {
     coming_up: comingUp,
     savings,
     as_of: new Date().toISOString(),
-    // TEMP DIAG (production blocker investigation)
-    _diag: {
-      key_kind: process.env.SUPABASE_SERVICE_ROLE_KEY
-        ? "service_role"
-        : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-          ? "anon"
-          : "none",
-      url_set: !!(process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL),
-      card_pubkeys_count: cardPubkeys.length,
-      card_keys_for_filter: cardKeysForFilter,
-      or_filter_len: orFilter.length,
-      recent_rows_count: recentRows.length,
-      recent_err: diagRecentErr,
-    },
-  } as W6Dashboard);
+  } satisfies W6Dashboard);
 }
