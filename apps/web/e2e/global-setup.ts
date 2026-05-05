@@ -1,4 +1,23 @@
 import type { FullConfig } from "@playwright/test";
+import { readFileSync, existsSync } from "fs";
+import { resolve } from "path";
+
+// Load .env.local so SUPABASE_SERVICE_ROLE_KEY and other secrets are available
+// in worker processes (workers inherit process.env from the main process).
+function loadEnvLocal() {
+  const envPath = resolve(process.cwd(), ".env.local");
+  if (!existsSync(envPath)) return;
+  for (const line of readFileSync(envPath, "utf8").split("\n")) {
+    const t = line.trim();
+    if (!t || t.startsWith("#")) continue;
+    const eq = t.indexOf("=");
+    if (eq < 0) continue;
+    const k = t.slice(0, eq).trim();
+    const v = t.slice(eq + 1).trim();
+    if (!process.env[k]) process.env[k] = v;
+  }
+}
+loadEnvLocal();
 
 /**
  * Pre-warm Next.js dev routes before the test suite runs.

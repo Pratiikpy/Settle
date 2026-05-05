@@ -1,4 +1,22 @@
 import { defineConfig, devices } from "@playwright/test";
+import { readFileSync, existsSync } from "fs";
+import { resolve } from "path";
+
+// Load .env.local into process.env before Playwright spawns worker processes.
+// Workers inherit process.env from this main config process.
+(function loadEnvLocal() {
+  const p = resolve(process.cwd(), ".env.local");
+  if (!existsSync(p)) return;
+  for (const line of readFileSync(p, "utf8").split("\n")) {
+    const t = line.trim();
+    if (!t || t.startsWith("#")) continue;
+    const eq = t.indexOf("=");
+    if (eq < 0) continue;
+    const k = t.slice(0, eq).trim();
+    const v = t.slice(eq + 1).trim();
+    if (!process.env[k]) process.env[k] = v;
+  }
+})();
 
 /**
  * Playwright config for the @settle/web E2E test suite.
