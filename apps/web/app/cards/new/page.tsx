@@ -145,6 +145,8 @@ export default function NewCardPage() {
         card_pubkey: string;
         agent_pubkey: string;
         agent_secret_b58: string;
+        blockhash: string;
+        last_valid_block_height: number;
       };
 
       const tx = Transaction.from(Buffer.from(data.transaction, "base64"));
@@ -155,11 +157,13 @@ export default function NewCardPage() {
       const sig = await connection.sendRawTransaction(signed.serialize(), {
         preflightCommitment: "confirmed",
       });
+      // lastValidBlockHeight is NOT preserved through Transaction.from(); use the
+      // value the API returned alongside the transaction blob.
       await connection.confirmTransaction(
         {
           signature: sig,
-          blockhash: tx.recentBlockhash!,
-          lastValidBlockHeight: tx.lastValidBlockHeight!,
+          blockhash: data.blockhash ?? tx.recentBlockhash!,
+          lastValidBlockHeight: data.last_valid_block_height,
         },
         "confirmed",
       );

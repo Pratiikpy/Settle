@@ -210,7 +210,7 @@ export default function AllowancesPage() {
         {
           signature: sig,
           blockhash: tx.recentBlockhash!,
-          lastValidBlockHeight: tx.lastValidBlockHeight!,
+          lastValidBlockHeight: tx.lastValidBlockHeight ?? (await connection.getBlockHeight()) + 150,
         },
         "confirmed",
       );
