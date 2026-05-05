@@ -209,6 +209,57 @@ export async function POST(req: NextRequest) {
       tx.serialize({ requireAllSignatures: false, verifySignatures: false }),
     ).toString("base64");
 
+    // Mirror the kernel commit into Supabase so it's visible in /api/ledger,
+    // /api/dashboard, /receipts, the public feed, leaderboards, etc.
+    // The on-chain record_receipt ix above creates the canonical anchor;
+    // this row is the off-chain index. Without it, /api/ledger comes back
+    // empty even though the tx confirmed and the kernel hash is provable.
+    //
+    // Pre-write at build time (vs. post-confirmation) makes "I sent → I see
+    // the receipt" instant. If the tx never lands, this row just stays as a
+    // kernel-only record without an on-chain sig. That's an acceptable
+    // failure mode — the indexer can later mark stale rows; we'd rather
+    // show the user their commit than gate UX on confirmation latency.
+    const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseKey) {
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const sb = createClient(supabaseUrl, supabaseKey, {
+          auth: { persistSession: false },
+        });
+        const nowIso = new Date().toISOString();
+        const { error: insertErr } = await sb.from("receipts").insert({
+          request_id: requestId,
+          card_pubkey: from.toBase58(),
+          pact_pubkey: null,
+          merchant_pubkey: to.toBase58(),
+          amount_lamports: parsed.inputAmountAtomic,
+          decision: "ALLOW",
+          deny_code: null,
+          capability_hash: `\\x${"00".repeat(32)}`,
+          purpose_text_hash: `\\x${kernel.hashes.purpose_text_hash}`,
+          purpose_hash: `\\x${kernel.hashes.purpose_hash}`,
+          receipt_hash: `\\x${kernel.hashes.receipt_hash}`,
+          reason_hash: `\\x${kernel.hashes.reason_hash}`,
+          policy_snapshot_hash: `\\x${kernel.hashes.policy_snapshot_hash}`,
+          target_method: "POST",
+          target_path: "/_kernel/direct_send",
+          decision_slot: decisionSlot,
+          policy_version: 0,
+          receipt_kind: "direct_send",
+          context_hash: `\\x${kernel.context_hash}`,
+          created_at: nowIso,
+        });
+        if (insertErr) {
+          console.error("[quote-and-build] receipts insert failed:", insertErr.message);
+        }
+      } catch (e) {
+        console.error("[quote-and-build] receipts insert threw:", (e as Error).message);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       mode: "direct_usdc",
