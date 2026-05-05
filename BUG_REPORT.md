@@ -442,6 +442,25 @@ audit-branch preview will catch up when its deploy queue clears.
 | `/verify` with all-zeros hash | Clean "NOT FOUND" + 3-step UI showing why hash didn't match. Good defensive UX. |
 | Production `/api/ledger` | 21 receipts visible (vs. 0 before audit) |
 
+## Iteration 7 — production verification
+
+Switched test target from `use-settle-git-audit-e2e-burner-...` (preview,
+deploy queue stuck) to `use-settle.vercel.app` (canonical production URL).
+
+| Verification | Result |
+|---|---|
+| `use-settle.vercel.app/api/health` | ok, cluster=devnet, settle_program=`HU4piq8b…`, supabase ok |
+| `POST use-settle.vercel.app/api/swap/quote-and-build` | mode=direct_usdc, has_receipt=true |
+| `use-settle.vercel.app/api/ledger?wallet=Alice` | **21 native_kernel + 1 native_imported** |
+| `use-settle.vercel.app/verify?h=ca50ca04…238cc902` (the audit receipt) | **VERIFIED ✓** — all 4 BLAKE3 hashes match canonical JSON, anchored at on-chain slot 460,246,396 — `audit-71-PROD-verify-VERIFIED.png` |
+| Wallet modal on production | Phantom only (E2E Persona correctly absent — burner key would be a security hole on prod) |
+
+**This proves the entire audit's headline result lands on `use-settle.vercel.app`** —
+the canonical URL Pratiik asked about. UI-driven form fill on the audit
+branch produced an on-chain receipt that the production `/verify` endpoint
+recomputes and validates. End-to-end, no mocks, no Settle dependency on the
+verifier side.
+
 **The single most important verification — captured in `audit-63-verify-with-hash.png`**:
 A receipt I created via the /send UI was looked up on the public /verify
 page using its `receipt_hash`, and the verifier returned **VERIFIED ✓** with
