@@ -74,8 +74,26 @@ interface W6Dashboard {
 
 function lamportsToUsdc(v: bigint | number | string | null | undefined): string {
   if (v == null) return "0.00";
-  const n = typeof v === "bigint" ? Number(v) : Number(v);
-  return (n / 1e6).toFixed(2);
+  // Bug #48 fix: dashboard recent-receipts amounts rounded sub-cent
+  // sends to "$0.00" (e.g. 1000 lamports = $0.001 became $0.00 in the
+  // table). Same Bug #23/#43 family — when sub-cent, render with 6
+  // decimals trimmed so the row reflects what actually moved.
+  let n: bigint;
+  try {
+    n = typeof v === "bigint" ? v : BigInt(v);
+  } catch {
+    return "0.00";
+  }
+  if (n < 0n) n = -n;
+  const whole = n / 1_000_000n;
+  const frac = n % 1_000_000n;
+  if (whole === 0n && frac > 0n && frac < 10_000n) {
+    const padded = frac.toString().padStart(6, "0").replace(/0+$/, "");
+    const display = padded.length < 3 ? padded.padEnd(3, "0") : padded;
+    return `0.${display}`;
+  }
+  const fracStr = frac.toString().padStart(6, "0").slice(0, 2);
+  return `${whole}.${fracStr}`;
 }
 
 function relativeTs(ts: string): string {
