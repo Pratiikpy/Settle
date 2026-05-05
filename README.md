@@ -12,16 +12,18 @@ Settle is the payment app for the AI age. Send USDC to anyone with a `@handle`. 
 
 ![Settle landing — magic-moment terminal mid-flight](docs/screenshots/hero.png)
 
+**Live:** [use-settle.vercel.app](https://use-settle.vercel.app/) · [`/verify`](https://use-settle.vercel.app/verify) · [`/stats`](https://use-settle.vercel.app/stats) · Anchor program [`HU4piq8…77nD`](https://solscan.io/account/HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD?cluster=devnet) (devnet)
+
 ---
 
 ## Try it in 2 minutes
 
 No install needed. All four work on devnet right now:
 
-1. **Watch an agent spend** → [`/watch`](https://settle.so/watch). A live card on devnet. The terminal streams real ALLOW / DENY decisions; click any row to open the on-chain receipt.
-2. **Send a payment** → [`/start/consumer`](https://settle.so/start/consumer). Connect Phantom, take an in-app sandbox airdrop, send to `@alice`. Receipt lands at `/r/<id>` with full hash chain and Solscan link.
-3. **Hire your own agent** → [`/start/agent`](https://settle.so/start/agent). Pick a budget. Pick what it can buy. One transaction revokes the credential.
-4. **Verify a receipt without us** → grab any `receipt_hash` from `/r/<id>`, drop it into [`/verify`](https://settle.so/verify). The SDK re-derives the hash chain in your browser.
+1. **Watch an agent spend** → [`/watch`](https://use-settle.vercel.app/watch). A live card on devnet. The terminal streams real ALLOW / DENY decisions; click any row to open the on-chain receipt.
+2. **Send a payment** → [`/start/consumer`](https://use-settle.vercel.app/start/consumer). Connect Phantom, take an in-app sandbox airdrop, send to `@alice`. Receipt lands at `/r/<id>` with full hash chain and Solscan link.
+3. **Hire your own agent** → [`/start/agent`](https://use-settle.vercel.app/start/agent). Pick a budget. Pick what it can buy. One transaction revokes the credential.
+4. **Verify a receipt without us** → grab any `receipt_hash` from `/r/<id>`, drop it into [`/verify`](https://use-settle.vercel.app/verify). The SDK re-derives the hash chain in your browser.
 
 ---
 
