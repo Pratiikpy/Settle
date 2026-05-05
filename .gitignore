@@ -45,6 +45,8 @@ coverage/
 test-results/
 playwright-report/
 .last-run.json
+apps/web/demo-recordings/
+demo-recordings/
 
 # logs
 *.log

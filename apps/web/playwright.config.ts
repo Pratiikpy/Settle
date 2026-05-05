@@ -61,5 +61,18 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      // Hackathon demo recorder. Always records video, headed, no
+      // retries (a clean recording is better than a re-attempted one).
+      // Run with: pnpm exec playwright test e2e/demo-recorder.spec.ts --project=chromium-demo --headed
+      name: "chromium-demo",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1280, height: 800 },
+        video: { mode: "on", size: { width: 1280, height: 800 } },
+      },
+      retries: 0,
+      testMatch: /demo-recorder\.spec\.ts$/,
+    },
   ],
 });
