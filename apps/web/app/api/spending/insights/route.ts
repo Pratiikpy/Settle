@@ -60,22 +60,16 @@ export async function GET(req: NextRequest) {
     .eq("authority_pubkey", authority);
   const cardPubkeys = (cards ?? []).map((c) => c.card_pubkey);
 
-  if (cardPubkeys.length === 0) {
-    return NextResponse.json({
-      ok: true,
-      total_usdc: "0.00",
-      by_category: {},
-      by_merchant: [],
-      daily_series: [],
-      top_merchant: null,
-    });
-  }
-
-  // Receipts in the window
+  // Bug #38: include the user's wallet too — direct_send receipts use
+  // the sender's wallet as card_pubkey, so a user with no agent cards
+  // but plenty of direct sends used to see an empty insights page.
+  const cardKeysWithSelf = [authority, ...cardPubkeys];
+  // Receipts in the window — include direct sends from the user's
+  // wallet (Bug #38 class).
   const { data: receipts, error: rErr } = await supabase
     .from("receipts")
     .select("merchant_pubkey, amount_lamports, created_at, decision")
-    .in("card_pubkey", cardPubkeys)
+    .in("card_pubkey", cardKeysWithSelf)
     .eq("decision", "ALLOW")
     .gte("created_at", since);
 

@@ -140,13 +140,17 @@ export async function GET(req: NextRequest): Promise<Response> {
   todayStart.setUTCHours(0, 0, 0, 0);
   const todayIso = todayStart.toISOString();
 
-  // Outbound (cards user owns, ALLOW)
+  // Outbound (cards user owns OR direct sends from user's wallet, ALLOW).
+  // Bug #38: include user's wallet — direct_send receipts use sender's
+  // wallet as card_pubkey, so a /send → confirmed used to leave today's
+  // "spent" counter at $0.
   let outboundToday: Array<{ amount_lamports: string; card_pubkey: string }> = [];
-  if (cardPubkeys.length > 0) {
+  {
+    const cardKeysWithSelf = [pubkey, ...cardPubkeys];
     const { data, error } = await sb
       .from("receipts")
       .select("amount_lamports, card_pubkey")
-      .in("card_pubkey", cardPubkeys)
+      .in("card_pubkey", cardKeysWithSelf)
       .eq("decision", "ALLOW")
       .gte("created_at", todayIso);
     logErr("outboundToday", error);
