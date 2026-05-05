@@ -223,8 +223,6 @@ export async function POST(req: NextRequest) {
     const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    let indexStatus: "indexed" | "skipped_no_supabase" | "rls_blocked" | "failed" = "skipped_no_supabase";
-    let indexError: string | null = null;
     if (supabaseUrl && supabaseKey) {
       try {
         const { createClient } = await import("@supabase/supabase-js");
@@ -255,17 +253,9 @@ export async function POST(req: NextRequest) {
           created_at: nowIso,
         });
         if (insertErr) {
-          indexStatus = /row-level security|new row violates/i.test(insertErr.message)
-            ? "rls_blocked"
-            : "failed";
-          indexError = insertErr.message;
           console.error("[quote-and-build] receipts insert failed:", insertErr.message);
-        } else {
-          indexStatus = "indexed";
         }
       } catch (e) {
-        indexStatus = "failed";
-        indexError = (e as Error).message;
         console.error("[quote-and-build] receipts insert threw:", (e as Error).message);
       }
     }
@@ -286,7 +276,6 @@ export async function POST(req: NextRequest) {
         hashes: kernel.hashes,
         context_hash: kernel.context_hash,
       },
-      _index: { status: indexStatus, error: indexError },
     });
   }
 
