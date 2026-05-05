@@ -150,7 +150,7 @@ export default function PayWidgetPage() {
       await connection.confirmTransaction(
         {
           signature: sig,
-          blockhash: built.blockhash,
+          blockhash: built.blockhash!,
           lastValidBlockHeight: built.last_valid_block_height!,
         },
         "confirmed",
