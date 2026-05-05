@@ -348,9 +348,18 @@ export default function SendPage() {
     : null;
   const priceImpactNum = quote ? parseFloat(quote.price_impact_pct) : null;
   const highImpact = priceImpactNum !== null && priceImpactNum > 1;
+  // Bug #34: validate recipient is a real Solana pubkey before enabling Pay.
+  // Without this the form happily accepted strings like "NOT_A_VALID_PUBKEY"
+  // and only failed at API submission time (or worse, never reached it
+  // because the button text already showed the bogus "to" string).
+  const PUBKEY_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+  const recipientLooksValid = recipient.length > 0 && PUBKEY_RE.test(recipient);
+  const amountValid = parseFloat(amount || "0") > 0;
   const ctaDisabled =
     !connected ||
     stage !== "compose" ||
+    !recipientLooksValid ||
+    !amountValid ||
     (!isUsdc && cluster === "devnet") ||
     (!isUsdc && cluster === "mainnet" && !quote && !quoteError);
 
