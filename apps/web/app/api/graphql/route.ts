@@ -123,12 +123,22 @@ function buildRoot() {
       return data ? mapReceipt(data) : null;
     },
     receiptsForWallet: async ({ pubkey, limit }: { pubkey: string; limit: number }) => {
-      const { data } = await sb
+      // Bug #37 (= Bug #10 in GraphQL): public.receipts has no
+      // sender_pubkey / recipient_pubkey — only card_pubkey (sender for
+      // direct_send) and merchant_pubkey (recipient). The previous
+      // .or() filter referenced columns that don't exist, so PostgREST
+      // 400'd, the destructure swallowed the error, and `data ?? []`
+      // returned empty. Use card/merchant column names.
+      const { data, error } = await sb
         .from("receipts")
         .select(RECEIPT_FIELDS)
-        .or(`sender_pubkey.eq.${pubkey},recipient_pubkey.eq.${pubkey}`)
+        .or(`card_pubkey.eq.${pubkey},merchant_pubkey.eq.${pubkey}`)
         .order("created_at", { ascending: false })
         .limit(Math.min(limit ?? 25, 100));
+      if (error) {
+        // eslint-disable-next-line no-console
+        console.error("[graphql.receiptsForWallet]", error.message);
+      }
       return (data ?? []).map(mapReceipt);
     },
     receiptsForMerchant: async ({
