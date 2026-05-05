@@ -26,6 +26,9 @@ import {
   type JupiterQuoteResponse,
   JupiterError,
 } from "../../../../lib/jupiter";
+import { kernelCommit, kernelCommitToRecordReceiptArgs } from "@settle/sdk";
+import { recordReceiptIx } from "../../../../lib/anchor-client";
+import { randomUUID } from "node:crypto";
 
 export const runtime = "nodejs";
 
@@ -152,6 +155,42 @@ export async function POST(req: NextRequest) {
     transferIx.keys.push({ pubkey: reference, isSigner: false, isWritable: false });
     tx.add(transferIx);
 
+    // Record-receipt attestation. Without this ix, the Settle indexer never
+    // sees the send → /api/ledger comes back empty even though the USDC
+    // transfer confirmed (the bug Pratiik hit on use-settle.vercel.app:
+    // tx 5hU8LStb… moved real $10 USDC but stayed invisible in /receipts).
+    //
+    // The fee-payer signature already covers this ix (no extra signer).
+    // Mirrors what /api/send/build did before this swap-aware route shipped.
+    const requestId = randomUUID();
+    const purposeText = parsed.note?.trim().length
+      ? parsed.note.trim()
+      : `direct USDC send: ${(Number(parsed.inputAmountAtomic) / 1_000_000).toFixed(6)} to ${to.toBase58().slice(0, 8)}…`;
+    const decisionSlot = await connection.getSlot("confirmed");
+    const kernel = kernelCommit({
+      kind: "direct_send",
+      request_id: requestId,
+      amount_lamports: parsed.inputAmountAtomic,
+      sender: from.toBase58(),
+      recipient: to.toBase58(),
+      decision_slot: decisionSlot,
+      purpose_text: purposeText,
+    });
+    try {
+      tx.add(
+        recordReceiptIx({
+          attestor: from,
+          args: kernelCommitToRecordReceiptArgs(kernel),
+        }),
+      );
+    } catch (e) {
+      // record_receipt build failure (e.g. Settle program not deployed on
+      // current cluster) shouldn't crash the send — log and continue with
+      // a memo-only attestation. Receipt may not appear in indexed ledger
+      // until program deploy is verified.
+      console.error("[quote-and-build] recordReceiptIx skipped:", (e as Error).message);
+    }
+
     if (parsed.note && parsed.note.trim().length > 0) {
       const memoProgram = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
       tx.add({
@@ -180,6 +219,12 @@ export async function POST(req: NextRequest) {
       reference: reference.toBase58(),
       amount_usdc: (Number(parsed.inputAmountAtomic) / 1_000_000).toFixed(6),
       message: `Send $${(Number(parsed.inputAmountAtomic) / 1_000_000).toFixed(2)} USDC.`,
+      receipt: {
+        request_id: requestId,
+        kind: kernel.kind,
+        hashes: kernel.hashes,
+        context_hash: kernel.context_hash,
+      },
     });
   }
 
