@@ -11,6 +11,7 @@ import { getSolscanUrl } from "../../../../lib/solana";
 
 /**
  * F4.6 + C90 — Merchant-side dispute inbox + resolution.
+ * Bug #28 fix: redirects /m/me/disputes → /m/<own-handle>/disputes when connected.
  *
  * Lists pending refund_requests with the buyer's emoji + reason. The
  * merchant can:
