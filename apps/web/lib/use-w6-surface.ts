@@ -75,6 +75,33 @@ export function useW6Surface(): [W6Surface, (next: W6Surface) => void] {
         pathname.startsWith("/g/")
       )
         return "public";
+      // Consumer routes — show Consumer surface even when not connected,
+      // so the user sees the right sidebar + nav. Wallet-gated content
+      // inside the page itself can still show a "connect to use" CTA.
+      if (
+        pathname.startsWith("/send") ||
+        pathname.startsWith("/receive") ||
+        pathname.startsWith("/dashboard") ||
+        pathname.startsWith("/cards") ||
+        pathname.startsWith("/receipts") ||
+        pathname.startsWith("/wishes") ||
+        pathname.startsWith("/allowances") ||
+        pathname.startsWith("/groups") ||
+        pathname.startsWith("/spending") ||
+        pathname.startsWith("/split-bill") ||
+        pathname.startsWith("/request") ||
+        pathname.startsWith("/notifications") ||
+        pathname.startsWith("/activity") ||
+        pathname.startsWith("/settings") ||
+        pathname.startsWith("/import") ||
+        pathname.startsWith("/onboarding") ||
+        pathname.startsWith("/pay") ||
+        pathname.startsWith("/at/") ||
+        pathname.startsWith("/claim") ||
+        pathname.startsWith("/ledger") ||
+        pathname === "/"
+      )
+        return "consumer";
     }
     return connected ? "consumer" : "public";
   }, [fromQuery, connected, pathname]);
