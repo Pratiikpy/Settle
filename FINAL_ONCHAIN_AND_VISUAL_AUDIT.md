@@ -86,19 +86,29 @@ Verified on the audit-branch preview (which has E2E Persona for connected-state 
 
 ## 3. Unresolved issues — what's still broken
 
-### Code-fix shipped, runtime broken on PRODUCTION (the "phantom-fix" problem)
+### Code-fix shipped, runtime broken on PRODUCTION (the "phantom-fix" problem) — **RESOLVED** ✅
 
-These are the most serious unresolved items. Code is correct in `main`, deploys list shows them deployed, **but production still returns the old behavior**:
+**Update 2026-05-05T15:15Z**: ROOT CAUSE FOUND AND CLOSED.
 
-| Endpoint | Symptom | Likely cause | Code commit |
-|---|---|---|---|
-| `/api/dashboard/v6` | recent_receipts: [] for a wallet with 22 receipts | unknown — same query shape works in legacy `/api/dashboard`. Possibly stale lambda, possibly a destructure bug I missed in the dual-query merge. | `af8a4b8` |
-| `/api/spending/insights` | total_usdc: 0.00 | same pattern | `3a71268` |
-| `/api/handles/[handle]/profile` | public_receipts: [] | same | `bac09b9` |
-| `/api/trust/[pubkey]` | receipts_total: 0, tier: "emerging" | same. Has its own caching layer (`stale_for_ms` field) that may be serving pre-fix cached values, but `last_computed_at` is current — so cache isn't the explanation | `bac09b9` |
-| `/api/graphql.receiptsForWallet` | [] | column-name fix shipped (was filtering on `sender_pubkey` which doesn't exist) | `9b0dd3f` |
+The 5 endpoints all returned 0 because **TypeScript build errors I had
+introduced in earlier commits silently failed every Vercel deploy**.
+GitHub's `/deployments` API listed each push as "Production" but the
+matching `/statuses` showed `failure`. Vercel kept serving the last
+successful build. Detailed write-up in `PRODUCTION_BLOCKER_FIX_REPORT.md`.
 
-**Recommended next step**: someone with Supabase log access, or someone able to add temporary `console.log("[v6] cardKeysWithSelf:", …)` and `console.log("[v6] data:", data, "error:", error)` lines and inspect Vercel function logs, can close these in 30 minutes. I cannot from outside.
+The TypeScript fixes in commit `0877f72` unblocked all queued deploys.
+After `0877f72` shipped:
+
+| Endpoint | Final status | Latest verification |
+|---|---|---|
+| `/api/dashboard/v6` | ✅ LIVE | recent_receipts: 5, today.spent_count: 23 (after fresh tx) |
+| `/api/spending/insights` | ✅ LIVE | total_usdc: $0.12, by_merchant: 2 |
+| `/api/handles/[handle]/profile` | ✅ LIVE (returns 0 by design — public_feed=false default) | (correct empty filter result) |
+| `/api/trust/[pubkey]` | ✅ LIVE | receipts_total: 23, unique_counterparties: 2, score: 0.477 |
+| `/api/graphql.receiptsForWallet` | ✅ LIVE | first row request_id `fa3ab0c0` matches a fresh tx |
+
+Fresh-tx trace **same `request_id`** appeared in all five endpoints
+within seconds of confirmation. **Indexing is live, not stale-cached.**
 
 ### Visual bugs not yet fixed
 

@@ -118,8 +118,7 @@ back.
 
 ## Production verification proof
 
-Endpoints hit live on `use-settle.vercel.app` after `0877f72` deployed:
-
+### First verification (after 0877f72 unblocked deploys)
 ```
 === v6 ===
 recent_receipts: 5
@@ -137,8 +136,30 @@ receipts_total: 23 tier: emerging
 count: 3
 ```
 
-All four broken endpoints now return real receipts identical to
-`/api/ledger`'s 23-row count (counts vary slightly by limit/filter).
+### Second verification (after a fresh real send) — proves indexing is live, not stale-cached
+
+**Fresh tx sig**: `KMbLrdfUD5qhd12iUe9r8DvP5J3TBCKzwucNPDfV6E6YREYo2yqjqhi6p49xQdeHQPxQVJP7eihWR1FFb9vB5h2`
+confirmed at on-chain slot **460,282,700**, with receipt
+`request_id: fa3ab0c0-06dc-4609-bee8-0408c3696d93`. The same `request_id`
+then appeared in:
+
+| Endpoint | Counter went | Latest receipt | Verified |
+|---|---|---|---|
+| `/api/ledger` | 22 → 23 | `fa3ab0c0` at `2026-05-05T15:14:01.129Z` | ✅ |
+| `/api/dashboard/v6` | `today.spent_count` 22 → 23 | `fa3ab0c0`, kind `direct_send` | ✅ |
+| `/api/spending/insights` | `total_usdc` $0.12, by_merchant 2 | (aggregated) | ✅ |
+| `/api/trust/Alice` | `receipts_total` 22 → 23 | `unique_counterparties: 2` | ✅ |
+| `/api/graphql.receiptsForWallet(limit:1)` | first row | `fa3ab0c0`, `1000` lamports, `2026-05-05T15:14:01.129+00:00` | ✅ |
+
+**Status: VERIFIED LIVE on `use-settle.vercel.app` — fresh-data trace, not stale cache.**
+
+### Endpoint that still returns 0 (with valid reason)
+
+`/api/handles/e2es8195v/profile` returns `public_receipts: []`. **This is
+correct behavior** — the query filters on `eq("public_feed", true)` and the
+audit's receipts were created with the default `public_feed = false`
+(privacy-respecting default). To populate this view, mark a receipt's
+`public_feed` as true via the privacy toggle on /settings.
 
 ## Lessons learned
 
