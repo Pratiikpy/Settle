@@ -99,6 +99,7 @@ export async function POST(req: NextRequest) {
   // a useful toast instead of swallowing a 500.
   for (let i = 0; i < body.merchantAllowlist.length; i++) {
     const entry = body.merchantAllowlist[i];
+    if (!entry) continue; // shouldn't happen given zod validation, satisfies TS
     const merchantStr = typeof entry === "string" ? entry : entry.merchant;
     try {
       const pk = new PublicKey(merchantStr);
