@@ -25,6 +25,14 @@ const EMBED_CSP_DIRECTIVES = CSP_DIRECTIVES.replace(
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@settle/sdk", "@settle/types", "@settle/ui"],
+  // AUDIT BRANCH ONLY: enable the SettleE2EBurnerWalletAdapter so the
+  // "E2E Persona" option appears in the wallet modal. Lets Playwright
+  // drive the deployed UI with a seeded keypair (no Phantom needed).
+  // DO NOT MERGE THIS BRANCH TO MAIN — production must NOT have burner
+  // enabled. The bundled keypair would let anyone sign as the test wallet.
+  env: {
+    NEXT_PUBLIC_E2E_BURNER: "1",
+  },
   experimental: {
     typedRoutes: false,
   },
