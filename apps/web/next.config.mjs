@@ -1,15 +1,17 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
 // Wallet adapters require unsafe-eval for their internal WASM/crypto bootstrapping.
+// vercel.live is allowed for preview deploys (Vercel Live Comments overlay).
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live",
+  "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live",
+  "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data: https://fonts.gstatic.com",
+  "font-src 'self' data: https://fonts.gstatic.com https://vercel.live",
   "connect-src 'self' https: wss:",
-  "frame-src 'self'",
+  "frame-src 'self' https://vercel.live",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

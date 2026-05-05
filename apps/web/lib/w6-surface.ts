@@ -77,7 +77,8 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
       section: "You",
       items: [
         { icon: "eye", label: "Profile", href: "/at/me" },
-        { icon: "bell", label: "Notifications", href: "/activity", badgeKey: "unread" },
+        { icon: "bell", label: "Activity", href: "/activity", badgeKey: "unread" },
+        { icon: "bell", label: "Notifications", href: "/notifications", badgeKey: "unread" },
         { icon: "settings", label: "Settings", href: "/settings" },
       ],
     },
