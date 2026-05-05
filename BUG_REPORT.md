@@ -359,6 +359,48 @@ Supabase writes & reads, screenshots captured at every decision point.
 
 ---
 
+## The headline proof — /verify VERIFIED ✓
+
+`audit-63-verify-with-hash.png` is the single most important artifact in this audit.
+
+I created a tx via the /send UI in iteration 1, captured its `receipt_hash`
+from the receipt detail page (`ca50ca04…238cc902`), then opened
+`/verify?h=<that_hash>` and watched the public verifier return a giant
+green **VERIFIED ✓** with all 4 hashes matching the canonical JSON:
+
+| Step | Result |
+|---|---|
+| 1. Pull on-chain commitment chain | ✓ ok — anchored at slot 460,246,396 |
+| 2. Fetch off-chain canonical JSON | ✓ ok — sealed payload from origin |
+| 3. Recompute 4 hashes locally (BLAKE3) | running → all 4 ✓ green |
+
+**Recomputed hashes (match)**:
+- `receipt_hash`: `ca50ca04 e587acec bfefdab0 bfdcee53 51a521f3 3797d201 417a9c3a 238cc902` ✓
+- `reason_hash`: `16e95a67 7357e356 b5a81521 e7e7760f dea68ddb e0c2a740 419ec8cb f87f04ea` ✓
+- `policy_snapshot_hash`: `203bceb4 b5d4af26 24a79359 818439c1 a8895bac c9fc4fca 70ffd8de 59660d71` ✓
+- `purpose_hash`: `5f51f84c b2a4b946 bc2dfe42 9c78880b 568c2c37 fe103d7a 975536f0 1088f1d7` ✓
+
+The ENTIRE Settle pitch — programmable money + verifiable receipts +
+trust-building reputation — collapses to this one screen working: UI form
+input produced an on-chain commitment that an unrelated party can verify,
+no wallet, no Settle dependency. Before this audit's Bug #10 root-cause
+fix, this loop was broken. Now it works.
+
+---
+
+## Action-based features driven (iteration 4)
+
+| Action | Result |
+|---|---|
+| `/onboarding` "Get funds" click | API returned airdrop-rate-limited; UI showed manual fallback links + "I've funded my wallet" continue. **Bug #11 from old audit is closed** — UI handles this gracefully. |
+| `/embed/pay` "Pay $0.001" click | **Bug #31 found**: 404 on /api/send/build (legacy endpoint) → JSON parse error. Fixed by switching to /api/swap/quote-and-build. |
+| `/capabilities/discover` query "translate japanese to english" | API returned, "No matches yet. Try a broader query." Clean empty state. |
+| `/receive` "Copy address" click | Button flips to "Copied ✓". Clipboard works. |
+| `/r/<id>` "Verify hashes →" click | Navigates to `/verify?h=<receipt_hash>` |
+| `/verify?h=<hash>` auto-verify | **VERIFIED ✓** — all 4 hashes match canonical JSON. |
+
+---
+
 ## Summary
 
 **Bug #10 — invisible receipts — is FIXED end-to-end on the live preview**:
