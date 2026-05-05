@@ -607,7 +607,12 @@ export default function SendPage() {
                   className="w6-heading"
                   style={{ fontSize: 48, lineHeight: 0.95 }}
                 >
-                  ${parseFloat(amount || "0").toFixed(2)}
+                  {(() => {
+                    const n = parseFloat(amount || "0");
+                    if (n === 0) return "$0.00";
+                    if (n < 0.01) return `$${n.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`;
+                    return `$${n.toFixed(2)}`;
+                  })()}
                 </div>
                 <div
                   className="w6-muted"

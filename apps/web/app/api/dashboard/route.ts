@@ -73,24 +73,34 @@ export async function GET(req: NextRequest) {
     created_at: string;
     receipt_kind: string | null;
   };
+  // Include receipts the user is the sender (card_pubkey ∈ owned cards OR
+  // their wallet pubkey for direct_send), AND those they received as
+  // merchant. Without this, /send → confirmed → 'no receipts yet' on the
+  // dashboard, which is the central UX broken-window: user does the action
+  // and the dashboard pretends nothing happened.
   let recentReceipts: ReceiptRow[] = [];
-  if (cardPubkeys.length > 0) {
-    const { data, error } = await sb
-      .from("receipts")
-      .select(
-        "request_id, merchant_pubkey, card_pubkey, amount_lamports, decision, created_at, receipt_kind",
-      )
-      .in("card_pubkey", cardPubkeys)
-      .order("created_at", { ascending: false })
-      .limit(5);
-    if (error) {
-      return NextResponse.json(
-        { error: "supabase_error", message: error.message },
-        { status: 502 },
-      );
-    }
-    recentReceipts = (data ?? []) as ReceiptRow[];
+  // Match ANY of: card_pubkey is the user's pubkey (direct sends use this),
+  // card_pubkey is one of the user's agent cards, OR merchant_pubkey is
+  // the user (inbound).
+  const cardKeysForFilter = [pubkey, ...cardPubkeys];
+  const cardKeyFilter = cardKeysForFilter
+    .map((k) => `card_pubkey.eq.${k}`)
+    .join(",");
+  const { data: recentData, error: recentErr } = await sb
+    .from("receipts")
+    .select(
+      "request_id, merchant_pubkey, card_pubkey, amount_lamports, decision, created_at, receipt_kind",
+    )
+    .or(`${cardKeyFilter},merchant_pubkey.eq.${pubkey}`)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  if (recentErr) {
+    return NextResponse.json(
+      { error: "supabase_error", message: recentErr.message },
+      { status: 502 },
+    );
   }
+  recentReceipts = (recentData ?? []) as ReceiptRow[];
 
   // Count of inbound (user is merchant) — distinct from cards-they-own
   const { count: receivedCount } = await sb
