@@ -172,13 +172,17 @@ fix (out of scope for this UI/UX audit pass).
 
 ---
 
-### Bug #27 — `/agents/templates/[slug]` 404 for visible templates
+### Bug #27 — `/agents/templates/[slug]` 404 — ❌ FALSE POSITIVE
 
-`/agents/templates` shows three template cards (Research Assistant,
-Translator, Summarizer) but `/agents/templates/research-assistant`
-returns the 404 page. The slug routing or detail page is missing.
+I had guessed the slug `research-assistant` (kebab-case of the title).
+The actual slugs are `research`, `translate`, `summary`. All three
+detail pages render perfectly with hire flow, cap, expiry, allowlist,
+and a "Hire — sign rule" CTA. The custom 404 page (encountered when I
+guessed wrong) is well-designed: "This page doesn't exist on Solana.
+Maybe the link is wrong, or the resource was revoked. Every Settle path
+resolves to a verifiable receipt — this one didn't." (`audit-46-template-research.png`)
 
-**Status**: documented. Custom 404 page is well-designed though.
+**Status**: not a bug. Closing.
 
 ---
 
@@ -303,6 +307,22 @@ Supabase writes & reads, screenshots captured at every decision point.
 - This-audit send 2: `2AeJC5N1Hsjw2WkifEwAJoymxPsz9hnbz3EXG1UWHFR89bRrd2SzvDb2iMEFAFNKraJCnTJunKhj1EpLrSj7VBpx`
 - This-audit send 3: `4zNxK358GYFdEVbdMxymQVUchtiNiQLiBh8iSun97Pnj5ySLuwf2ReVEwxRevD4NPn2ZUW3yXvjGUNVgpS9YQp1a`
 - Cumulative receipts in Supabase for Alice: 20 native_kernel + 1 native_imported
+
+**Live `/stats` aggregates reflecting this audit's writes**:
+- RECEIPTS · 24h: 20
+- USDC MOVED · 24h: $0.02
+- By kind: direct_send 100%
+- By decision: ALLOW 100%
+- ON-CHAIN ATTESTS · 24h: 0 (the on-chain attestation indexer isn't
+  active — only the eager-write at /api/swap/quote-and-build time
+  populates `receipts`. Long-term the indexer should reconcile)
+
+**Verifiable build** (`/verify-build`):
+- Program ID: `HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD` (matches the
+  Settle program seen inside every successful tx during this audit)
+- On-chain bytecode SHA-256: `07cc62fc1b02490bcb60eac1b93c5865ce60bf10635b0f216bf671488ceb1dcf`
+- `build-info.json` not yet committed — page tells operators how to
+  reproduce.
 
 ---
 
