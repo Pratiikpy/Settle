@@ -68,13 +68,17 @@ export async function GET(
     sig_solscan: string | null;
     created_at: string;
   }> = [];
-  if (cardPubkeys.length > 0) {
+  // Bug #38: include the wallet pubkey itself — direct sends use the
+  // wallet as card_pubkey, and a profile that excludes them looks like
+  // the user has never paid anyone.
+  {
+    const cardKeysWithSelf = [pubkey, ...cardPubkeys];
     const { data, error } = await supabase
       .from("receipts")
       .select(
         "request_id, merchant_pubkey, amount_lamports, decision_slot, sig_solscan, created_at",
       )
-      .in("card_pubkey", cardPubkeys)
+      .in("card_pubkey", cardKeysWithSelf)
       .eq("decision", "ALLOW")
       .eq("public_feed", true)
       .order("created_at", { ascending: false })
