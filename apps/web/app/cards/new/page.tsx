@@ -59,27 +59,21 @@ export default function NewCardPage() {
   // spend rejects any call whose capability_hash doesn't match exactly — strongest
   // custody guarantee available.
   type AllowlistEntry = { merchant: string; capabilityHashHex?: string };
-  // Default merchants come from env. The fallback placeholders below are
-  // intentionally non-base58 stubs that the API will reject — that's the
-  // signal to the user (and the deploying operator) to set the
-  // NEXT_PUBLIC_MERCHANT_* envs with real on-chain merchant pubkeys before
-  // shipping. They are NOT meant to be left as-is in production.
-  const defaultMerchants: AllowlistEntry[] = [
-    {
-      merchant:
-        process.env.NEXT_PUBLIC_MERCHANT_ARXIV ?? "Arxv1111111111111111111111111111111111111a",
-    },
-    {
-      merchant:
-        process.env.NEXT_PUBLIC_MERCHANT_TRANSLATE ??
-        "Trns1111111111111111111111111111111111111a",
-    },
-    {
-      merchant:
-        process.env.NEXT_PUBLIC_MERCHANT_SUMMARY ??
-        "Sumr1111111111111111111111111111111111111a",
-    },
-  ];
+  // Default merchants come from env vars (NEXT_PUBLIC_MERCHANT_*). When
+  // those aren't configured, start with a single empty row instead of
+  // pre-filling decorative-but-invalid stub strings — those used to be
+  // base58-shaped but didn't decode to 32 bytes, so submitting unchanged
+  // produced a 500 with no UI feedback (Bug #24). Empty rows force the
+  // user to paste a real merchant pubkey before the Create button enables.
+  const envDefaults = [
+    process.env.NEXT_PUBLIC_MERCHANT_ARXIV,
+    process.env.NEXT_PUBLIC_MERCHANT_TRANSLATE,
+    process.env.NEXT_PUBLIC_MERCHANT_SUMMARY,
+  ].filter((s): s is string => typeof s === "string" && s.length > 0);
+  const defaultMerchants: AllowlistEntry[] =
+    envDefaults.length > 0
+      ? envDefaults.map((merchant) => ({ merchant }))
+      : [{ merchant: "" }];
   const [allowlist, setAllowlist] = useState<AllowlistEntry[]>(defaultMerchants);
   const [showCapabilityPins, setShowCapabilityPins] = useState(false);
 

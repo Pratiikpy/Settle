@@ -92,6 +92,29 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Validate every merchant pubkey decodes to 32 bytes (the body regex
+  // only checks length+charset, but base58 strings of valid length can
+  // still decode to <32 bytes — e.g. "Arxv11…1a" passes regex but isn't
+  // a real Solana pubkey). Return a structured error so the UI can render
+  // a useful toast instead of swallowing a 500.
+  for (let i = 0; i < body.merchantAllowlist.length; i++) {
+    const entry = body.merchantAllowlist[i];
+    const merchantStr = typeof entry === "string" ? entry : entry.merchant;
+    try {
+      const pk = new PublicKey(merchantStr);
+      if (pk.toBytes().length !== 32) throw new Error("not 32 bytes");
+    } catch {
+      return NextResponse.json(
+        {
+          error: "invalid_merchant_pubkey",
+          message: `merchantAllowlist[${i}] is not a valid Solana address: ${merchantStr.slice(0, 12)}…`,
+          index: i,
+        },
+        { status: 400 },
+      );
+    }
+  }
+
   const authority = new PublicKey(body.authority);
   const labelHash = labelHashBytes(body.label);
   const [cardPda] = findAgentCardPda(authority, labelHash);
