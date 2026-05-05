@@ -170,7 +170,7 @@ export const NAV_BY_SURFACE: Record<W6Surface, NavSection[]> = {
         { icon: "hash", label: "Verify", href: "/verify" },
         { icon: "grid", label: "Heatmap", href: "/leaderboard" },
         { icon: "layers", label: "Capabilities", href: "/capabilities/discover" },
-        { icon: "globe", label: "Federation", href: "/leaderboard" },
+        { icon: "globe", label: "Federation", href: "/admin/federation/origins" },
         { icon: "activity", label: "Stats", href: "/stats" },
         { icon: "eye", label: "Public feed", href: "/feed" },
       ],
