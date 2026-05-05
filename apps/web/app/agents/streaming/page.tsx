@@ -9,6 +9,7 @@ import { trustGesture } from "../../../lib/confetti";
 import { getSolscanUrl } from "../../../lib/solana";
 import { PauseOnBlur } from "../../../components/pause-on-blur";
 import { W6AppShell } from "../../../components/w6-app-shell";
+import { asAuthHeaders, fetchAuthHeaders } from "../../../lib/client-auth";
 
 /**
  * F13 / F14 — Streaming Pact full lifecycle UI.
@@ -56,7 +57,7 @@ function lamportsToUsd(v: bigint | string | number): string {
 }
 
 export default function StreamingDashboard() {
-  const { connected, publicKey, signTransaction } = useWallet();
+  const { connected, publicKey, signTransaction, signMessage } = useWallet();
   const { connection } = useConnection();
   const [cards, setCards] = useState<CardRow[]>([]);
   const [pacts, setPacts] = useState<PactRow[]>([]);
@@ -64,8 +65,14 @@ export default function StreamingDashboard() {
   const [tickMs, setTickMs] = useState(0);
 
   async function refresh() {
-    if (!publicKey) return;
-    const r = await fetch(`/api/cards/list?authority=${publicKey.toBase58()}`);
+    // Bug #33 fix: /api/cards/list is wallet-sig protected. Without
+    // signed headers it 401s and the dropdown stays empty even when the
+    // user owns cards. Mirror the working /cards page pattern.
+    if (!publicKey || !signMessage) return;
+    const auth = await fetchAuthHeaders(publicKey.toBase58(), signMessage);
+    const r = await fetch(`/api/cards/list?authority=${publicKey.toBase58()}`, {
+      headers: asAuthHeaders(auth),
+    });
     const d = await r.json();
     if (d.ok) {
       setCards(d.cards ?? []);

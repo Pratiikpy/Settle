@@ -109,7 +109,7 @@ export async function generateMetadata({
     };
   }
 
-  const amount = (Number(r.amount_lamports ?? 0) / 1e6).toFixed(2);
+  const amount = formatUsdcAmount(r.amount_lamports);
   const title = `Settle receipt · ${verb} · $${amount} USDC`;
   const desc = `Cryptographic receipt #${(r.receipt_hash || "").slice(0, 8)} on Solana${r.sig_solscan ? ` · tx ${r.sig_solscan.slice(0, 8)}…` : ""}`;
   return {
@@ -118,6 +118,38 @@ export async function generateMetadata({
     openGraph: { title, description: desc, type: "article" },
     twitter: { card: "summary_large_image", title, description: desc },
   };
+}
+
+/**
+ * Format a USDC amount from lamports (USDC has 6 decimals on Solana).
+ * Uses 2-decimal display when ≥ $0.01, otherwise falls back to a
+ * 6-decimal trimmed form so sub-cent amounts (e.g. 1000 lamports =
+ * $0.001) don't render as the misleading "$0.00".
+ *
+ * Bug #43 fix — discovered during the strict pre-demo audit when the
+ * proven demo receipt of 1000 lamports rendered as "$0.00 USDC" on
+ * /r/[id]. The print and send pages already had this fix; this brings
+ * the canonical receipt-detail page in line.
+ */
+function formatUsdcAmount(lamports: string | number | null | undefined): string {
+  let n: bigint;
+  try {
+    n = BigInt(lamports ?? 0);
+  } catch {
+    return "0.00";
+  }
+  if (n < 0n) n = -n;
+  const whole = n / 1_000_000n;
+  const frac = n % 1_000_000n;
+  // Sub-cent: show up to 6 decimals, trim trailing zeros (min 3 dp so
+  // $0.001 stays readable rather than collapsing to "$0").
+  if (whole === 0n && frac > 0n && frac < 10_000n) {
+    const padded = frac.toString().padStart(6, "0").replace(/0+$/, "");
+    const display = padded.length < 3 ? padded.padEnd(3, "0") : padded;
+    return `0.${display}`;
+  }
+  const fracStr = frac.toString().padStart(6, "0").slice(0, 2);
+  return `${whole}.${fracStr}`;
 }
 
 // ── Cross-chain helpers ──
@@ -164,7 +196,7 @@ export default async function ReceiptPoster({
     return <CrosschainReceiptPoster r={r} />;
   }
 
-  const amount = (Number(r.amount_lamports ?? 0) / 1e6).toFixed(2);
+  const amount = formatUsdcAmount(r.amount_lamports);
   const allow = r.decision !== "DENY";
   const verbColor = allow ? "#1f9d55" : "#c1311e";
   const verb = allow ? "Verified" : "Blocked";

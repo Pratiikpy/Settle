@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
 import { TrustScoreBadge } from "@settle/ui";
@@ -59,6 +60,7 @@ export default function PayWidgetPage() {
   const note = params.get("note") ?? "";
   const originParam = params.get("origin") ?? "*";
   const { connected, publicKey, signTransaction } = useWallet();
+  const { setVisible: setWalletModalVisible } = useWalletModal();
   const { connection } = useConnection();
 
   const [status, setStatus] = useState<PostStatus>("ready");
@@ -217,9 +219,16 @@ export default function PayWidgetPage() {
         </div>
 
         {!connected ? (
-          <div className="mt-6 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4 text-center text-xs text-[#52525b]">
-            Connect a wallet to continue.
-          </div>
+          // Bug #44 (cont.) — same fix as /embed/pay: pop the wallet
+          // modal inline rather than telling the user to find a button
+          // that doesn't exist on this chrome-less widget.
+          <button
+            type="button"
+            onClick={() => setWalletModalVisible(true)}
+            className="mt-6 w-full rounded-full bg-accent py-3 text-sm font-medium text-background"
+          >
+            Connect wallet to pay
+          </button>
         ) : status === "success" ? (
           <div className="mt-6 rounded-xl border border-emerald-400/30 bg-emerald-400/[0.05] p-4 text-center text-xs text-emerald-300">
             Paid ✓ — closing in a moment.

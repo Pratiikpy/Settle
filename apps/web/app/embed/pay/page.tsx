@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Transaction } from "@solana/web3.js";
 import { TrustScoreBadge } from "@settle/ui";
 import { fireSettlementConfetti } from "../../../lib/confetti";
@@ -56,6 +57,7 @@ export default function EmbedPayPage() {
   const note = params.get("note") ?? "";
   const capability = params.get("capability") ?? "";
   const { connected, publicKey, signTransaction } = useWallet();
+  const { setVisible: setWalletModalVisible } = useWalletModal();
   const { connection } = useConnection();
 
   const [status, setStatus] = useState<Status>("ready");
@@ -243,9 +245,18 @@ export default function EmbedPayPage() {
         </div>
 
         {!connected ? (
-          <div className="mt-6 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4 text-center text-xs text-[#52525b]">
-            Connect a wallet (top right) to continue.
-          </div>
+          // Bug #44 fix: previously said "Connect a wallet (top right)
+          // to continue." but the embed has no top-right wallet button —
+          // it's meant to be iframed. When loaded standalone the hint
+          // pointed to nothing. Now show an inline connect button so
+          // both iframed and standalone modes work cleanly.
+          <button
+            type="button"
+            onClick={() => setWalletModalVisible(true)}
+            className="mt-6 w-full rounded-full bg-accent py-3 text-sm font-medium text-background"
+          >
+            Connect wallet to pay
+          </button>
         ) : status === "success" ? (
           <div className="mt-6 rounded-xl border border-emerald-400/30 bg-emerald-400/[0.05] p-4 text-center text-xs text-emerald-300">
             Paid ✓ — host page notified.

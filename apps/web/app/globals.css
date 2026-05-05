@@ -981,6 +981,18 @@
     }
   }
 
+  /* Bug #39 fix — sidebar nav items had no :hover state, made the
+     sidebar feel dead under the cursor. Subtle bg+color shift; the
+     active item is excluded so its solid white bg stays unchanged. */
+  .w6-nav-item:not(.w6-nav-item-active):hover {
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: var(--w6-ink) !important;
+  }
+  .w6-nav-item:focus-visible {
+    outline: 2px solid var(--w6-ink);
+    outline-offset: 2px;
+  }
+
   /* Cluster badge dot pulse (mainnet only). */
   .w6-cluster-pulse {
     animation: w6-pulse 2s ease-in-out infinite;

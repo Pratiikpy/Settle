@@ -12,16 +12,20 @@ Settle is the payment app for the AI age. Send USDC to anyone with a `@handle`. 
 
 ![Settle landing — magic-moment terminal mid-flight](docs/screenshots/hero.png)
 
+**Live:** [use-settle.vercel.app](https://use-settle.vercel.app/) · [`/verify`](https://use-settle.vercel.app/verify) · [`/stats`](https://use-settle.vercel.app/stats) · Anchor program [`HU4piq8…77nD`](https://solscan.io/account/HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD?cluster=devnet) (devnet)
+
+**Status:** devnet today · 14 ix on-chain · 3 SDKs in TS / Python / Rust producing byte-identical hashes · mainnet after audit ([`SECURITY.md`](./SECURITY.md))
+
 ---
 
 ## Try it in 2 minutes
 
 No install needed. All four work on devnet right now:
 
-1. **Watch an agent spend** → [`/watch`](https://settle.so/watch). A live card on devnet. The terminal streams real ALLOW / DENY decisions; click any row to open the on-chain receipt.
-2. **Send a payment** → [`/start/consumer`](https://settle.so/start/consumer). Connect Phantom, take an in-app sandbox airdrop, send to `@alice`. Receipt lands at `/r/<id>` with full hash chain and Solscan link.
-3. **Hire your own agent** → [`/start/agent`](https://settle.so/start/agent). Pick a budget. Pick what it can buy. One transaction revokes the credential.
-4. **Verify a receipt without us** → grab any `receipt_hash` from `/r/<id>`, drop it into [`/verify`](https://settle.so/verify). The SDK re-derives the hash chain in your browser.
+1. **Watch an agent spend** → [`/watch`](https://use-settle.vercel.app/watch) — real ALLOW / DENY decisions stream live; click any row to open the on-chain receipt.
+2. **Send a payment** → [`/start/consumer`](https://use-settle.vercel.app/start/consumer) — connect Phantom, take a sandbox airdrop, send to `@alice`.
+3. **Hire your own agent** → [`/start/agent`](https://use-settle.vercel.app/start/agent) — pick a budget and what it can buy; revoke in one tx.
+4. **Verify a receipt without us** → drop any `receipt_hash` into [`/verify`](https://use-settle.vercel.app/verify) — the SDK re-derives the hash chain in your browser.
 
 ---
 
@@ -77,6 +81,33 @@ The SDK is published in three runtimes:
 - **Python:** [`settle-protocol-sdk`](https://pypi.org/project/settle-protocol-sdk/) — receipt kernel + `verifyReceipt` + LangChain and CrewAI adapters.
 - **Rust:** [`packages/rust-sdk`](packages/rust-sdk) for on-chain consumers.
 
+### Same hashes, three runtimes
+
+```ts
+// TypeScript — packages/sdk
+import { verifyReceipt } from "@settle/sdk";
+const v = verifyReceipt({ receipt, reason, policy_snapshot, http, expected });
+// v.ok === true ⇒ all 4 hashes match
+```
+
+```python
+# Python — pip install settle-protocol-sdk
+from settle_sdk import verify_receipt
+v = verify_receipt({"receipt": r, "reason": s, "policy_snapshot": p,
+                    "http": h, "expected": e})
+# v.ok is True ⇒ all 4 hashes match
+```
+
+```rust
+// Rust — packages/rust-sdk
+use settle_sdk::verify_receipt;
+let v = verify_receipt(&VerifyInput { receipt, reason, policy_snapshot,
+                                      purpose_input, expected });
+// v.ok ⇒ all 4 hashes match
+```
+
+All three call sites compute the same 4 BLAKE3 hashes from the same canonical-JSON encoding. Cross-language parity is enforced by [`packages/python-sdk/test_kernel_parity.py`](packages/python-sdk/test_kernel_parity.py) and [`test_parity.py`](packages/python-sdk/test_parity.py) — the Python suite hashes shared fixtures and compares against precomputed TS + Rust outputs.
+
 ---
 
 ## What a receipt looks like
@@ -103,6 +134,8 @@ SETTLE · CRYPTOGRAPHIC RECEIPT
 
 Every receipt — happy path or deny — commits the same four BLAKE3 hashes on Solana. Anyone with the receipt JSON can re-derive them in their browser.
 
+**See a live one:** [`/r/93de12a1-01c1-4fc8-83c0-1bff28f5a870`](https://use-settle.vercel.app/r/93de12a1-01c1-4fc8-83c0-1bff28f5a870) — the same shape, with a real on-chain hash you can paste into [`/verify`](https://use-settle.vercel.app/verify) and watch it match.
+
 ---
 
 ## Settle × Ika · cross-chain custody
@@ -123,12 +156,12 @@ Full integration story: [`docs/IKA-INTEGRATION.md`](docs/IKA-INTEGRATION.md). Te
 
 ## How Settle compares
 
-| | Stripe | Helio | x402 raw | **Settle** |
+| | Stripe | Helio | [x402 raw](https://github.com/coinbase/x402) | **Settle** |
 |---|:-:|:-:|:-:|:-:|
-| Agent-native credentials | — | — | partial | ✅ |
-| On-chain receipts | — | partial | — | ✅ |
+| Agent-native credentials (cap, allowlist, expiry, revocation) | — | — | partial | ✅ |
+| On-chain receipts (kernel-committed) | — | partial | — | ✅ |
 | Revocable in one tx | — | — | — | ✅ |
-| Sub-cent fees | — | ✅ | ✅ | ✅ |
+| Verifiable without provider servers | — | — | — | ✅ |
 | Cross-chain signing under one policy | — | — | — | ✅ |
 
 ---
@@ -171,6 +204,13 @@ Every `PolicyDecisionEvent` commits 3 × 32-byte BLAKE3 hashes on-chain (`receip
 - Slot-based cap window (`CAP_WINDOW_SLOTS = 220_000`, ≈ 24h) cannot be exploited by validator clock manipulation.
 - Merchant pubkey **pinned** in the DeliveryEscrow variant payload — permissionless release cannot redirect funds.
 - USDC mint pinned at card create — spend rejects any other mint.
+
+</details>
+
+<details>
+<summary><b>Reproducible builds</b></summary>
+
+The Anchor program ships a hash of the build inputs. [`/verify-build`](https://use-settle.vercel.app/verify-build) shows the deployed program's bytecode hash side-by-side with the hash of `cargo build-sbf` against the source at the tagged commit. Anyone can re-run the build and compare. No "trust our deploy step."
 
 </details>
 

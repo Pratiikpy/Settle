@@ -442,6 +442,71 @@ audit-branch preview will catch up when its deploy queue clears.
 | `/verify` with all-zeros hash | Clean "NOT FOUND" + 3-step UI showing why hash didn't match. Good defensive UX. |
 | Production `/api/ledger` | 21 receipts visible (vs. 0 before audit) |
 
+## Iteration 7 — production verification
+
+Switched test target from `use-settle-git-audit-e2e-burner-...` (preview,
+deploy queue stuck) to `use-settle.vercel.app` (canonical production URL).
+
+| Verification | Result |
+|---|---|
+| `use-settle.vercel.app/api/health` | ok, cluster=devnet, settle_program=`HU4piq8b…`, supabase ok |
+| `POST use-settle.vercel.app/api/swap/quote-and-build` | mode=direct_usdc, has_receipt=true |
+| `use-settle.vercel.app/api/ledger?wallet=Alice` | **21 native_kernel + 1 native_imported** |
+| `use-settle.vercel.app/verify?h=ca50ca04…238cc902` (the audit receipt) | **VERIFIED ✓** — all 4 BLAKE3 hashes match canonical JSON, anchored at on-chain slot 460,246,396 — `audit-71-PROD-verify-VERIFIED.png` |
+| Wallet modal on production | Phantom only (E2E Persona correctly absent — burner key would be a security hole on prod) |
+
+**This proves the entire audit's headline result lands on `use-settle.vercel.app`** —
+the canonical URL Pratiik asked about. UI-driven form fill on the audit
+branch produced an on-chain receipt that the production `/verify` endpoint
+recomputes and validates. End-to-end, no mocks, no Settle dependency on the
+verifier side.
+
+---
+
+## Iteration 8 — landing page LIVE TICKER showing real audit data
+
+The most underrated downstream win of the Bug #10 fix: the landing page's
+"Live agent activity" terminal ticker (top-right of the hero) is now
+populated with **real on-chain receipts** from this audit, not scenario
+data. Captured in `audit-73-early-access-submit.png`:
+
+```
+settle://live                                      live · on-chain
+[16:54:14] agent @Dvze..UbAk $0.00 → ✓ allowed #\xca50
+[16:46:30] agent @Dvze..UbAk $0.00 → ✓ allowed #\xed23
+[16:46:06] agent @Dvze..UbAk $0.00 → ✓ allowed #\x7fb4
+[16:45:56] agent @Dvze..UbAk $0.00 → ✓ allowed #\xd791
+[16:45:46] agent @Dvze..UbAk $0.00 → ✓ allowed #\x588c
+```
+
+The `ca50` prefix on the top entry matches the `receipt_hash`
+(`ca50ca04…238cc902`) that we VERIFIED ✓ on `/verify` two iterations ago.
+The label says "live · on-chain" not "preview · scenario" — confirming
+the ticker is reading from the real index. **Before the audit's Bug #10 fix
+this ticker was either empty or showing fake scenario data**. After: the
+landing page's marketing copy is honestly showing what the platform does.
+
+Also tested: Email signup on landing page → "✓ You're on the list. We'll
+be in touch." Successful submit + clean confirmation.
+
+Also tested: Card detail page (`/cards/[id]?surface=agent`) renders
+spending rule, slide-to-revoke, kill-the-card, pacts list, receipts feed.
+Found **Bug #35**: "$0.00 of —" with em-dash for cap, but progress ring
+shows 60% — display inconsistency.
+
+---
+
+## Cumulative final tally
+
+- **35 bugs filed**
+- **28 fixed + shipped**
+- **3 architectural follow-ups pending** (#26, #30, #33)
+- **2 displays pending** (#34 deploy lag — fix in branch, #35 small)
+- **1 false positive** (#27)
+- **73 screenshots**, ~52 surfaces driven
+- **PRODUCTION verified working** — `/verify` returns VERIFIED ✓ for the receipt I created via UI
+- **Landing page ticker shows real audit data** — the entire pipeline visible to first-time visitors
+
 **The single most important verification — captured in `audit-63-verify-with-hash.png`**:
 A receipt I created via the /send UI was looked up on the public /verify
 page using its `receipt_hash`, and the verifier returned **VERIFIED ✓** with

@@ -97,9 +97,16 @@ export default function FeedPage() {
             className="w6-card"
             style={{ padding: 32, textAlign: "center" }}
           >
-            <p className="w6-muted" style={{ fontSize: 13 }}>
-              No public events yet. Agent activity will appear here as it
-              happens.
+            <p className="w6-muted" style={{ fontSize: 13, marginBottom: 6 }}>
+              No public events yet.
+            </p>
+            <p
+              className="w6-muted"
+              style={{ fontSize: 12, lineHeight: 1.5, maxWidth: 420, margin: "0 auto" }}
+            >
+              Receipts are private by default. Senders can opt-in to publish
+              an event here when they share a receipt — protecting privacy
+              for everyone else.
             </p>
           </div>
         ) : (
