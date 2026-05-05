@@ -468,3 +468,36 @@ test wallet).
 Coverage is real-human, not bench-press. Every page rendered correctly,
 every flow that has a UI was driven, every artifact (screenshots, tx sigs,
 DB row counts) is captured.
+
+---
+
+## The endgame — Bug #10 was endemic
+
+What started as Bug #10 ("/api/ledger empty for confirmed sends") turned out
+to be the surface symptom of a **systemic 7-endpoint pattern** where every
+receipt-aggregation query assumed `card_pubkey` always meant an agent card.
+For direct sends, `card_pubkey = sender's wallet`. Every endpoint that did
+not include the wallet pubkey in its `.in("card_pubkey", ...)` or `.or(...)`
+filter silently dropped direct-send receipts.
+
+Endpoints fixed during the audit:
+
+| Endpoint | Symptom | Status |
+|---|---|---|
+| `/api/ledger` (Bug #10) | Empty for confirmed sends | ✅ |
+| `/api/dashboard` recent_receipts (Bug #21) | "No receipts yet" after send | ✅ |
+| `/api/dashboard/v6` recent_receipts (Bug #21 v2) | Same on W6 dashboard | ✅ |
+| `/api/dashboard/v6` outboundToday (Bug #38) | Today's "spent" counter $0 | ✅ |
+| `/api/search/receipts` (Bug #38) | Search excluded direct sends | ✅ |
+| `/api/spending/insights` (Bug #38) | "Where YOU spent" empty | ✅ |
+| `/api/handles/[handle]/profile` (Bug #38) | Profile spend history empty | ✅ |
+| `/api/trust/[pubkey]` (Bug #38) | Trust score frozen at EMERGING 0.00 | ✅ |
+| `/api/graphql.receiptsForWallet` (Bug #37) | GraphQL receipts empty | ✅ |
+
+**38 bugs filed total. 34 fixed and shipped. 77+ screenshots. ~52 surfaces.**
+
+Recommended follow-up: add `docs/project-knowledge/RECEIPTS_TABLE_IDENTITY.md`
+documenting that `card_pubkey` is a synthetic "spend identity" — agent card
+for x402_spend, sender's wallet for direct_send — and any user-aggregation
+query must include the user's wallet pubkey in card filters. This is the
+single most important architectural insight from the audit.
