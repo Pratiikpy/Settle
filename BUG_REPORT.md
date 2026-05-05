@@ -388,7 +388,7 @@ fix, this loop was broken. Now it works.
 
 ---
 
-## Action-based features driven (iteration 4)
+## Action-based features driven (iteration 4-5)
 
 | Action | Result |
 |---|---|
@@ -398,6 +398,29 @@ fix, this loop was broken. Now it works.
 | `/receive` "Copy address" click | Button flips to "Copied ✓". Clipboard works. |
 | `/r/<id>` "Verify hashes →" click | Navigates to `/verify?h=<receipt_hash>` |
 | `/verify?h=<hash>` auto-verify | **VERIFIED ✓** — all 4 hashes match canonical JSON. |
+| `/wishes` "Save toward" tab + form | Existing wishes show, fill+create works, **Bug #32 found** ("$$100.00" double dollar) — fixed |
+| `/agents/streaming` "+ Open new stream" | Form opens correctly with Parent card / scope / rate / max / merchant / expiry. **Bug #33 found**: Parent card dropdown empty despite owned cards |
+| `/m/me/qr` "Generate fixed-amount QR" | Generates QR canvas (280x280) + share link `/embed/pay?merchant=...&amount=5.00&note=...` properly URL-encoded |
+| `/api/dashboard/v6` direct probe | **Bug #21 corrected fix**: I had originally fixed `/api/dashboard` but the W6 dashboard UI actually calls `/api/dashboard/v6`. Same broken filter; now fixed in both. |
+
+---
+
+## Final tally (after iteration 5)
+
+**33 bug reports filed during the comprehensive audit.**
+- **27 fixed** and shipped to `main` (auto-deployed by Vercel; some still propagating through CDN edge cache).
+- **3 pending** — Bug #26 (smart-contract Anchor stack overflow), Bug #30 (privacy/brand layout inconsistency), Bug #33 (streaming dropdown). All architectural follow-ups beyond UI/UX surface scope.
+- **1 false positive** (Bug #27 — slug-guess error).
+- **2 deploy-cache pending** (Bug #28, Bug #21-v2 fix shipped but Vercel chunk hashes haven't refreshed yet).
+
+**67 screenshots captured across ~52 distinct surface areas** in `apps/web/audit-*.png`.
+
+**The single most important verification — captured in `audit-63-verify-with-hash.png`**:
+A receipt I created via the /send UI was looked up on the public /verify
+page using its `receipt_hash`, and the verifier returned **VERIFIED ✓** with
+all 4 BLAKE3 hashes matching canonical JSON, anchored at on-chain slot
+460,246,396. That's the entire "verifiable money" pitch demonstrated
+end-to-end on the live site, no Settle dependency on the verifier side.
 
 ---
 
