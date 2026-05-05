@@ -149,14 +149,14 @@ The trade-off: we **don't show a fresh send during the recording**. That's a del
 |-------|----------|--------|
 | All A-class bugs fixed | yes | ✅ DONE |
 | `next build` succeeds | yes | ✅ verified locally |
-| Latest commit deployed to production | yes | ⏳ pending Vercel confirmation |
+| Latest commit deployed to production | yes | ✅ commit `5a4c54b` Vercel state=success ("Deployment has completed") |
 | Demo route renders end-to-end | yes | ✅ each URL re-verified during this audit |
 | Proven receipt hash still resolves | yes | ✅ `ca50ca04…cc902` confirmed VERIFIED on production |
 | No untriaged blockers | yes | ✅ Bug #26 + #39 are documented, scoped, and avoided |
 
-### DECISION: **GO (after Vercel confirms 5a4c54b deployed)**
+### DECISION: **GO** ✅
 
-Once `gh api repos/Pratiikpy/Settle/commits/5a4c54b/statuses` shows **success** for the Vercel deployment, **proceed to recording**. If Vercel reports `failure`, halt — do NOT record from a stale build.
+Vercel confirmed both `5a4c54b` (the 3 demo-visible fixes) and `d83adab` (this report) as successful production deploys. **Proceed to recording.**
 
 ### What "go" means concretely
 

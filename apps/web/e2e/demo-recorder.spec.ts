@@ -2,12 +2,14 @@
  * demo-recorder.spec.ts — Hackathon demo recorder
  *
  * One-take Playwright spec that drives the locked-down demo flow from
- * HACKATHON_DEMO_LOCK.md and saves a clean .webm video.
+ * PRE_DEMO_FIX_AND_GO_NO_GO.md and saves a clean .webm video.
  *
- * Mode B (default): use the audit-branch preview's E2E Persona burner
- * adapter for the wallet half of the demo, then switch to production
- * `use-settle.vercel.app` for the verifier half. The judge sees the
- * canonical proof URL even though the wallet flow runs on preview.
+ * PRODUCTION-ONLY MODE: every frame runs on `use-settle.vercel.app`.
+ * No preview branch URL ever appears on screen — this matches the
+ * "judges should see confidence, not a workaround" rule from the
+ * pre-demo report. Trade-off: we don't record a fresh send. The demo
+ * is a proof-tour (judges can reproduce any /verify?h=... themselves)
+ * not a click-tour. See PRE_DEMO_FIX_AND_GO_NO_GO.md §5 for rationale.
  *
  * Run:
  *   pnpm exec playwright test e2e/demo-recorder.spec.ts \
@@ -19,22 +21,13 @@
  * The harness records a single 75-second take. If anything goes wrong
  * (e.g. Supabase 5xx, Vercel cold-start), the video file is still saved
  * and the test fails — re-run, don't edit the video.
- *
- * SECURITY: this file reads .test-wallet.json from the repo root for
- * the burner key. Never commit a populated key in this script. The
- * .test-wallet.json file IS gitignored.
  */
 
 import { test, expect, type Page } from "@playwright/test";
-import { readFileSync } from "fs";
-import { resolve } from "path";
-import bs58 from "bs58";
 
 const PROD = "https://use-settle.vercel.app";
-const PREVIEW = "https://use-settle-git-audit-e2e-burner-pratiikpys-projects.vercel.app";
 
 // Public-only identities (safe to commit)
-const ALICE = "C5z7pQZx1RxEaBTDZXbLt32qDjnkfysLUtug2fKHxeYY";
 const BOB = "DvzeYj2gE4Lu1uK8CDrkERWnBMXp5tGT2yVvc8KmUbAk";
 
 // A proven receipt_hash from a confirmed devnet send during the audit.
@@ -43,13 +36,6 @@ const PROVEN_HASH =
   "ca50ca04e587acecbfefdab0bfdcee5351a521f33797d201417a9c3a238cc902";
 const PROVEN_REQUEST_ID = "93de12a1-01c1-4fc8-83c0-1bff28f5a870";
 
-function loadAliceBurnerB58(): string {
-  // Read .test-wallet.json from the repo root (two levels up from apps/web).
-  const path = resolve(process.cwd(), "..", "..", ".test-wallet.json");
-  const arr = JSON.parse(readFileSync(path, "utf8")) as number[];
-  return bs58.encode(Buffer.from(arr));
-}
-
 async function frame(page: Page, ms: number) {
   // Show a frame for `ms` so the recording captures the state before
   // moving on. Each demo frame uses this to give the eye time to read.
@@ -57,16 +43,7 @@ async function frame(page: Page, ms: number) {
 }
 
 test.describe("Hackathon demo recording", () => {
-  test.beforeAll(() => {
-    // Fail fast if .test-wallet.json doesn't exist — better than recording
-    // a broken video.
-    expect(() => loadAliceBurnerB58()).not.toThrow();
-  });
-
-  test("locked demo flow — production verifier + preview wallet", async ({
-    browser,
-  }) => {
-    const burnerB58 = loadAliceBurnerB58();
+  test("locked demo flow — production-only proof-tour", async ({ browser }) => {
     const ctx = await browser.newContext({
       viewport: { width: 1280, height: 800 },
       recordVideo: {
@@ -74,16 +51,6 @@ test.describe("Hackathon demo recording", () => {
         size: { width: 1280, height: 800 },
       },
     });
-    // Pre-seed the burner key BEFORE any page in this context loads —
-    // ensures the wallet adapter sees it on first paint.
-    await ctx.addInitScript((b58: string) => {
-      try {
-        window.localStorage.setItem("settle-e2e-burner-key", b58);
-      } catch {
-        /* ignore */
-      }
-    }, burnerB58);
-
     const page = await ctx.newPage();
 
     // ═══════════════════════════════════════════════════════════════
@@ -133,42 +100,22 @@ test.describe("Hackathon demo recording", () => {
     await frame(page, 6_000);
 
     // ═══════════════════════════════════════════════════════════════
-    // FRAME 5 — drive a real send on the audit-branch preview
+    // FRAME 5 — production /dashboard (chrome-less, judges land here)
+    // Frame proves: agent rows render with real labels (#40 fix),
+    // recent receipts appear (Bug #21 systemic fix).
     // ═══════════════════════════════════════════════════════════════
-    await page.goto(`${PREVIEW}/send`);
+    await page.goto(`${PROD}/dashboard`);
     await page.waitForLoadState("networkidle");
-    // Burner auto-connects since localStorage is pre-seeded
-    await expect(page.locator("text=Connected").first()).toBeVisible({
-      timeout: 15_000,
-    });
-    // Pubkey tab + form
-    await page.getByRole("button", { name: "Pubkey", exact: true }).click();
-    await page
-      .getByPlaceholder(/7xKXz9pQrT4nMm2vL8aBcDeFgHiJkLmNoPqRsTuVwXyZ/)
-      .fill(BOB);
-    await page.getByPlaceholder("10.00").fill("0.001");
-    await page
-      .getByPlaceholder("pizza, rent, …")
-      .fill("hackathon-demo");
-    await frame(page, 2_000);
-    // Pay
-    await page.getByRole("button", { name: /^Pay 0\.001 USDC/ }).click();
-    // Wait for "Sent ✓" — give the on-chain confirm room to land
-    await expect(page.getByText("Sent ✓")).toBeVisible({ timeout: 30_000 });
-    // Capture the receipt hash from the rendered Solscan link's adjacent
-    // panel (the receipt page exposes it). We don't read it programmatically
-    // here — the demo viewer doesn't need to see the hash, just the result.
-    await frame(page, 5_000);
+    await frame(page, 8_000);
 
     // ═══════════════════════════════════════════════════════════════
-    // FRAME 6 — back on production /verify with the SAME proven hash
-    // (for the silent demo we re-show the verifier with the existing
-    // hash; the spirit of the demo is "same receipt, public verifier".)
+    // FRAME 6 — production /agents/streaming (read-only view)
+    // Shows: streaming pact concept, pause/resume affordance.
+    // No clicking — demo doesn't trigger spend_via_pact (Bug #26).
     // ═══════════════════════════════════════════════════════════════
-    await page.goto(`${PROD}/verify?h=${PROVEN_HASH}`);
+    await page.goto(`${PROD}/agents/streaming`);
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("VERIFIED").first()).toBeVisible();
-    await frame(page, 4_000);
+    await frame(page, 8_000);
 
     // ═══════════════════════════════════════════════════════════════
     // FRAME 7 — production /embed/pay widget (no wallet needed to render)
@@ -180,7 +127,7 @@ test.describe("Hackathon demo recording", () => {
     await expect(page.getByText("PAY WITH SETTLE").first()).toBeVisible({
       timeout: 10_000,
     });
-    await frame(page, 5_000);
+    await frame(page, 8_000);
 
     // ═══════════════════════════════════════════════════════════════
     // FRAME 8 — production /docs (developer pitch)
@@ -190,7 +137,17 @@ test.describe("Hackathon demo recording", () => {
     await expect(page.getByText(/pnpm add @settle\/sdk/i).first()).toBeVisible({
       timeout: 10_000,
     });
-    await frame(page, 6_000);
+    await frame(page, 10_000);
+
+    // ═══════════════════════════════════════════════════════════════
+    // FRAME 9 — closing shot: back on /verify with the SAME proven hash
+    // The judge can paste this hash on production themselves and get
+    // the same VERIFIED result. That's the demo.
+    // ═══════════════════════════════════════════════════════════════
+    await page.goto(`${PROD}/verify?h=${PROVEN_HASH}`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("VERIFIED").first()).toBeVisible();
+    await frame(page, 7_000);
 
     // Close the page so the recording finalizes cleanly.
     await ctx.close();
