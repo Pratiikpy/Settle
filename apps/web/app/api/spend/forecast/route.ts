@@ -74,13 +74,16 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // 30d window.
+  // 30d window. Bug #38: include user's wallet — direct sends use it
+  // as card_pubkey, so a user without agent cards but with regular
+  // direct sends used to get an empty forecast.
+  const cardKeysWithSelf = [pubkey, ...cardPubkeys];
   const now = Date.now();
   const thirtyAgo = new Date(now - 30 * 24 * 3600 * 1000).toISOString();
   const { data: rows, error } = await sb
     .from("receipts")
     .select("amount_lamports, decision, created_at")
-    .in("card_pubkey", cardPubkeys)
+    .in("card_pubkey", cardKeysWithSelf)
     .gte("created_at", thirtyAgo)
     .limit(20000);
   if (error) {
