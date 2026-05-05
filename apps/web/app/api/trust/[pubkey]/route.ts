@@ -131,16 +131,18 @@ export async function GET(
     .select("card_pubkey")
     .eq("authority_pubkey", pubkey);
   const cardPubkeys = (ownedCards ?? []).map((c) => c.card_pubkey);
-  // Bug #38: trust score depends on the user's payment history. Direct
-  // sends use the user's wallet as card_pubkey, so a heavy direct
-  // sender with no agent cards used to look like a brand-new user.
+  // Bug #38 + production blocker fix: use proven .or() shape so direct
+  // sends (card_pubkey = wallet) are counted in the user's trust score.
   let asBuyer: ReceiptStatRow[] = [];
   {
     const cardKeysWithSelf = [pubkey, ...cardPubkeys];
+    const orFilter = cardKeysWithSelf
+      .map((k) => `card_pubkey.eq.${k}`)
+      .join(",");
     const { data, error } = await sb
       .from("receipts")
       .select("decision, merchant_pubkey, card_pubkey")
-      .in("card_pubkey", cardKeysWithSelf)
+      .or(orFilter)
       .limit(10000);
     if (error) {
       return NextResponse.json(

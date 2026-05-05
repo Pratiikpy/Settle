@@ -68,20 +68,20 @@ export async function GET(
     sig_solscan: string | null;
     created_at: string;
   }> = [];
-  // Bug #38: include the wallet pubkey itself — direct sends use the
-  // wallet as card_pubkey, and a profile that excludes them looks like
-  // the user has never paid anyone. (Earlier version of this fix
-  // referenced an undefined `pubkey` variable — should be
-  // `handleRow.pubkey` since this route is keyed by handle, not by
-  // pubkey directly.)
+  // Bug #38 + production blocker fix: use proven .or() shape (was
+  // returning 0 with .in()) and reference the correct handleRow.pubkey
+  // variable (earlier fix used a bare undefined `pubkey`).
   {
     const cardKeysWithSelf = [handleRow.pubkey, ...cardPubkeys];
+    const orFilter = cardKeysWithSelf
+      .map((k) => `card_pubkey.eq.${k}`)
+      .join(",");
     const { data, error } = await supabase
       .from("receipts")
       .select(
         "request_id, merchant_pubkey, amount_lamports, decision_slot, sig_solscan, created_at",
       )
-      .in("card_pubkey", cardKeysWithSelf)
+      .or(orFilter)
       .eq("decision", "ALLOW")
       .eq("public_feed", true)
       .order("created_at", { ascending: false })

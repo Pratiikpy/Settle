@@ -60,16 +60,19 @@ export async function GET(req: NextRequest) {
     .eq("authority_pubkey", authority);
   const cardPubkeys = (cards ?? []).map((c) => c.card_pubkey);
 
-  // Bug #38: include the user's wallet too — direct_send receipts use
-  // the sender's wallet as card_pubkey, so a user with no agent cards
-  // but plenty of direct sends used to see an empty insights page.
+  // Bug #38 + production blocker fix: use the proven `.or()` shape
+  // from /api/dashboard (which works on prod) instead of `.in()`.
+  // Reason: in production /api/dashboard returns rows reliably via
+  // .or(card_pubkey.eq.A,card_pubkey.eq.B,...) but `.in()` was
+  // returning 0 from this route under unclear runtime conditions.
   const cardKeysWithSelf = [authority, ...cardPubkeys];
-  // Receipts in the window — include direct sends from the user's
-  // wallet (Bug #38 class).
+  const orFilter = cardKeysWithSelf
+    .map((k) => `card_pubkey.eq.${k}`)
+    .join(",");
   const { data: receipts, error: rErr } = await supabase
     .from("receipts")
     .select("merchant_pubkey, amount_lamports, created_at, decision")
-    .in("card_pubkey", cardKeysWithSelf)
+    .or(orFilter)
     .eq("decision", "ALLOW")
     .gte("created_at", since);
 
