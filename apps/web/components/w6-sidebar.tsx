@@ -161,6 +161,12 @@ export function W6Sidebar({
                   key={item.href + item.label}
                   href={resolvedHref}
                   aria-current={active ? "page" : undefined}
+                  // Bug #39 fix: previously no :hover style — sidebar
+                  // looked dead under the cursor. The "w6-nav-item"
+                  // class adds a subtle bg+color shift on hover (defined
+                  // once in globals.css below). Active state still wins
+                  // via inline style overrides.
+                  className={active ? "w6-nav-item w6-nav-item-active" : "w6-nav-item"}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
