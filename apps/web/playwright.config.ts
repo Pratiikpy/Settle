@@ -74,5 +74,20 @@ export default defineConfig({
       retries: 0,
       testMatch: /demo-recorder\.spec\.ts$/,
     },
+    {
+      // Wallet-flow recorder — drives the audit-branch preview where
+      // the Persona burner adapter is enabled. Larger viewport
+      // (1440×900) for a slight zoom-out so connected pages fit
+      // without scroll.
+      // Run with: pnpm exec playwright test e2e/demo-recorder-wallet.spec.ts --project=chromium-demo-wallet --headed
+      name: "chromium-demo-wallet",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        video: { mode: "on", size: { width: 1440, height: 900 } },
+      },
+      retries: 0,
+      testMatch: /demo-recorder-wallet\.spec\.ts$/,
+    },
   ],
 });
