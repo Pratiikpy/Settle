@@ -70,9 +70,12 @@ export async function GET(
   }> = [];
   // Bug #38: include the wallet pubkey itself — direct sends use the
   // wallet as card_pubkey, and a profile that excludes them looks like
-  // the user has never paid anyone.
+  // the user has never paid anyone. (Earlier version of this fix
+  // referenced an undefined `pubkey` variable — should be
+  // `handleRow.pubkey` since this route is keyed by handle, not by
+  // pubkey directly.)
   {
-    const cardKeysWithSelf = [pubkey, ...cardPubkeys];
+    const cardKeysWithSelf = [handleRow.pubkey, ...cardPubkeys];
     const { data, error } = await supabase
       .from("receipts")
       .select(

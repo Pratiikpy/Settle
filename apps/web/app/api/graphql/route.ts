@@ -85,22 +85,33 @@ const schema = buildSchema(/* GraphQL */ `
 
 function getSb() {
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // PRODUCTION_BLOCKER fix: anon fallback so the route works on
+  // deploys that have NEXT_PUBLIC_SUPABASE_ANON_KEY but not service role.
   const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+// PRODUCTION_BLOCKER fix: previous list had `sender_pubkey,
+// recipient_pubkey` which DO NOT EXIST in public.receipts (only
+// card_pubkey + merchant_pubkey). The SELECT itself was returning a
+// PostgREST 400, the destructure swallowed it, every query returned
+// `data: null`. The Bug #10 silent-empty pattern, in GraphQL.
 const RECEIPT_FIELDS =
-  "request_id, receipt_kind, amount_lamports, sender_pubkey, recipient_pubkey, merchant_pubkey, card_pubkey, decision, narration_text, created_at, bookkeeper_category";
+  "request_id, receipt_kind, amount_lamports, merchant_pubkey, card_pubkey, decision, narration_text, created_at, bookkeeper_category";
 
 function mapReceipt(r: Record<string, unknown>) {
+  // PRODUCTION_BLOCKER fix: schema has no sender_pubkey/recipient_pubkey
+  // columns. Map the existing columns (card = sender for direct_send,
+  // merchant = recipient) into the GraphQL field names so callers get
+  // meaningful values instead of nulls.
   return {
     request_id: r.request_id,
     kind: r.receipt_kind,
     amount_lamports: r.amount_lamports,
-    sender_pubkey: r.sender_pubkey,
-    recipient_pubkey: r.recipient_pubkey,
+    sender_pubkey: r.card_pubkey, // alias
+    recipient_pubkey: r.merchant_pubkey, // alias
     merchant_pubkey: r.merchant_pubkey,
     card_pubkey: r.card_pubkey,
     decision: r.decision,
