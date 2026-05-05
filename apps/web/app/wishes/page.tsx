@@ -897,7 +897,7 @@ export default function WishesPage() {
                               className="w6-mono"
                               style={{ fontSize: 12 }}
                             >
-                              target ${target}
+                              target {target}
                             </span>
                           </div>
                           <div
