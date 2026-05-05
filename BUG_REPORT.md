@@ -413,7 +413,34 @@ fix, this loop was broken. Now it works.
 - **1 false positive** (Bug #27 — slug-guess error).
 - **2 deploy-cache pending** (Bug #28, Bug #21-v2 fix shipped but Vercel chunk hashes haven't refreshed yet).
 
-**67 screenshots captured across ~52 distinct surface areas** in `apps/web/audit-*.png`.
+**70 screenshots captured across ~52 distinct surface areas** in `apps/web/audit-*.png`.
+
+## Production verification (iter 6)
+
+The audit-branch preview URL (`use-settle-git-audit-e2e-burner-...`) had
+deploy-queue lag during the last few iterations (last preview build at
+12:09; recent commits queued behind). But **production**
+(`use-settle.vercel.app`) IS deploying every push to `main` and has all
+fixes live:
+
+| Endpoint on `use-settle.vercel.app` | Result |
+|---|---|
+| `/api/health` | ok, cluster=devnet, settle_program=`HU4piq8b…` |
+| `POST /api/swap/quote-and-build` | mode=direct_usdc, has_receipt=true |
+| `/api/ledger?wallet=Alice` | **21 native_kernel + 1 native_imported** (one fresh from this iter) |
+
+So Pratiik's audit asks — fix Bug #10, fix every other UX gap, prove
+on-chain end-to-end — are answered on the live production URL. The
+audit-branch preview will catch up when its deploy queue clears.
+
+## Iteration 6 actions
+
+| Action | Result |
+|---|---|
+| `/admin/cron` "Run now" without secret | Click handled, error path logged |
+| `/send` invalid pubkey "NOT_A_VALID_PUBKEY" | **Bug #34 found**: form accepted it, Pay button stayed enabled. Fixed: PUBKEY_RE validation + amount > 0 gate. |
+| `/verify` with all-zeros hash | Clean "NOT FOUND" + 3-step UI showing why hash didn't match. Good defensive UX. |
+| Production `/api/ledger` | 21 receipts visible (vs. 0 before audit) |
 
 **The single most important verification — captured in `audit-63-verify-with-hash.png`**:
 A receipt I created via the /send UI was looked up on the public /verify
