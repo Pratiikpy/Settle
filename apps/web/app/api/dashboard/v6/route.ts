@@ -214,26 +214,48 @@ export async function GET(req: NextRequest): Promise<Response> {
     created_at: string;
   };
   let recentRows: ReceiptRow[] = [];
-  // Bug #21 (real fix): include receipts where card_pubkey == user's wallet
-  // (direct sends store the sender there) AND owned-agent-card sets AND
-  // merchant_pubkey == user. Previously /send → confirmed → dashboard
-  // 'No receipts yet' because direct_send wasn't in any of the buckets.
+  // Bug #21 (real fix): use `.in("card_pubkey", […])` for the OR-of-eq
+  // pattern (multiple `card_pubkey.eq.X` clauses inside `.or()` got
+  // parsed as the LAST eq winning, returning 0 rows). The user's wallet
+  // is included because direct sends store the sender there.
   const cardKeysForFilter = [pubkey, ...cardPubkeys];
-  const cardKeyClause = cardKeysForFilter
-    .map((k) => `card_pubkey.eq.${k}`)
-    .join(",");
-  const orFilter = `${cardKeyClause},merchant_pubkey.eq.${pubkey}`;
+  // Two queries unioned client-side: the OR-on-different-columns case
+  // (card vs merchant) is the only one PostgREST's .or() needs to
+  // express. The card_pubkey membership uses .in() which is reliable.
   {
-    const { data, error } = await sb
-      .from("receipts")
-      .select(
-        "request_id, receipt_kind, merchant_pubkey, card_pubkey, amount_lamports, decision, deny_code, created_at",
-      )
-      .or(orFilter)
-      .order("created_at", { ascending: false })
-      .limit(5);
-    logErr("recentRows", error);
-    recentRows = (data ?? []) as ReceiptRow[];
+    const [byCard, byMerchant] = await Promise.all([
+      sb
+        .from("receipts")
+        .select(
+          "request_id, receipt_kind, merchant_pubkey, card_pubkey, amount_lamports, decision, deny_code, created_at",
+        )
+        .in("card_pubkey", cardKeysForFilter)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      sb
+        .from("receipts")
+        .select(
+          "request_id, receipt_kind, merchant_pubkey, card_pubkey, amount_lamports, decision, deny_code, created_at",
+        )
+        .eq("merchant_pubkey", pubkey)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+    logErr("recentRows.byCard", byCard.error);
+    logErr("recentRows.byMerchant", byMerchant.error);
+    const merged = [...(byCard.data ?? []), ...(byMerchant.data ?? [])];
+    // Dedupe by request_id, sort by created_at desc, take 5.
+    const seen = new Set<string>();
+    const deduped = merged.filter((r) => {
+      if (seen.has(r.request_id)) return false;
+      seen.add(r.request_id);
+      return true;
+    });
+    deduped.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+    recentRows = deduped.slice(0, 5) as ReceiptRow[];
   }
 
   const recentReceipts = recentRows.map((r) => ({
