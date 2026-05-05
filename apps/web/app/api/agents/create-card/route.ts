@@ -68,6 +68,7 @@ function getRpcUrl(): string {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   let raw: unknown;
   try {
     raw = await req.json();
@@ -177,4 +178,18 @@ export async function POST(req: NextRequest) {
     last_valid_block_height: lastValidBlockHeight,
     message: `Create AgentCard "${body.label}". Daily cap $${body.dailyCapUsdc}, per-call max $${body.perCallMaxUsdc}, ${body.merchantAllowlist.length} merchants, expires in ${body.expiryDays}d. (mode: ${mode})`,
   });
+  } catch (e) {
+    // Without this catch, throws here (e.g. RPC/Anchor IDL/PublicKey ctor failures)
+    // escape and Vercel renders an empty 500 — UI saw that and silently stayed on
+    // the Create stage. Surface a structured error so the client toast can render.
+    console.error("[create-card] uncaught:", e);
+    return NextResponse.json(
+      {
+        error: "create_card_failed",
+        message: e instanceof Error ? e.message : String(e),
+        ...(e instanceof Error && e.stack ? { stack: e.stack.split("\n").slice(0, 4).join("\n") } : {}),
+      },
+      { status: 500 },
+    );
+  }
 }
