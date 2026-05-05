@@ -1016,7 +1016,12 @@ function ExtraToggle({
     textDecoration: "none",
     color: "var(--w6-ink)",
   };
-  if (href && on) {
+  // If an href is provided, the "extra" is really a shortcut to a
+  // dedicated page (Split bill, Schedule). Single-click should navigate
+  // immediately — toggling on first then requiring a second click is a
+  // confusing dead-end (user reported: "Split this bill checkbox does
+  // nothing visible after first click").
+  if (href) {
     return (
       <Link href={href} className="w6-card-flat" style={baseStyle}>
         {inner}
