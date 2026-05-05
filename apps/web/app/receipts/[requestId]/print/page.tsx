@@ -75,10 +75,19 @@ async function fetchReceipt(requestId: string): Promise<ReceiptResponse | null> 
 }
 
 function formatUsdc(lamports: string): string {
+  // Sub-cent amounts (e.g. 1000 lamports = $0.001) used to render as
+  // "$0.00" because the formatter sliced to 2 decimals. Show 6-decimal
+  // precision (trailing zeros trimmed) for sub-cent so a 0.001 USDC tip
+  // doesn't look like nothing on a printed receipt.
   const n = BigInt(lamports);
   const whole = (n / 1_000_000n).toString();
-  const cents = (n % 1_000_000n).toString().padStart(6, "0").slice(0, 2);
-  return `$${whole}.${cents}`;
+  const fracRaw = (n % 1_000_000n).toString().padStart(6, "0");
+  const subCent = whole === "0" && fracRaw.slice(0, 2) === "00";
+  if (subCent) {
+    const trimmed = fracRaw.replace(/0+$/, "") || "0";
+    return `$0.${trimmed}`;
+  }
+  return `$${whole}.${fracRaw.slice(0, 2)}`;
 }
 
 function stripBytea(v: string | null | undefined): string {
