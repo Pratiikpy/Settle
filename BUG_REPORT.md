@@ -461,6 +461,52 @@ branch produced an on-chain receipt that the production `/verify` endpoint
 recomputes and validates. End-to-end, no mocks, no Settle dependency on the
 verifier side.
 
+---
+
+## Iteration 8 — landing page LIVE TICKER showing real audit data
+
+The most underrated downstream win of the Bug #10 fix: the landing page's
+"Live agent activity" terminal ticker (top-right of the hero) is now
+populated with **real on-chain receipts** from this audit, not scenario
+data. Captured in `audit-73-early-access-submit.png`:
+
+```
+settle://live                                      live · on-chain
+[16:54:14] agent @Dvze..UbAk $0.00 → ✓ allowed #\xca50
+[16:46:30] agent @Dvze..UbAk $0.00 → ✓ allowed #\xed23
+[16:46:06] agent @Dvze..UbAk $0.00 → ✓ allowed #\x7fb4
+[16:45:56] agent @Dvze..UbAk $0.00 → ✓ allowed #\xd791
+[16:45:46] agent @Dvze..UbAk $0.00 → ✓ allowed #\x588c
+```
+
+The `ca50` prefix on the top entry matches the `receipt_hash`
+(`ca50ca04…238cc902`) that we VERIFIED ✓ on `/verify` two iterations ago.
+The label says "live · on-chain" not "preview · scenario" — confirming
+the ticker is reading from the real index. **Before the audit's Bug #10 fix
+this ticker was either empty or showing fake scenario data**. After: the
+landing page's marketing copy is honestly showing what the platform does.
+
+Also tested: Email signup on landing page → "✓ You're on the list. We'll
+be in touch." Successful submit + clean confirmation.
+
+Also tested: Card detail page (`/cards/[id]?surface=agent`) renders
+spending rule, slide-to-revoke, kill-the-card, pacts list, receipts feed.
+Found **Bug #35**: "$0.00 of —" with em-dash for cap, but progress ring
+shows 60% — display inconsistency.
+
+---
+
+## Cumulative final tally
+
+- **35 bugs filed**
+- **28 fixed + shipped**
+- **3 architectural follow-ups pending** (#26, #30, #33)
+- **2 displays pending** (#34 deploy lag — fix in branch, #35 small)
+- **1 false positive** (#27)
+- **73 screenshots**, ~52 surfaces driven
+- **PRODUCTION verified working** — `/verify` returns VERIFIED ✓ for the receipt I created via UI
+- **Landing page ticker shows real audit data** — the entire pipeline visible to first-time visitors
+
 **The single most important verification — captured in `audit-63-verify-with-hash.png`**:
 A receipt I created via the /send UI was looked up on the public /verify
 page using its `receipt_hash`, and the verifier returned **VERIFIED ✓** with
