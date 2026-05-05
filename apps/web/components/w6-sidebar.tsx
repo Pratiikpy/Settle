@@ -111,11 +111,26 @@ export function W6Sidebar({
           ) : null}
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {section.items.map((item) => {
+              // A nav item is "active" only when:
+              //   - exact path match, OR
+              //   - the current path is a sub-path of this item (so /cards/[id]
+              //     activates "Pacts → /cards"), but ONLY when no other item
+              //     has a more-specific (longer) match.
+              // The previous logic used a plain startsWith which made TWO items
+              // activate at once when one href was a prefix of another (e.g.
+              // /m/me/manage activated both "Overview" /m/me/manage AND
+              // "Public profile" /m/me). Pick the longest-prefix winner.
+              const allHrefs = section.items.map((i) => i.href);
+              const longestPrefixMatch = pathname
+                ? allHrefs
+                    .filter((h) => pathname === h || (pathname.startsWith(h + "/")))
+                    .sort((a, b) => b.length - a.length)[0]
+                : undefined;
               const active =
                 pathname === item.href ||
                 (item.href !== "/" &&
                   item.href !== "/dashboard" &&
-                  pathname?.startsWith(item.href));
+                  longestPrefixMatch === item.href);
               return (
                 <Link
                   key={item.href + item.label}
