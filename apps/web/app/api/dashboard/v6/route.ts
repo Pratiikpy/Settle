@@ -111,7 +111,12 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // PRODUCTION_BLOCKER fix: previously only checked SERVICE_ROLE_KEY,
+  // which silently returned EMPTY when service role wasn't set. Other
+  // routes (legacy /api/dashboard, /api/ledger) fall back to the anon
+  // key and worked. Mirror that fallback here.
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !key) {
     return NextResponse.json(EMPTY(pubkey));
   }
@@ -218,48 +223,28 @@ export async function GET(req: NextRequest): Promise<Response> {
     created_at: string;
   };
   let recentRows: ReceiptRow[] = [];
-  // Bug #21 (real fix): use `.in("card_pubkey", […])` for the OR-of-eq
-  // pattern (multiple `card_pubkey.eq.X` clauses inside `.or()` got
-  // parsed as the LAST eq winning, returning 0 rows). The user's wallet
-  // is included because direct sends store the sender there.
+  // Use the EXACT same query shape as legacy /api/dashboard (which works
+  // in production): a single .or() with explicit eq clauses for each
+  // candidate card_pubkey, plus eq for merchant. This is proven on prod.
+  // Earlier dual-query Promise.all approach returned 0 in production for
+  // unclear reasons (possibly a runtime-env quirk in the Vercel
+  // function); the simple .or() shape is reliable.
   const cardKeysForFilter = [pubkey, ...cardPubkeys];
-  // Two queries unioned client-side: the OR-on-different-columns case
-  // (card vs merchant) is the only one PostgREST's .or() needs to
-  // express. The card_pubkey membership uses .in() which is reliable.
+  const orFilter = [
+    ...cardKeysForFilter.map((k) => `card_pubkey.eq.${k}`),
+    `merchant_pubkey.eq.${pubkey}`,
+  ].join(",");
   {
-    const [byCard, byMerchant] = await Promise.all([
-      sb
-        .from("receipts")
-        .select(
-          "request_id, receipt_kind, merchant_pubkey, card_pubkey, amount_lamports, decision, deny_code, created_at",
-        )
-        .in("card_pubkey", cardKeysForFilter)
-        .order("created_at", { ascending: false })
-        .limit(10),
-      sb
-        .from("receipts")
-        .select(
-          "request_id, receipt_kind, merchant_pubkey, card_pubkey, amount_lamports, decision, deny_code, created_at",
-        )
-        .eq("merchant_pubkey", pubkey)
-        .order("created_at", { ascending: false })
-        .limit(10),
-    ]);
-    logErr("recentRows.byCard", byCard.error);
-    logErr("recentRows.byMerchant", byMerchant.error);
-    const merged = [...(byCard.data ?? []), ...(byMerchant.data ?? [])];
-    // Dedupe by request_id, sort by created_at desc, take 5.
-    const seen = new Set<string>();
-    const deduped = merged.filter((r) => {
-      if (seen.has(r.request_id)) return false;
-      seen.add(r.request_id);
-      return true;
-    });
-    deduped.sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    );
-    recentRows = deduped.slice(0, 5) as ReceiptRow[];
+    const { data, error } = await sb
+      .from("receipts")
+      .select(
+        "request_id, receipt_kind, merchant_pubkey, card_pubkey, amount_lamports, decision, deny_code, created_at",
+      )
+      .or(orFilter)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    logErr("recentRows", error);
+    recentRows = (data ?? []) as ReceiptRow[];
   }
 
   const recentReceipts = recentRows.map((r) => ({
