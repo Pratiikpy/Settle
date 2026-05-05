@@ -5,7 +5,7 @@ Driven through Playwright by clicking buttons, filling forms, observing actual
 outcomes (tx confirmed on-chain → receipt indexed in DB → UI reflects state),
 not just page-load checks.
 
-**Total commits shipped during this audit: 23.** Each auto-deployed by Vercel.
+**Total commits shipped during this audit: 25.** Each auto-deployed by Vercel.
 
 This document supersedes the prior version.
 
@@ -146,15 +146,62 @@ Two-part fix:
 
 ---
 
-### Bug #25 — Profile sidebar link hardcoded to /at/me
+### Bug #25 — Profile sidebar link hardcoded to /at/me, /m/me/* same
 
-The "Profile" sidebar nav item has `href: "/at/me"` regardless of the
-current user's handle. My handle is `@e2es8195v` — clicking Profile
-landed on `/at/me` showing "@me not found · Claim a handle" instead of
-my profile. The "You" footer card already does the right thing
-(`/at/${handle}`) — the sidebar link should match.
+The "Profile" sidebar nav item had `href: "/at/me"` regardless of the
+current user's handle, and the merchant nav items all hardcoded `/m/me/*`.
+My handle is `@e2es8195v` — clicking Profile landed on `/at/me` showing
+"@me not found · Claim a handle" instead of my profile.
 
-**Status**: documented, not yet fixed.
+**Fix**: `w6-sidebar.tsx` rewrites `/at/me` → `/at/<handle>` and `/m/me/*`
+→ `/m/<handle>/*` at render time when the handle is known.
+
+**Commit**: `88f7b47`.
+
+---
+
+### Bug #26 — `spend_via_pact` ix has on-chain stack overflow
+
+The `/audit` log shows 11 FAILED scheduled sends with this exact error:
+`Transaction simulation failed: ... Access violation in stack frame 5
+at address 0x200005fa8 of size 8` from program `HU4piq8b…` in the
+`spend_via_pact` ix. Recurring scheduled allowances reproducibly crash.
+
+**Status**: documented. Smart-contract bug, requires Anchor program
+fix (out of scope for this UI/UX audit pass).
+
+---
+
+### Bug #27 — `/agents/templates/[slug]` 404 for visible templates
+
+`/agents/templates` shows three template cards (Research Assistant,
+Translator, Summarizer) but `/agents/templates/research-assistant`
+returns the 404 page. The slug routing or detail page is missing.
+
+**Status**: documented. Custom 404 page is well-designed though.
+
+---
+
+### Bug #28 — `/m/me/disputes` and `/m/me/webhook` show raw `handle_not_found`
+
+Three merchant subpages rendered raw `handle_not_found` errors inside
+their content area when @me wasn't claimed.
+
+**Fix**: each page now redirects to `/m/<own-handle>/<sub>` when the
+user is connected (looks up handle via `/api/handles/by-pubkey`).
+
+**Commit**: `88f7b47`.
+
+---
+
+### Bug #29 — `/m/me/capabilities` infinite "Resolving handle..." spinner
+
+Same root cause as #28 but a different surface — the capabilities page
+hung forever on a "Resolving handle..." stub instead of erroring.
+
+**Fix**: same redirect helper as #28.
+
+**Commit**: `88f7b47`.
 
 ---
 
