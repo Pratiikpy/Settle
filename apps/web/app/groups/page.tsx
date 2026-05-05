@@ -69,6 +69,12 @@ export default function GroupsPage() {
     Record<string, SpendRequest[]>
   >({});
   const [active, setActive] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createLabel, setCreateLabel] = useState("");
+  const [createHoldingCard, setCreateHoldingCard] = useState("");
+  const [createQuorum, setCreateQuorum] = useState(2);
+  const [createMembers, setCreateMembers] = useState("");
+  const [createBusy, setCreateBusy] = useState(false);
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [showNewRequest, setShowNewRequest] = useState(false);
   const [draftDest, setDraftDest] = useState("");
@@ -221,6 +227,59 @@ export default function GroupsPage() {
     }
   }
 
+  // Create-group form: posts to /api/group-accounts. Custodian = connected
+  // wallet. Members entered as one pubkey per line; all are voters.
+  async function createGroup() {
+    if (!me) return toast.error("Connect a wallet first.");
+    if (!createLabel.trim()) return toast.error("Group label required.");
+    if (!createHoldingCard.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/))
+      return toast.error("Holding card must be a base58 pubkey.");
+    const memberPubkeys = createMembers
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    for (const m of memberPubkeys) {
+      if (!m.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/)) {
+        return toast.error(`Invalid member pubkey: ${m.slice(0, 8)}…`);
+      }
+    }
+    if (memberPubkeys.length === 0) {
+      return toast.error("Add at least one member.");
+    }
+    setCreateBusy(true);
+    try {
+      const res = await fetch("/api/group-accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          custodian_pubkey: me,
+          holding_card: createHoldingCard,
+          label: createLabel,
+          quorum: createQuorum,
+          members: memberPubkeys.map((pubkey) => ({
+            pubkey,
+            role: "voter" as const,
+          })),
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? `create_failed_${res.status}`);
+      }
+      toast.success("Group created.");
+      setShowCreate(false);
+      setCreateLabel("");
+      setCreateHoldingCard("");
+      setCreateQuorum(2);
+      setCreateMembers("");
+      await reload();
+    } catch (e) {
+      toast.error(`Create failed: ${(e as Error).message}`);
+    } finally {
+      setCreateBusy(false);
+    }
+  }
+
   return (
     <W6AppShell>
       {/* Header */}
@@ -243,6 +302,16 @@ export default function GroupsPage() {
           >
             Spend together. Vote first.
           </h1>
+          {connected && (
+            <button
+              type="button"
+              onClick={() => setShowCreate((v) => !v)}
+              className="w6-btn w6-btn-secondary w6-btn-sm"
+              style={{ marginTop: 12 }}
+            >
+              {showCreate ? "Cancel" : "+ New group"}
+            </button>
+          )}
           <p
             className="w6-muted"
             style={{
@@ -257,6 +326,82 @@ export default function GroupsPage() {
           </p>
         </div>
       </div>
+
+      {/* New-group form (toggleable). Custodian = connected wallet. */}
+      {connected && showCreate && (
+        <section
+          className="w6-card"
+          style={{ padding: 20, marginBottom: 28 }}
+        >
+          <div className="w6-eyebrow" style={{ fontSize: 11 }}>
+            New group
+          </div>
+          <h2 className="w6-heading" style={{ fontSize: 18, margin: "6px 0 12px" }}>
+            Create a quorum-controlled vault
+          </h2>
+          <div className="grid gap-3" style={{ display: "grid", gap: 10 }}>
+            <input
+              value={createLabel}
+              onChange={(e) => setCreateLabel(e.target.value)}
+              placeholder="Group label (e.g. Friday roommates, Team Marketing)"
+              className="w6-input"
+              maxLength={80}
+            />
+            <input
+              value={createHoldingCard}
+              onChange={(e) => setCreateHoldingCard(e.target.value)}
+              placeholder="Holding card pubkey (an AgentCard the group will spend from)"
+              className="w6-input w6-mono"
+              style={{ fontSize: 12 }}
+            />
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <label style={{ fontSize: 12.5 }}>
+                Quorum:&nbsp;
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={createQuorum}
+                  onChange={(e) => setCreateQuorum(Math.max(1, Math.min(20, parseInt(e.target.value || "1", 10))))}
+                  className="w6-input"
+                  style={{ width: 70, display: "inline-block" }}
+                />
+              </label>
+              <span className="w6-muted" style={{ fontSize: 11.5 }}>
+                signatures needed before a spend fires
+              </span>
+            </div>
+            <textarea
+              value={createMembers}
+              onChange={(e) => setCreateMembers(e.target.value)}
+              placeholder="Member pubkeys, one per line (you'll be auto-added as custodian)"
+              className="w6-input w6-mono"
+              rows={4}
+              style={{ fontSize: 12 }}
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              <button
+                type="button"
+                onClick={() => void createGroup()}
+                disabled={createBusy || !createLabel.trim() || !createHoldingCard.trim()}
+                className="w6-btn w6-btn-primary w6-btn-sm"
+              >
+                {createBusy ? "Creating…" : "Create group"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreate(false)}
+                className="w6-btn w6-btn-secondary w6-btn-sm"
+              >
+                Cancel
+              </button>
+            </div>
+            <p className="w6-muted" style={{ fontSize: 11, marginTop: 4 }}>
+              The group is a Supabase row + a holding card. Members can request spends; quorum signs; the cron fires.
+            </p>
+          </div>
+        </section>
+      )}
 
       {!connected ? (
         <div className="w6-card" style={{ padding: 32, textAlign: "center" }}>
@@ -282,6 +427,13 @@ export default function GroupsPage() {
             spending via a Pact, but only when {`{quorum}`} of {`{members}`}{" "}
             sign off does the cron release the funds.
           </p>
+          <button
+            type="button"
+            onClick={() => setShowCreate(true)}
+            className="w6-btn w6-btn-primary"
+          >
+            + New group
+          </button>
         </div>
       ) : (
         <>
