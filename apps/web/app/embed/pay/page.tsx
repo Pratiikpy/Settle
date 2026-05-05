@@ -102,7 +102,13 @@ export default function EmbedPayPage() {
     setError(null);
     try {
       const idempotencyKey = crypto.randomUUID();
-      const buildRes = await fetch("/api/send/build", {
+      // /api/send/build was the legacy endpoint; the swap-aware route
+      // /api/swap/quote-and-build supersedes it (handles direct USDC,
+      // multi-token, and writes the receipt index — see Bug #10 fix).
+      // direct_usdc path requires inputMint = USDC + inputAmountAtomic in lamports.
+      const USDC_DEVNET_MINT = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+      const inputAmountAtomic = String(Math.round(parseFloat(amount) * 1_000_000));
+      const buildRes = await fetch("/api/swap/quote-and-build", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,20 +117,27 @@ export default function EmbedPayPage() {
         body: JSON.stringify({
           from: publicKey.toBase58(),
           to: merchant,
-          amount,
+          inputMint: USDC_DEVNET_MINT,
+          inputAmountAtomic,
           note: note || undefined,
-          ...(capability ? { capability_hash: capability } : {}),
         }),
       });
-      const built = (await buildRes.json()) as {
+      let built: {
         ok?: boolean;
         transaction?: string;
         blockhash?: string;
         last_valid_block_height?: number;
         message?: string;
         error?: string;
-        receipt?: { request_id?: string; receipt_hash?: string };
+        receipt?: { request_id?: string; hashes?: { receipt_hash?: string } };
       };
+      try {
+        built = await buildRes.json();
+      } catch {
+        // Defensive: if the API returns HTML (e.g. 404 page), surface a
+        // clean error rather than a JSON parse stacktrace.
+        throw new Error(`build_failed_http_${buildRes.status}`);
+      }
       if (!built.ok || !built.transaction) {
         throw new Error(built.message ?? built.error ?? "build_failed");
       }
@@ -151,7 +164,7 @@ export default function EmbedPayPage() {
       postToParent({
         type: "settle:paid",
         request_id: built.receipt?.request_id ?? "",
-        receipt_hash: built.receipt?.receipt_hash ?? null,
+        receipt_hash: built.receipt?.hashes?.receipt_hash ?? null,
       });
       closedRef.current = true;
     } catch (e) {

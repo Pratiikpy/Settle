@@ -101,9 +101,12 @@ export default function PayWidgetPage() {
     setStatus("signing");
     setError(null);
     try {
-      // 1. Build the unsigned tx via /api/send/build (idempotency-keyed).
+      // 1. Build the unsigned tx via /api/swap/quote-and-build
+      // (replaces legacy /api/send/build; supports direct USDC + multi-token).
       const idempotencyKey = crypto.randomUUID();
-      const buildRes = await fetch("/api/send/build", {
+      const USDC_DEVNET_MINT = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+      const inputAmountAtomic = String(Math.round(parseFloat(amount) * 1_000_000));
+      const buildRes = await fetch("/api/swap/quote-and-build", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,11 +115,25 @@ export default function PayWidgetPage() {
         body: JSON.stringify({
           from: publicKey.toBase58(),
           to: merchant,
-          amount,
+          inputMint: USDC_DEVNET_MINT,
+          inputAmountAtomic,
           note: note || undefined,
         }),
       });
-      const built = await buildRes.json();
+      let built: {
+        ok?: boolean;
+        transaction?: string;
+        blockhash?: string;
+        last_valid_block_height?: number;
+        message?: string;
+        error?: string;
+        receipt?: { request_id?: string; hashes?: { receipt_hash?: string } };
+      };
+      try {
+        built = await buildRes.json();
+      } catch {
+        throw new Error(`build_failed_http_${buildRes.status}`);
+      }
       if (!built.ok || !built.transaction) {
         throw new Error(built.message ?? built.error ?? "build_failed");
       }
