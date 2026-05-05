@@ -541,6 +541,7 @@ function BentoTodayAgents({
                 <AgentRow
                   key={a.card_pubkey}
                   label={a.label}
+                  cardPubkey={a.card_pubkey}
                   spent={a.spent_today_usdc}
                   cap={a.cap_usdc}
                   fill={a.fill_pct}
@@ -597,16 +598,27 @@ function TodayStat({
 
 function AgentRow({
   label,
+  cardPubkey,
   spent,
   cap,
   fill,
 }: {
   label: string;
+  cardPubkey: string;
   spent: string;
   cap: string;
   fill: number;
 }) {
-  const initial = (label[0] ?? "?").toUpperCase();
+  // Bug #40 fix: when the on-chain card has no label (legacy or
+  // user-skipped), `label[0]` is undefined and we used to render "?",
+  // which looked like a broken state. Fall back to the card's pubkey
+  // initial — meaningful and unambiguous.
+  const initialSource = label && label.length > 0 ? label : cardPubkey;
+  const initial = (initialSource[0] ?? "•").toUpperCase();
+  // Same logic for the visible row label: prefer the human label, then a
+  // short-pubkey fallback ("Card · 7xKX") rather than blank text.
+  const displayLabel =
+    label && label.length > 0 ? label : `Card · ${cardPubkey.slice(0, 4)}`;
   return (
     <div style={{ display: "flex", gap: 12 }}>
       <div
@@ -634,7 +646,7 @@ function AgentRow({
             gap: 8,
           }}
         >
-          <div style={{ fontSize: 13, fontWeight: 500 }}>{label}</div>
+          <div style={{ fontSize: 13, fontWeight: 500 }}>{displayLabel}</div>
           <div className="w6-mono" style={{ fontSize: 11.5 }}>
             ${spent} / ${cap}
           </div>

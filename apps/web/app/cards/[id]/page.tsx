@@ -445,7 +445,18 @@ export default function CardDetailPage() {
                 allowReceipts.reduce((s, r) => s + Number(r.amount_lamports), 0) / 1_000_000
               ).toFixed(2)}`
         }
-        fillPct={revoked ? 0 : 0.6}
+        // Bug #35 fix: previously hardcoded to 0.6 regardless of actual
+        // spend, which produced "$0.00 of —" with a 60% ring (visual
+        // contradiction). Compute from receipts: 0 if no spend, else a
+        // proportional value based on count (we don't know the daily
+        // cap on this page so use a soft scale up to 80%).
+        fillPct={
+          revoked
+            ? 0
+            : allowReceipts.length === 0
+              ? 0
+              : Math.min(0.8, allowReceipts.length / 10)
+        }
         allowlist={[...new Set(allowReceipts.map((r) => r.merchant_pubkey.slice(0, 6)))]}
         expiryLabel={revoked ? "—" : "—"}
         revoked={revoked}
