@@ -92,8 +92,10 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Use a neutral, subtle selection — the accent (green) tint felt
+     loud on every paragraph the user dragged across. Gray feels native. */
   ::selection {
-    background: rgb(var(--accent) / 0.25);
+    background: rgb(0 0 0 / 0.12);
     color: rgb(var(--foreground));
   }
 
