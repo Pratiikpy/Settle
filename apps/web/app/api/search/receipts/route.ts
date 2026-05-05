@@ -60,11 +60,15 @@ export async function GET(req: NextRequest) {
   type RowLike = Record<string, unknown> & { request_id: string };
   const queryBuilders: PromiseLike<{ data: RowLike[] | null }>[] = [];
 
-  if (cardPubkeys.length > 0) {
+  // Bug #38: include user's wallet — direct sends use it as card_pubkey
+  // and were missing from search results. Without this, user's /send
+  // history was unsearchable.
+  const cardKeysWithSelf = [pubkey, ...cardPubkeys];
+  {
     let qb = sb
       .from("receipts")
       .select(SELECT)
-      .in("card_pubkey", cardPubkeys)
+      .in("card_pubkey", cardKeysWithSelf)
       .order("created_at", { ascending: false })
       .limit(limit);
     if (q) qb = qb.textSearch("search_tsv", q, { type: "plain" });
