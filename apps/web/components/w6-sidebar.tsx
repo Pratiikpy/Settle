@@ -131,10 +131,22 @@ export function W6Sidebar({
                 (item.href !== "/" &&
                   item.href !== "/dashboard" &&
                   longestPrefixMatch === item.href);
+
+              // Bug #25: profile/merchant nav items hardcoded to /at/me and
+              // /m/me — but those aren't pubkey/handle-aware. Rewrite at
+              // render time to /at/<own-handle> and /m/<own-handle>/<sub>
+              // when we know the user's handle, so "Profile" actually opens
+              // the user's profile and not a generic /at/me 'not found'.
+              let resolvedHref = item.href;
+              if (handle) {
+                if (item.href === "/at/me") resolvedHref = `/at/${handle}`;
+                else if (item.href.startsWith("/m/me"))
+                  resolvedHref = item.href.replace("/m/me", `/m/${handle}`);
+              }
               return (
                 <Link
                   key={item.href + item.label}
-                  href={item.href}
+                  href={resolvedHref}
                   aria-current={active ? "page" : undefined}
                   style={{
                     display: "inline-flex",

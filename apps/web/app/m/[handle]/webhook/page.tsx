@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { W6AppShell } from "../../../../components/w6-app-shell";
@@ -38,7 +38,25 @@ interface WebhookState {
 
 export default function MerchantWebhookPage() {
   const params = useParams<{ handle: string }>();
+  const router = useRouter();
   const { connected, publicKey, signMessage } = useWallet();
+
+  // Bug #28: redirect /m/me/webhook → /m/<own-handle>/webhook when connected.
+  useEffect(() => {
+    if (params.handle !== "me") return;
+    if (!publicKey) return;
+    let cancelled = false;
+    fetch(`/api/handles/by-pubkey?pubkey=${publicKey.toBase58()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { handle?: string } | null) => {
+        if (cancelled) return;
+        if (j?.handle) router.replace(`/m/${j.handle}/webhook`);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [params.handle, publicKey, router]);
 
   const [state, setState] = useState<WebhookState | null>(null);
   const [loading, setLoading] = useState(false);

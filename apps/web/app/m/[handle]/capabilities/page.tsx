@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { computeCapabilityHashHex } from "@settle/sdk";
@@ -44,8 +44,27 @@ interface RegistryRow {
 
 export default function MerchantCapabilitiesPage() {
   const params = useParams<{ handle: string }>();
+  const router = useRouter();
   const { connected, publicKey } = useWallet();
   const owner = publicKey?.toBase58() ?? "";
+
+  // Bug #29: avoid the perpetual "Resolving handle..." spinner — when on
+  // /m/me, redirect to the user's actual handle if they have one.
+  useEffect(() => {
+    if (params.handle !== "me") return;
+    if (!publicKey) return;
+    let cancelled = false;
+    fetch(`/api/handles/by-pubkey?pubkey=${publicKey.toBase58()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { handle?: string } | null) => {
+        if (cancelled) return;
+        if (j?.handle) router.replace(`/m/${j.handle}/capabilities`);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [params.handle, publicKey, router]);
 
   const [merchantPubkey, setMerchantPubkey] = useState<string | null>(null);
   const [entries, setEntries] = useState<RegistryRow[]>([]);
