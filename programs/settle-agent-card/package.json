@@ -5,7 +5,8 @@
   "description": "Mocha tests for the settle-agent-card Anchor program. Runs against either anchor's spawned solana-test-validator or devnet (slower). See ../../docs/TESTING.md.",
   "scripts": {
     "typecheck": "tsc --noEmit -p ./tsconfig.json",
-    "test": "ts-mocha -p ./tsconfig.json -t 1000000 'tests/**/*.ts'",
+    "test": "node -e \"console.log('[skip] @settle/anchor-tests is gated behind a running validator. Run pnpm anchor:test from the repo root (spins up solana-test-validator + anchor deploy + mocha), or pnpm --filter @settle/anchor-tests test:mocha if a validator is already running and ANCHOR_PROVIDER_URL is set.')\"",
+    "test:mocha": "ts-mocha -p ./tsconfig.json -t 1000000 'tests/**/*.ts'",
     "test:localnet": "anchor test"
   },
   "devDependencies": {

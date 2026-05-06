@@ -60,34 +60,37 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      // Demo-recorder specs are run via dedicated chromium-demo* projects
+      // (1080p viewport + always-record video). Excluding them here keeps
+      // normal Playwright runs fast and avoids spurious video artifacts.
+      testIgnore: /demo-recorder(-(wallet|broll|landing))?\.spec\.ts$/,
     },
     {
-      // Hackathon demo recorder. Always records video, headed, no
-      // retries (a clean recording is better than a re-attempted one).
+      // Hackathon demo recorder — 1080p production tour. Always records
+      // video, headed, no retries (clean take preferred over re-runs).
       // Run with: pnpm exec playwright test e2e/demo-recorder.spec.ts --project=chromium-demo --headed
       name: "chromium-demo",
       use: {
         ...devices["Desktop Chrome"],
-        viewport: { width: 1280, height: 800 },
-        video: { mode: "on", size: { width: 1280, height: 800 } },
+        viewport: { width: 1920, height: 1080 },
+        video: { mode: "on", size: { width: 1920, height: 1080 } },
       },
       retries: 0,
       testMatch: /demo-recorder\.spec\.ts$/,
     },
     {
-      // Wallet-flow recorder — drives the audit-branch preview where
-      // the Persona burner adapter is enabled. Larger viewport
-      // (1440×900) for a slight zoom-out so connected pages fit
-      // without scroll.
+      // Wallet-flow + B-roll recorder — also 1080p so the final cut
+      // is uniform. Drives the audit-branch preview where the Persona
+      // burner adapter is enabled.
       // Run with: pnpm exec playwright test e2e/demo-recorder-wallet.spec.ts --project=chromium-demo-wallet --headed
       name: "chromium-demo-wallet",
       use: {
         ...devices["Desktop Chrome"],
-        viewport: { width: 1440, height: 900 },
-        video: { mode: "on", size: { width: 1440, height: 900 } },
+        viewport: { width: 1920, height: 1080 },
+        video: { mode: "on", size: { width: 1920, height: 1080 } },
       },
       retries: 0,
-      testMatch: /demo-recorder-wallet\.spec\.ts$/,
+      testMatch: /demo-recorder-(wallet|broll|landing)\.spec\.ts$/,
     },
   ],
 });
