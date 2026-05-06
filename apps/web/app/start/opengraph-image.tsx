@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 /**
- * /start OG image — static. 1200×630.
+ * /start OG image â€” static. 1200Ã—630.
  * Light theme matching the /start picker page. Three-fork visual:
  * "I send / I sell / I build".
  */
@@ -27,7 +27,7 @@ export default function OG() {
         }}
       >
         <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.04em" }}>
-          SETTLE · GET STARTED
+          SETTLE Â· GET STARTED
         </div>
 
         <div style={{ marginTop: 56, display: "flex", flexDirection: "column" }}>
@@ -94,7 +94,7 @@ export default function OG() {
           }}
         >
           <span>Three paths. Each ends with a real receipt on Solana.</span>
-          <span>settle.xyz/start</span>
+          <span>use-settle.vercel.app/start</span>
         </div>
       </div>
     ),

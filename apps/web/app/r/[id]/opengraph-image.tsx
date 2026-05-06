@@ -4,8 +4,8 @@ import { ImageResponse } from "next/og";
  * Dynamic OG image for /r/[id] receipt poster.
  *
  * Next.js auto-wires this route as the OG image for the receipt poster
- * page. Generates a 1200×630 PNG with decision, amount, receipt id,
- * and the Settle wordmark — so a shared link looks like a poster, not
+ * page. Generates a 1200Ã—630 PNG with decision, amount, receipt id,
+ * and the Settle wordmark â€” so a shared link looks like a poster, not
  * a generic preview.
  *
  * Falls back to a generic Settle card if the receipt can't be fetched.
@@ -29,7 +29,7 @@ async function fetchReceipt(id: string): Promise<ReceiptDto | null> {
     process.env.APP_URL ||
     "http://localhost:3000";
   try {
-    // Honor upstream cache for OG generation — receipts are immutable
+    // Honor upstream cache for OG generation â€” receipts are immutable
     // so a cached fetch is fine here too.
     const r = await fetch(`${base}/api/receipts/${id}`, {
       next: { revalidate: 60 },
@@ -77,7 +77,7 @@ export default async function OG({ params }: { params: { id: string } }) {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.04em" }}>
-            SETTLE · ON SOLANA
+            SETTLE Â· ON SOLANA
           </div>
           <div
             style={{
@@ -91,7 +91,7 @@ export default async function OG({ params }: { params: { id: string } }) {
               letterSpacing: "0.05em",
             }}
           >
-            {`${verb} ${allow ? "✓" : "✗"}`}
+            {`${verb} ${allow ? "âœ“" : "âœ—"}`}
           </div>
         </div>
 
@@ -135,7 +135,7 @@ export default async function OG({ params }: { params: { id: string } }) {
           }}
         >
           <span>Verifiable money on Solana.</span>
-          <span>settle.xyz</span>
+          <span>Settle</span>
         </div>
       </div>
     ),

@@ -29,7 +29,7 @@ export default function ReceiptNotFound() {
           href="/"
           style={{ fontSize: 13, color: "inherit", textDecoration: "none" }}
         >
-          ← settle.xyz
+          â† Settle
         </Link>
         <div
           style={{
@@ -40,7 +40,7 @@ export default function ReceiptNotFound() {
             color: "var(--w6-ink-3, #5a5f66)",
           }}
         >
-          SETTLE · RECEIPT
+          SETTLE Â· RECEIPT
         </div>
         <h1
           style={{
@@ -87,7 +87,7 @@ export default function ReceiptNotFound() {
               textDecoration: "none",
             }}
           >
-            Verify a receipt hash →
+            Verify a receipt hash â†’
           </Link>
           <Link
             href="/"

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 /**
- * /watch OG image — static. 1200×630.
+ * /watch OG image â€” static. 1200Ã—630.
  * Same visual rhythm as /r/[id] poster: SETTLE wordmark, big headline,
  * footer thesis. Black bg matches the /watch dark page theme.
  */
@@ -41,7 +41,7 @@ export default function OG() {
               color: "#9aa0a6",
             }}
           >
-            SETTLE · LIVE DEMO
+            SETTLE Â· LIVE DEMO
           </div>
           <div
             style={{
@@ -55,7 +55,7 @@ export default function OG() {
               letterSpacing: "0.05em",
             }}
           >
-            ON DEVNET · NOW
+            ON DEVNET Â· NOW
           </div>
         </div>
 
@@ -79,7 +79,7 @@ export default function OG() {
               color: "#27c93f",
             }}
           >
-            — safely.
+            â€” safely.
           </span>
         </div>
 
@@ -97,7 +97,7 @@ export default function OG() {
           }}
         >
           <span>Real txs. Real receipts. Real revoke.</span>
-          <span>settle.xyz/watch</span>
+          <span>use-settle.vercel.app/watch</span>
         </div>
       </div>
     ),
