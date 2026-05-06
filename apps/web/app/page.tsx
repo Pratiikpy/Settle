@@ -164,7 +164,7 @@ function Hero() {
         className="w6-hero-grid"
       >
         <div>
-          <W6Pill tone="neutral">Solana-native payments app</W6Pill>
+          <W6Pill tone="neutral">Solana · live on devnet</W6Pill>
           <h1
             className="w6-heading"
             style={{
@@ -173,7 +173,7 @@ function Hero() {
               lineHeight: 1.02,
             }}
           >
-            Programmable money for the AI age.
+            The programmable spending card for AI agents.
           </h1>
           <p
             className="w6-muted"
@@ -184,9 +184,9 @@ function Hero() {
               margin: 0,
             }}
           >
-            Settle helps humans, agents, merchants, and teams move money
-            through plain-English rules, verifiable receipts, and trust-building
-            reputation.
+            Caps. Allowlists. Expiry. Instant revoke. Every payment leaves a
+            four-hash receipt on Solana that anyone can re-derive in a browser
+            tab — no Settle server in the trust path.
           </p>
           <div id="request-access" style={{ marginTop: 32 }}>
             <LandingWaitlistForm source="landing" />

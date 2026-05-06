@@ -1,8 +1,10 @@
 # Settle
 
-**Pay anyone. Hire any AI. Trust the receipts.**
+## The programmable spending card for AI agents.
 
-A Solana payment protocol with verifiable on-chain receipts. Send USDC to a `@handle`, hire AI agents with cryptographically scoped spending rules, and re-derive a cryptographic proof of every payment from the canonical JSON. **No Settle server is needed to verify the receipt hashes; on-chain policy enforcement is independent of our database.**
+**Caps. Allowlists. Expiry. Instant revoke.** Every payment leaves a four-hash receipt on Solana that anyone can re-derive in a browser tab. No Settle server in the trust path; on-chain policy enforcement is independent of our database.
+
+Settle is the trust layer that sits between humans and the AI agents they hand a budget to. It also works for plain consumer USDC sends and merchant accept-payments flows — but the spine is the agent card.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Built on Solana](https://img.shields.io/badge/built%20on-Solana-9945FF.svg)](https://solana.com)

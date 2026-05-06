@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSolscanUrl, getSolscanAccountUrl } from "../../../lib/solana";
 import { ReceiptShareButtons } from "../../../components/receipt-share-buttons";
+import { VerifiedStamp } from "../../../components/receipt-stamp";
 
 /**
  * Public receipt poster page — beautiful, shareable, server-rendered.
@@ -218,8 +219,19 @@ export default async function ReceiptPoster({
           href="/"
           style={{ fontSize: 13, color: "#0a0a0c", textDecoration: "none" }}
         >
-          ← settle.xyz
+          ← Settle
         </Link>
+
+        <VerifiedStamp
+          decision={r.decision}
+          denyCode={r.deny_code}
+          hashes={{
+            receipt_hash: r.receipt_hash,
+            reason_hash: r.reason_hash,
+            policy_snapshot_hash: r.policy_snapshot_hash,
+            purpose_hash: r.purpose_hash,
+          }}
+        />
 
         <article
           style={{
@@ -327,32 +339,31 @@ export default async function ReceiptPoster({
             />
           </div>
 
-          <div style={{ marginTop: 32 }}>
-            <div style={{ fontSize: 12, color: "#5a5f66", fontWeight: 600 }}>
-              4-HASH CHAIN
+          {r.context_hash ? (
+            <div style={{ marginTop: 32 }}>
+              <div style={{ fontSize: 12, color: "#5a5f66", fontWeight: 600 }}>
+                CONTEXT HASH
+              </div>
+              <div
+                style={{
+                  marginTop: 10,
+                  background: "#0a0a0c",
+                  color: "#e6e6e8",
+                  borderRadius: 10,
+                  padding: "12px 16px",
+                  fontFamily: "ui-monospace, monospace",
+                  fontSize: 12,
+                  lineHeight: 1.7,
+                }}
+              >
+                <HashRow label="context_hash" value={r.context_hash} testId="hash-context" />
+              </div>
+              <div style={{ fontSize: 11, color: "#5a5f66", marginTop: 6 }}>
+                BLAKE3 of (kind, sender, recipient, amount, request_id). Indexable
+                identity for cross-protocol lookup.
+              </div>
             </div>
-            <div
-              style={{
-                marginTop: 10,
-                background: "#0a0a0c",
-                color: "#e6e6e8",
-                borderRadius: 10,
-                padding: "16px 18px",
-                fontFamily: "ui-monospace, monospace",
-                fontSize: 12,
-                lineHeight: 1.7,
-              }}
-            >
-              <HashRow label="receipt_hash" value={r.receipt_hash} testId="hash-receipt" />
-              <HashRow label="context_hash" value={r.context_hash} testId="hash-context" />
-              <HashRow label="reason_hash" value={r.reason_hash} testId="hash-reason" />
-              <HashRow
-                label="policy_snapshot"
-                value={r.policy_snapshot_hash}
-                testId="hash-policy"
-              />
-            </div>
-          </div>
+          ) : null}
 
           <div style={{ marginTop: 28, display: "flex", gap: 12, flexWrap: "wrap" }}>
             {r.sig_solscan ? (
@@ -527,7 +538,7 @@ function CrosschainReceiptPoster({ r }: { r: ReceiptDto }) {
             href="/"
             style={{ fontSize: 13, color: "#0a0a0c", textDecoration: "none" }}
           >
-            ← settle.so
+            ← Settle
           </Link>
           <span
             data-testid="ika-badge"
