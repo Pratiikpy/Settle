@@ -7,7 +7,7 @@ import { authFromRequest } from "../../../lib/wallet-auth";
 export const runtime = "nodejs";
 
 /**
- * F10 — One-time-use payment link creation (creator side).
+ * F10 â€” One-time-use payment link creation (creator side).
  *
  *   POST /api/payment-links     create a fresh single-use link (auth = creator)
  *   GET  /api/payment-links?creator=<pk>   list creator's links
@@ -30,7 +30,7 @@ function getSupabase() {
 }
 
 function makeToken(): string {
-  // 18 random bytes → 24-char base64url. Unguessable, URL-safe, fits in QR comfortably.
+  // 18 random bytes â†’ 24-char base64url. Unguessable, URL-safe, fits in QR comfortably.
   return randomBytes(18)
     .toString("base64")
     .replaceAll("+", "-")
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "supabase_error", message: error.message }, { status: 502 });
   }
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://settle.so";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://use-settle.vercel.app";
   return NextResponse.json({
     ok: true,
     token,

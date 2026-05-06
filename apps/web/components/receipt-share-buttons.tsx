@@ -5,8 +5,8 @@ import { useState } from "react";
 /**
  * Share buttons for the public receipt poster /r/[id].
  *
- * - "Tweet" → opens Twitter intent with the receipt URL prefilled.
- * - "Copy link" → copies the page URL to the clipboard, flips the
+ * - "Tweet" â†’ opens Twitter intent with the receipt URL prefilled.
+ * - "Copy link" â†’ copies the page URL to the clipboard, flips the
  *   button label briefly so the user gets feedback.
  *
  * Client-side only; the server-rendered poster page mounts this
@@ -26,9 +26,9 @@ export function ReceiptShareButtons({
   const url =
     typeof window !== "undefined"
       ? window.location.href
-      : `https://settle.so/r/${receiptId}`;
+      : `https://use-settle.vercel.app/r/${receiptId}`;
   const verb = decision === "DENY" ? "blocked" : "verified";
-  const tweet = `Just ${verb} a $${amountUsdc} USDC payment on @solana with a cryptographic receipt anyone can verify. ↓`;
+  const tweet = `Just ${verb} a $${amountUsdc} USDC payment on @solana with a cryptographic receipt anyone can verify. â†“`;
   const twitterIntent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     tweet,
   )}&url=${encodeURIComponent(url)}`;
@@ -41,7 +41,7 @@ export function ReceiptShareButtons({
         setTimeout(() => setCopied(false), 2_000);
       }
     } catch {
-      /* ignore — clipboard may be blocked in sandboxed contexts */
+      /* ignore â€” clipboard may be blocked in sandboxed contexts */
     }
   }
 
@@ -63,7 +63,7 @@ export function ReceiptShareButtons({
           border: "1px solid rgba(0,0,0,0.12)",
         }}
       >
-        Tweet ↗
+        Tweet â†—
       </a>
       <button
         data-testid="receipt-share-copy"
@@ -80,7 +80,7 @@ export function ReceiptShareButtons({
           cursor: "pointer",
         }}
       >
-        {copied ? "✓ Copied" : "Copy link"}
+        {copied ? "âœ“ Copied" : "Copy link"}
       </button>
     </>
   );

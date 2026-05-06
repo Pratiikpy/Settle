@@ -94,7 +94,7 @@ export async function GET(
     {
       type: "action",
       title: `Pay @${slug} via Settle`,
-      icon: "https://settle.so/og/merchant.png",
+      icon: `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://use-settle.vercel.app"}/icon-512`,
       description: `Send USDC to @${slug} via Solana Pay. Fresh reference pubkey embedded so the recipient can match the receipt.`,
       label: "Pay",
       links: {

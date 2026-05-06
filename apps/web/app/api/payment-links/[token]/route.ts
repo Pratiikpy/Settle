@@ -17,10 +17,10 @@ import { createClient } from "@supabase/supabase-js";
 export const runtime = "nodejs";
 
 /**
- * F10 — One-time-use payment link claim (buyer side).
+ * F10 â€” One-time-use payment link claim (buyer side).
  *
- *   GET  /api/payment-links/[token]  → public preview (label, amount, creator, claimed?)
- *   POST /api/payment-links/[token]  → buyer pays. Body: { account: <buyer_pubkey> }
+ *   GET  /api/payment-links/[token]  â†’ public preview (label, amount, creator, claimed?)
+ *   POST /api/payment-links/[token]  â†’ buyer pays. Body: { account: <buyer_pubkey> }
  *                                       Server enforces single-use atomically via
  *                                       claimed_at = NULL precondition. Subsequent calls
  *                                       return 410 Gone.
@@ -91,8 +91,8 @@ export async function GET(
   const isClaimed = row.claimed_at !== null;
   return NextResponse.json(
     {
-      label: `Settle · ${row.label}`,
-      icon: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://settle.so"}/icon-512`,
+      label: `Settle Â· ${row.label}`,
+      icon: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://use-settle.vercel.app"}/icon-512`,
       title: row.label,
       description:
         row.description ??
@@ -100,7 +100,7 @@ export async function GET(
           ? "This link has already been claimed."
           : isExpired
             ? "This link has expired."
-            : `Pay $${row.amount_usdc.toFixed(2)} to ${row.creator_pubkey.slice(0, 6)}…`),
+            : `Pay $${row.amount_usdc.toFixed(2)} to ${row.creator_pubkey.slice(0, 6)}â€¦`),
       amount_usdc: row.amount_usdc,
       claimed: isClaimed,
       expired: isExpired,

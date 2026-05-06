@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://settle.so";
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://use-settle.vercel.app";
   const now = new Date();
 
   const staticRoutes = [

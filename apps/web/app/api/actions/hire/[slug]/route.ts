@@ -15,7 +15,7 @@ export async function GET(
   const response = {
     type: "action",
     title: "Hire this AI agent",
-    icon: "https://settle.so/og/agent-card.png",
+    icon: `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://use-settle.vercel.app"}/icon-512`,
     description: `Spawn a Pact card for "${slug}". Cap $0.50, 3 merchants allowlisted, 15-min expiry, one-tap revoke.`,
     label: "Hire — $0.50",
     links: {

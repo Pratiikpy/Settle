@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   // to http://localhost:3000 — which breaks Twitter/Slack/Discord
   // previews when the site is deployed.
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://settle.so",
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://use-settle.vercel.app",
   ),
   title: "Settle — Pay anyone. Hire any AI. Trust the receipts.",
   description:

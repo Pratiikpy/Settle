@@ -17,7 +17,7 @@ Reviewed against patterns from [`solana-developers/sealevel-attacks`](https://gi
 ### 1. Missing signer check
 - ✅ `spend(ctx, ...)`: `authority: Signer<'info>` with `address = card.authority @ SettleError::UnauthorizedAuthority`
 - ✅ `revoke(ctx)`: same signer constraint on the card
-- ✅ `record_denial(ctx, ...)`: facilitator pubkey hard-coded constraint
+- ✅ `record_denial(ctx, ...)`: signer must equal `card.authority` OR `card.agent_pubkey` (both pinned at `create_card`); enforced via Anchor `constraint = (signer.key() == card.authority || signer.key() == card.agent_pubkey) @ SettleError::UnauthorizedAuthority`
 - ✅ `open_pact(ctx, ...)`: signer constraint matches `parent_card.authority`
 - ✅ `close_pact(ctx)`: signer constraint matches `pact.authority`
 - ✅ `create_card(ctx, ...)`: signer is the authority
@@ -38,7 +38,7 @@ Reviewed against patterns from [`solana-developers/sealevel-attacks`](https://gi
 
 ### 5. Type cosplay (account confusion)
 - ✅ Anchor's 8-byte discriminator on every account type (`AgentCard` vs `Pact`) prevents passing one where the other is expected
-- ✅ `record_denial` enforces `card.authority == FACILITATOR_PUBKEY` constant per environment, preventing arbitrary signers from polluting the on-chain ledger
+- ✅ `record_denial` enforces signer must equal `card.authority` OR `card.agent_pubkey` (both pubkeys are pinned at `create_card` time and immutable). Arbitrary signers cannot pollute the on-chain ledger.
 
 ### 6. Closing accounts vs. revival
 - ✅ `close_pact` sets `pact.closed = true` rather than closing the account — prevents account-revival attack where a rent-exempt deposit lets someone reuse the address

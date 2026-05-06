@@ -25,6 +25,21 @@ export const runtime = "nodejs";
  */
 
 export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ requestId: string }> },
+) {
+  try {
+    return await handleVerify(req, ctx);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown verify error";
+    return NextResponse.json(
+      { ok: false, error: "verify_exception", message },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleVerify(
   _req: NextRequest,
   { params }: { params: Promise<{ requestId: string }> },
 ) {

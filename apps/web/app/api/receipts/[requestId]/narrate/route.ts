@@ -32,7 +32,6 @@ interface ReceiptRow {
   card_pubkey: string | null;
   pact_pubkey: string | null;
   merchant_pubkey: string;
-  sender_pubkey: string | null;
   amount_lamports: string;
   decision: "ALLOW" | "DENY" | "REVIEW";
   deny_code: number | null;
@@ -229,13 +228,16 @@ function resolveNamesFrom(
   const map = new Map<string, string>();
   for (const h of rawHandles) map.set(h.pubkey, h.handle);
   const merchantHandle = map.get(r.merchant_pubkey) ?? null;
-  const senderHandle = r.sender_pubkey ? (map.get(r.sender_pubkey) ?? null) : null;
+  // The on-chain receipts table commits the agent card pubkey, not a separate sender.
+  // The card pubkey is the closest stable identifier for "who paid".
+  const senderPubkey = r.card_pubkey;
+  const senderHandle = senderPubkey ? (map.get(senderPubkey) ?? null) : null;
   return {
     merchant_label: merchantHandle ? `@${merchantHandle}` : shortPubkey(r.merchant_pubkey),
-    sender_label: r.sender_pubkey
+    sender_label: senderPubkey
       ? senderHandle
         ? `@${senderHandle}`
-        : shortPubkey(r.sender_pubkey)
+        : shortPubkey(senderPubkey)
       : null,
     merchant_handle: merchantHandle,
     sender_handle: senderHandle,
@@ -262,7 +264,7 @@ export async function GET(
   const { data, error } = await sb
     .from("receipts")
     .select(
-      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, sender_pubkey, amount_lamports, decision, deny_code, receipt_kind, target_method, target_path, decision_slot, policy_version, created_at, narration_text, narration_provider, narration_generated_at",
+      "request_id, card_pubkey, pact_pubkey, merchant_pubkey, amount_lamports, decision, deny_code, receipt_kind, target_method, target_path, decision_slot, policy_version, created_at, narration_text, narration_provider, narration_generated_at",
     )
     .eq("request_id", requestId)
     .maybeSingle<ReceiptRow>();
@@ -291,8 +293,8 @@ export async function GET(
   // Resolve handles before generating — turns "B4cA…to2Cp" into "@alice"
   // in the prompt + template fallback. Single batched read for both pubkeys.
   const pubkeysToResolve = [data.merchant_pubkey];
-  if (data.sender_pubkey && data.sender_pubkey !== data.merchant_pubkey) {
-    pubkeysToResolve.push(data.sender_pubkey);
+  if (data.card_pubkey && data.card_pubkey !== data.merchant_pubkey) {
+    pubkeysToResolve.push(data.card_pubkey);
   }
   const { data: handlesData } = await sb
     .from("handles")

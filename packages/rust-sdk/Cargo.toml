@@ -1,6 +1,6 @@
 [package]
 name = "settle-sdk"
-version = "0.1.0"
+version = "0.2.1"
 edition = "2021"
 description = "Settle Protocol SDK — kernel commit + receipt verification, byte-identical to the TypeScript and Python SDKs."
 license = "MIT"

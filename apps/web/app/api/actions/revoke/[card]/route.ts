@@ -39,7 +39,7 @@ export async function GET(
     {
       type: "action",
       title: "Revoke Settle card",
-      icon: "https://settle.so/og/revoke.png",
+      icon: `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://use-settle.vercel.app"}/icon-512`,
       description: `Revoke card ${card.slice(0, 4)}…${card.slice(-4)}. Marks the card revoked on-chain. Future spend attempts on this card will fail with deny_code 1.`,
       label: "Revoke now",
       links: {

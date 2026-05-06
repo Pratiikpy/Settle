@@ -20,14 +20,14 @@ export const runtime = "nodejs";
  * Universal Solana Action / Blink router (P5).
  *
  * One endpoint dispatches every shareable handle action by type:
- *   tip       → GET preview, POST builds USDC TransferChecked + reference (Solana Pay)
- *   pay       → same as tip (alias for "I'm sending you money")
- *   request   → buyer pre-fills $X, can override on-chain
+ *   tip       â†’ GET preview, POST builds USDC TransferChecked + reference (Solana Pay)
+ *   pay       â†’ same as tip (alias for "I'm sending you money")
+ *   request   â†’ buyer pre-fills $X, can override on-chain
  *
  * Future types (wired into the universal manifest in a single place):
- *   hire      → delegates to /api/actions/hire/[slug]/spawn
- *   fund      → opens + funds a Pact (delegates to /api/agents/spawn)
- *   revoke    → delegates to /api/actions/revoke/[card]
+ *   hire      â†’ delegates to /api/actions/hire/[slug]/spawn
+ *   fund      â†’ opens + funds a Pact (delegates to /api/agents/spawn)
+ *   revoke    â†’ delegates to /api/actions/revoke/[card]
  *
  * URL params:
  *   amount    decimal USDC (e.g. "5", "0.50"). Optional; spec param `{amount}` for the
@@ -164,7 +164,7 @@ export async function GET(
     {
       type: "action",
       title: titleByType[type],
-      icon: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://settle.so"}/icon-512`,
+      icon: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://use-settle.vercel.app"}/icon-512`,
       description: descriptionByType[type],
       label: presetAmount ? `Send $${presetAmount}` : "Send",
       links: { actions },
@@ -227,7 +227,7 @@ export async function POST(
 
   const tx = new Transaction();
 
-  // Recipient ATA may not exist yet — sender pays rent.
+  // Recipient ATA may not exist yet â€” sender pays rent.
   let toAtaExists = true;
   try {
     await getAccount(connection, toAta);

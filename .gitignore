@@ -41,6 +41,12 @@ SIDETRACK-IKA-PLAN.md
 coverage/
 *.lcov
 
+# Python bytecode + typescript build cache (should never be tracked)
+__pycache__/
+*.pyc
+*.pyo
+*.tsbuildinfo
+
 # Playwright artifacts — large, per-run, never useful in git
 test-results/
 playwright-report/
