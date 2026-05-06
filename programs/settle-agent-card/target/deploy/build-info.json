@@ -1,0 +1,14 @@
+{
+  "sha256": "37307f9984b19fc55d23cf4a16fd5ae730dc2856d6f949d6cce8a9211aa5178e",
+  "size_bytes": 494192,
+  "commit": "9bc00d79bd877053d6bad240b592fc35a36ec78b",
+  "dirty": true,
+  "built_at": "2026-05-06T17:42:35Z",
+  "builder": {
+    "hostname": "Prateek",
+    "platform": "linux-wsl",
+    "arch": "x86_64",
+    "solana": "3.1.14",
+    "anchor": "0.31.1"
+  }
+}
