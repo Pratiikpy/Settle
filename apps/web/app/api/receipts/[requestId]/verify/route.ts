@@ -86,12 +86,15 @@ async function handleVerify(
   const purposeHashHex = stripBytea(data.purpose_hash);
   const capabilityHashHex = stripBytea(data.capability_hash);
 
+  // Postgres bigint comes back as a JS number from Supabase when within Number.MAX_SAFE_INTEGER.
+  // The canonical receipt schema requires amount_lamports as a string for cross-language hash parity
+  // (Python and Rust treat it as a string, so TS must too — otherwise the BLAKE3 hash differs).
   const receipt: CanonicalReceipt = {
     request_id: data.request_id,
     card_pubkey: data.card_pubkey,
     pact_pubkey: data.pact_pubkey,
     merchant_pubkey: data.merchant_pubkey,
-    amount_lamports: data.amount_lamports,
+    amount_lamports: String(data.amount_lamports),
     capability_hash: capabilityHashHex,
     purpose_text_hash: purposeTextHashHex,
     decision_slot: data.decision_slot,
