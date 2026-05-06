@@ -17,12 +17,12 @@ import { createClient } from "@supabase/supabase-js";
 export const runtime = "nodejs";
 
 /**
- * F9 — Self-repricing QR via Solana Pay transaction-request URL.
+ * F9 â€” Self-repricing QR via Solana Pay transaction-request URL.
  *
  * Spec (Solana Pay transaction-request):
- *   GET  → returns { label, icon } describing the action (Phantom shows this in the
+ *   GET  â†’ returns { label, icon } describing the action (Phantom shows this in the
  *          confirmation sheet)
- *   POST → wallet posts { account: <buyer_pubkey> }, server returns
+ *   POST â†’ wallet posts { account: <buyer_pubkey> }, server returns
  *          { transaction: <base64 tx>, message: <human-readable> } with the buyer pre-filled
  *
  * The QR encodes `solana:<this URL>`. Same QR works forever; the merchant edits the price
@@ -97,9 +97,9 @@ export async function GET(
   }
   return NextResponse.json(
     {
-      label: `Settle · ${row.label}`,
-      icon: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://settle.so"}/icon-512`,
-      // Spec extension fields — not all wallets render these but Solana Pay supports
+      label: `Settle Â· ${row.label}`,
+      icon: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://use-settle.vercel.app"}/icon-512`,
+      // Spec extension fields â€” not all wallets render these but Solana Pay supports
       // arbitrary additional fields and Phantom shows description on the confirm sheet.
       title: row.label,
       description: row.description ?? `Pay $${row.amount_usdc.toFixed(2)} USDC`,

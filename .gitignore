@@ -18,6 +18,12 @@ programs/settle-agent-card/target/*
 programs/settle-agent-card/target/idl/*
 !programs/settle-agent-card/target/idl/*.json
 
+# Track build-info.json so /api/verify-build can claim a sha256 to compare
+# against the on-chain bytecode. Required for matches=true.
+!programs/settle-agent-card/target/deploy/
+programs/settle-agent-card/target/deploy/*
+!programs/settle-agent-card/target/deploy/build-info.json
+
 # env
 .env
 .env.local
@@ -40,6 +46,12 @@ SIDETRACK-IKA-PLAN.md
 # coverage
 coverage/
 *.lcov
+
+# Python bytecode + typescript build cache (should never be tracked)
+__pycache__/
+*.pyc
+*.pyo
+*.tsbuildinfo
 
 # Playwright artifacts — large, per-run, never useful in git
 test-results/

@@ -55,16 +55,28 @@ function getRpcUrl(): string {
 }
 
 function readBuildInfo(): BuildInfo | null {
-  const path = resolve(
-    process.cwd(),
-    "programs/settle-agent-card/target/deploy/build-info.json",
-  );
-  try {
-    const raw = readFileSync(path, "utf8");
-    return JSON.parse(raw) as BuildInfo;
-  } catch {
-    return null;
+  // The file is generated at build time by the WSL rebuild script and
+  // committed under apps/web/build-info.json so Vercel ships it into the
+  // function bundle. process.cwd() in a Vercel lambda resolves to the
+  // deployed package root (apps/web/).
+  //
+  // We also try the original repo-relative path as a fallback for local dev
+  // (pnpm dev runs from apps/web/ but the source-of-truth file lives at
+  // programs/settle-agent-card/target/deploy/build-info.json).
+  const candidates = [
+    resolve(process.cwd(), "build-info.json"),
+    resolve(process.cwd(), "..", "..", "programs", "settle-agent-card", "target", "deploy", "build-info.json"),
+    resolve(process.cwd(), "programs", "settle-agent-card", "target", "deploy", "build-info.json"),
+  ];
+  for (const path of candidates) {
+    try {
+      const raw = readFileSync(path, "utf8");
+      return JSON.parse(raw) as BuildInfo;
+    } catch {
+      continue;
+    }
   }
+  return null;
 }
 
 /**

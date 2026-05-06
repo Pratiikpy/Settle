@@ -25,6 +25,21 @@ export const runtime = "nodejs";
  */
 
 export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ requestId: string }> },
+) {
+  try {
+    return await handleVerify(req, ctx);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown verify error";
+    return NextResponse.json(
+      { ok: false, error: "verify_exception", message },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleVerify(
   _req: NextRequest,
   { params }: { params: Promise<{ requestId: string }> },
 ) {
@@ -71,12 +86,15 @@ export async function GET(
   const purposeHashHex = stripBytea(data.purpose_hash);
   const capabilityHashHex = stripBytea(data.capability_hash);
 
+  // Postgres bigint comes back as a JS number from Supabase when within Number.MAX_SAFE_INTEGER.
+  // The canonical receipt schema requires amount_lamports as a string for cross-language hash parity
+  // (Python and Rust treat it as a string, so TS must too — otherwise the BLAKE3 hash differs).
   const receipt: CanonicalReceipt = {
     request_id: data.request_id,
     card_pubkey: data.card_pubkey,
     pact_pubkey: data.pact_pubkey,
     merchant_pubkey: data.merchant_pubkey,
-    amount_lamports: data.amount_lamports,
+    amount_lamports: String(data.amount_lamports),
     capability_hash: capabilityHashHex,
     purpose_text_hash: purposeTextHashHex,
     decision_slot: data.decision_slot,

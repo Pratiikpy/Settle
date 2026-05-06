@@ -17,6 +17,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:sdk": "pnpm --filter @settle/sdk test",
+    "demo:parity": "tsx scripts/demo/three-runtime-parity.ts",
     "anchor:build": "bash scripts/deploy-devnet.sh",
     "anchor:test": "cd programs/settle-agent-card && anchor test",
     "deploy:devnet": "bash scripts/deploy-devnet.sh",

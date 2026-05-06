@@ -50,7 +50,7 @@ test("DEEP-8: Alice exports receipts to CSV — file downloads with valid format
 
     // Header should look like CSV (commas)
     expect(lines[0], "first line is header with commas").toContain(",");
-    console.log("[DEEP-8] Header columns:", lines[0].slice(0, 100));
+    console.log("[DEEP-8] Header columns:", lines[0]?.slice(0, 100));
 
     console.log("[DEEP-8] ✅ CSV export verified");
   } finally {
