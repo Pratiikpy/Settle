@@ -2,9 +2,9 @@ import { WatchAgentDemo } from "../../components/watch-agent-demo";
 
 export const dynamic = "force-static";
 export const metadata = {
-  title: "Settle · Watch an AI agent spend safely",
+  title: "Settle Â· Watch an AI agent spend safely",
   description:
-    "Live demo: a real agent on Solana devnet attempts payments — Settle's rules allow safe spends and block over-limit ones. Every receipt links to Solscan.",
+    "Live demo: a real agent on Solana devnet attempts payments â€” Settle's rules allow safe spends and block over-limit ones. Every receipt links to Solscan.",
 };
 
 export default function WatchPage() {
@@ -24,7 +24,7 @@ export default function WatchPage() {
           href="/"
           style={{ color: "#9aa0a6", fontSize: 13, textDecoration: "none" }}
         >
-          ← settle.xyz
+          â† Settle
         </a>
         <header style={{ marginTop: 24 }}>
           <h1
@@ -37,7 +37,7 @@ export default function WatchPage() {
               margin: 0,
             }}
           >
-            Watch an AI agent spend — safely.
+            Watch an AI agent spend â€” safely.
           </h1>
           <p
             style={{
@@ -113,7 +113,7 @@ export default function WatchPage() {
               textDecoration: "none",
             }}
           >
-            Hire an agent →
+            Hire an agent â†’
           </a>
         </section>
       </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const dynamic = "force-static";
 export const metadata = {
-  title: "Get started · Settle",
+  title: "Get started Â· Settle",
   description:
     "Choose how you'll use Settle: send money safely, accept payments, or build with AI agents.",
 };
@@ -21,7 +21,7 @@ export default function StartPage() {
     >
       <div style={{ maxWidth: 1080, margin: "0 auto" }}>
         <Link href="/" style={{ fontSize: 13, color: "inherit", textDecoration: "none" }}>
-          ← settle.xyz
+          â† Settle
         </Link>
         <header style={{ marginTop: 24, textAlign: "center" }}>
           <h1
@@ -163,7 +163,7 @@ function ForkCard({
           color: "#0a0a0c",
         }}
       >
-        {cta} →
+        {cta} â†’
       </span>
     </Link>
   );

@@ -2,7 +2,7 @@ import { PersonaPage } from "../../../components/persona-page";
 
 export const dynamic = "force-static";
 export const metadata = {
-  title: "Accept payments · Settle",
+  title: "Accept payments Â· Settle",
   description:
     "Three steps to your first verified sale on Solana. Claim a merchant handle, generate a payment QR or link, wire your webhook for instant settlement signals.",
 };
@@ -17,7 +17,7 @@ export default function MerchantOnboarding() {
         {
           n: 1,
           title: "Connect your wallet",
-          body: "Your wallet becomes your merchant identity. Customers will see settle.xyz/m/<handle> once you take your first payment or publish a capability.",
+          body: "Your wallet becomes your merchant identity. Customers will see use-settle.vercel.app/m/<handle> once you take your first payment or publish a capability.",
           ctaText: "Open manage",
           ctaHref: "/m/me/manage",
         },
