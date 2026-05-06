@@ -63,7 +63,7 @@ export default defineConfig({
       // Demo-recorder specs are run via dedicated chromium-demo* projects
       // (1080p viewport + always-record video). Excluding them here keeps
       // normal Playwright runs fast and avoids spurious video artifacts.
-      testIgnore: /demo-recorder(-(wallet|broll|landing))?\.spec\.ts$/,
+      testIgnore: /(demo-recorder(-(wallet|broll|landing))?|autonomous-judge)\.spec\.ts$/,
     },
     {
       // Hackathon demo recorder — 1080p production tour. Always records
@@ -91,6 +91,20 @@ export default defineConfig({
       },
       retries: 0,
       testMatch: /demo-recorder-(wallet|broll|landing)\.spec\.ts$/,
+    },
+    {
+      // Autonomous judge-pass — drives the burner-enabled preview through
+      // every public + authed surface, captures screenshots, generates
+      // a markdown report. Exercises real on-chain devnet signing.
+      // Run with: pnpm --filter @settle/web exec playwright test \
+      //   e2e/autonomous-judge.spec.ts --project=chromium-burner --headed --workers=1
+      name: "chromium-burner",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+      },
+      retries: 0,
+      testMatch: /autonomous-judge\.spec\.ts$/,
     },
   ],
 });
