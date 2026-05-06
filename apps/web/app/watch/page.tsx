@@ -24,7 +24,7 @@ export default function WatchPage() {
           href="/"
           style={{ color: "#9aa0a6", fontSize: 13, textDecoration: "none" }}
         >
-          â† Settle
+          ← Settle
         </a>
         <header style={{ marginTop: 24 }}>
           <h1
@@ -113,7 +113,7 @@ export default function WatchPage() {
               textDecoration: "none",
             }}
           >
-            Hire an agent â†’
+            Hire an agent →
           </a>
         </section>
       </div>

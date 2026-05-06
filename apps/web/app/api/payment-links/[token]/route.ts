@@ -19,8 +19,8 @@ export const runtime = "nodejs";
 /**
  * F10 â€” One-time-use payment link claim (buyer side).
  *
- *   GET  /api/payment-links/[token]  â†’ public preview (label, amount, creator, claimed?)
- *   POST /api/payment-links/[token]  â†’ buyer pays. Body: { account: <buyer_pubkey> }
+ *   GET  /api/payment-links/[token]  → public preview (label, amount, creator, claimed?)
+ *   POST /api/payment-links/[token]  → buyer pays. Body: { account: <buyer_pubkey> }
  *                                       Server enforces single-use atomically via
  *                                       claimed_at = NULL precondition. Subsequent calls
  *                                       return 410 Gone.
