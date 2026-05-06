@@ -30,7 +30,7 @@ function getSupabase() {
 }
 
 function makeToken(): string {
-  // 18 random bytes â†’ 24-char base64url. Unguessable, URL-safe, fits in QR comfortably.
+  // 18 random bytes → 24-char base64url. Unguessable, URL-safe, fits in QR comfortably.
   return randomBytes(18)
     .toString("base64")
     .replaceAll("+", "-")

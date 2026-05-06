@@ -20,9 +20,9 @@ export const runtime = "nodejs";
  * F9 â€” Self-repricing QR via Solana Pay transaction-request URL.
  *
  * Spec (Solana Pay transaction-request):
- *   GET  â†’ returns { label, icon } describing the action (Phantom shows this in the
+ *   GET  → returns { label, icon } describing the action (Phantom shows this in the
  *          confirmation sheet)
- *   POST â†’ wallet posts { account: <buyer_pubkey> }, server returns
+ *   POST → wallet posts { account: <buyer_pubkey> }, server returns
  *          { transaction: <base64 tx>, message: <human-readable> } with the buyer pre-filled
  *
  * The QR encodes `solana:<this URL>`. Same QR works forever; the merchant edits the price

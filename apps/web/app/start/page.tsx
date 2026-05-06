@@ -21,7 +21,7 @@ export default function StartPage() {
     >
       <div style={{ maxWidth: 1080, margin: "0 auto" }}>
         <Link href="/" style={{ fontSize: 13, color: "inherit", textDecoration: "none" }}>
-          â† Settle
+          ← Settle
         </Link>
         <header style={{ marginTop: 24, textAlign: "center" }}>
           <h1
@@ -163,7 +163,7 @@ function ForkCard({
           color: "#0a0a0c",
         }}
       >
-        {cta} â†’
+        {cta} →
       </span>
     </Link>
   );

@@ -29,7 +29,7 @@ export default function ReceiptNotFound() {
           href="/"
           style={{ fontSize: 13, color: "inherit", textDecoration: "none" }}
         >
-          â† Settle
+          ← Settle
         </Link>
         <div
           style={{
@@ -87,7 +87,7 @@ export default function ReceiptNotFound() {
               textDecoration: "none",
             }}
           >
-            Verify a receipt hash â†’
+            Verify a receipt hash →
           </Link>
           <Link
             href="/"

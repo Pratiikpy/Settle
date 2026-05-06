@@ -20,14 +20,14 @@ export const runtime = "nodejs";
  * Universal Solana Action / Blink router (P5).
  *
  * One endpoint dispatches every shareable handle action by type:
- *   tip       â†’ GET preview, POST builds USDC TransferChecked + reference (Solana Pay)
- *   pay       â†’ same as tip (alias for "I'm sending you money")
- *   request   â†’ buyer pre-fills $X, can override on-chain
+ *   tip       → GET preview, POST builds USDC TransferChecked + reference (Solana Pay)
+ *   pay       → same as tip (alias for "I'm sending you money")
+ *   request   → buyer pre-fills $X, can override on-chain
  *
  * Future types (wired into the universal manifest in a single place):
- *   hire      â†’ delegates to /api/actions/hire/[slug]/spawn
- *   fund      â†’ opens + funds a Pact (delegates to /api/agents/spawn)
- *   revoke    â†’ delegates to /api/actions/revoke/[card]
+ *   hire      → delegates to /api/actions/hire/[slug]/spawn
+ *   fund      → opens + funds a Pact (delegates to /api/agents/spawn)
+ *   revoke    → delegates to /api/actions/revoke/[card]
  *
  * URL params:
  *   amount    decimal USDC (e.g. "5", "0.50"). Optional; spec param `{amount}` for the

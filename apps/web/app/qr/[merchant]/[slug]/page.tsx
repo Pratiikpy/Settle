@@ -87,7 +87,7 @@ export default function QrPage() {
     <W6AppShell forceSurface="merchant">
       <div style={{ maxWidth: 880 }}>
         <Link href={`/at/${params.merchant}`} className="text-xs text-[#71717a] hover:text-accent">
-          â† Profile
+          ← Profile
         </Link>
 
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">
