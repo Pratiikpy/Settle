@@ -13,6 +13,8 @@ Last full judge pass: **2026-05-07 (third run)** — 42/42 OK, 0 console errors,
    curl -sS https://use-settle.vercel.app/api/receipts/93de12a1-01c1-4fc8-83c0-1bff28f5a870/verify | grep -q '"ok":true' && echo VERIFY:OK || echo VERIFY:FAIL
    ```
 
+**Note**: the receipt-stamp pattern uses `verify-row-receipt` (a stable test-id) instead of "PROOF · ON-CHAIN" because the middle-dot character is UTF-8 `c2 b7` and trips up byte-naive grep regex.
+
 2. If all green → append `OK <timestamp>` to `apps/web/e2e/loop-log.md` and reschedule.
 
 3. If any FAIL → investigate the specific endpoint, attempt fix, commit + push, reschedule.
