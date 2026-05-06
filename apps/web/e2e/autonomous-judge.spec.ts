@@ -141,12 +141,16 @@ test.describe("Autonomous judge pass", () => {
 
     for (const [path, name] of publicRoutes) {
       await safeStep(page, name, async () => {
+        // /watch holds a streaming connection so networkidle never fires;
+        // domcontentloaded is enough for the SSR + initial paint snapshot.
+        const waitUntil =
+          path === "/watch" || path.startsWith("/watch") ? "domcontentloaded" : "networkidle";
         await page.goto(`${PREVIEW}${path}`, {
-          waitUntil: "networkidle",
-          timeout: 25_000,
+          waitUntil,
+          timeout: 30_000,
         });
         // Let dynamic content settle (counter animations, lazy images).
-        await page.waitForTimeout(2_500);
+        await page.waitForTimeout(3_000);
       });
     }
 
