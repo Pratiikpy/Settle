@@ -103,7 +103,29 @@ let v = verify_receipt(&VerifyInput { receipt, reason, policy_snapshot,
 // v.ok ⇒ all 4 hashes match
 ```
 
-All three call sites compute the same 4 BLAKE3 hashes from the same canonical-JSON encoding. Cross-language parity is enforced by [`packages/python-sdk/test_kernel_parity.py`](packages/python-sdk/test_kernel_parity.py) and [`test_parity.py`](packages/python-sdk/test_parity.py) — the Python suite hashes shared fixtures and compares against precomputed TS + Rust outputs.
+All three call sites compute the same 4 BLAKE3 hashes from the same canonical-JSON encoding. Cross-language parity is enforced by [`packages/python-sdk/test_kernel_parity.py`](packages/python-sdk/test_kernel_parity.py) and [`test_parity.py`](packages/python-sdk/test_parity.py): the Python suite hashes shared fixtures and compares against precomputed TS + Rust outputs.
+
+#### Run the parity demo yourself
+
+One command runs the receipt kernel in all three SDKs against a locked input and prints the side-by-side hashes:
+
+```bash
+pnpm demo:parity
+```
+
+```
+hash                  TypeScript        Python            Rust              match
+─────────────────────────────────────────────────────────────────────────────────
+receipt_hash          095a40c24988…     095a40c24988…     095a40c24988…       ✓
+reason_hash           320e5f7ee4bd…     320e5f7ee4bd…     320e5f7ee4bd…       ✓
+policy_snapshot_hash  203bceb4b5d4…     203bceb4b5d4…     203bceb4b5d4…       ✓
+purpose_hash          ac9a1f2e6aad…     ac9a1f2e6aad…     ac9a1f2e6aad…       ✓
+context_hash          6bb849195e12…     6bb849195e12…     6bb849195e12…       ✓
+
+✓ All 5 hashes match across TypeScript, Python, and Rust.
+```
+
+The same canonical input goes through `packages/sdk` (TypeScript), `packages/python-sdk` (Python, also published on PyPI as `settle-protocol-sdk`), and `packages/rust-sdk` (Rust). Five separate BLAKE3 hashes per receipt, all five identical across runtimes. This is the proof behind the "byte-identical SDK parity" claim and is reproducible by any reviewer in under 60 seconds.
 
 ---
 
