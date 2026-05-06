@@ -56,16 +56,18 @@ test("DEEP-13: Alice grants Bob a weekly allowance — UI form → API 200 → l
     const allInputs = await page.locator("input[inputmode='decimal']").all();
     console.log(`[DEEP-13] Found ${allInputs.length} decimal inputs`);
     if (allInputs.length >= 2) {
-      await allInputs[0].fill("10.00");
-      await allInputs[1].fill("2.00");
+      // Length check above makes these safe; TS noUncheckedIndexedAccess
+      // can't narrow array bounds via .length, so non-null assert.
+      await allInputs[0]!.fill("10.00");
+      await allInputs[1]!.fill("2.00");
     } else {
       // Fallback: use sibling inputs of the kid input within the form section
       const formInputs = await page.locator("section input").all();
       console.log(`[DEEP-13] Fallback: ${formInputs.length} inputs in section`);
       // Skip the kid pubkey input (index 0), fill the next two
       if (formInputs.length >= 3) {
-        await formInputs[1].fill("10.00");
-        await formInputs[2].fill("2.00");
+        await formInputs[1]!.fill("10.00");
+        await formInputs[2]!.fill("2.00");
       }
     }
 
