@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { WalletButton } from "./wallet-button-client";
 import { W6Logo } from "@settle/ui";
 
@@ -66,12 +67,32 @@ const W6_REDESIGNED_PREFIXES = [
  */
 export function Header() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  // Bug #49 fix: SSR was rendering the legacy header on / (the landing
+  // page) because the static-prerender path was producing the legacy
+  // chrome before the W6 layout took over. Two-stage guard:
+  //   (1) never render on SSR/initial hydration — that kills the flash
+  //   (2) on client, apply the path allowlist
+  // Trade-off: legacy pages briefly show no header on first paint. That's
+  // strictly better than the landing rendering double headers stacked.
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  // Defensive: handle missing/empty pathname as "hide" (safer default).
+  if (!pathname || pathname === "/" || pathname === "") {
+    return null;
+  }
+
   if (
-    pathname === "/" ||
-    W6_REDESIGNED_PREFIXES.some((p) => p !== "/" && pathname?.startsWith(p))
+    W6_REDESIGNED_PREFIXES.some((p) => p !== "/" && pathname.startsWith(p))
   ) {
     return null;
   }
+
   return (
     <header
       style={{
