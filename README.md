@@ -16,6 +16,8 @@ Settle is the trust layer that sits between humans and the AI agents they hand a
 
 **[use-settle.vercel.app](https://use-settle.vercel.app)** · [▶ Watch the 4-min demo](https://youtu.be/UB_qD_q6Kes) · [Verify a receipt](https://use-settle.vercel.app/verify) · Anchor program [`HU4piq8…77nD`](https://solscan.io/account/HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD?cluster=devnet) on devnet
 
+**🏆 Solana Frontier Hackathon submission** — [📊 Pitch deck (PDF)](./docs/Settle-pitch-deck.pdf) · [🧪 Verify everything in 53s](#judge-fastest-path-to-verify-everything) · [📋 PROOF.md](./PROOF.md) · [📖 Session report](./docs/SESSION_REPORT.md) · [🛠 Operator handoff](./docs/OPERATOR_HANDOFF.md)
+
 **In the box:** 2 Anchor programs (settle-agent-card 0.31, settle-dwallet-router 1.0 cross-chain) · 15 instructions on the main program · 4 hashes per receipt · 3 SDK runtimes (TS / Python on PyPI / Rust, byte-identical) · 1 cross-chain extension via [Ika](https://ika.xyz) (Solana → Ethereum Sepolia) · on-chain bytecode verification at [`/verify-build`](https://use-settle.vercel.app/verify-build) · 199 SDK unit tests + Playwright E2E + cross-language parity in CI
 
 **Status:** devnet today · mainnet after audit ([`SECURITY.md`](./SECURITY.md))
@@ -30,6 +32,27 @@ No install needed. All four work on devnet right now:
 2. **Send a payment** → [`/start/consumer`](https://use-settle.vercel.app/start/consumer) — connect Phantom, take a sandbox airdrop, send to `@alice`.
 3. **Hire your own agent** → [`/start/agent`](https://use-settle.vercel.app/start/agent) — pick a budget and what it can buy; revoke in one tx.
 4. **Verify a receipt without us** → paste `ca50ca04e587acecbfefdab0bfdcee5351a521f33797d201417a9c3a238cc902` into [`/verify`](https://use-settle.vercel.app/verify) — the SDK re-derives all 4 BLAKE3 hashes in your browser tab.
+
+---
+
+## Judge: fastest path to verify everything
+
+```bash
+git clone https://github.com/Pratiikpy/Settle.git
+cd Settle/apps/web && node e2e/phantom-qa/run-all.mjs
+# 12/12 PASS in ~53 seconds against live production
+```
+
+That single command exercises every layer in sequence:
+
+- 2-wallet split-bill + 3-wallet group voting (with quorum + double-vote/forge negatives)
+- TypeScript SDK + MCP middleware + webhook HMAC + `create-settle-merchant` CLI
+- Real on-chain receipt import + `/api/verify/<hash>` roundtrip
+- Federation visibility + `/api/preflight` operational diagnostics
+
+**On-chain proofs** (every signature is Solscan-viewable on devnet — see [`PROOF.md`](./PROOF.md)): every Anchor instruction landed end-to-end, including the marquee `spend_via_pact` runtime proof tx [`4ZzgMFwQ…vz6u`](https://solscan.io/tx/4ZzgMFwQQC87E9zxirFj8abogzbVmmZnogXboQGaBYogD9ah5FkKpRo3iQC28wMjAAgdVbnNdChwLnkznDS5vz6u?cluster=devnet) and a real consumer SPL transfer [`2s71RsGr…jNMk`](https://solscan.io/tx/2s71RsGrSML2Qu2eabEbkSg8aeMtHX2E9vhWvSMiM7N8KgGdwuMyMnVuWoBsCsJMRUZ61RWMXpeWUnHtH5kGjNMk?cluster=devnet).
+
+**Click-and-see-VERIFIED-instantly:** [`/r/87d94764-cfdb-43c9-9361-18d00bde66ee`](https://use-settle.vercel.app/r/87d94764-cfdb-43c9-9361-18d00bde66ee) — a real imported receipt rendering with all 4 BLAKE3 hashes ✓ matching, computed client-side in your browser. No Settle server in the trust path.
 
 ---
 
