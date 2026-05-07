@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Connection, PublicKey, Transaction, clusterApiUrl } from "@solana/web3.js";
 import { createClient } from "@supabase/supabase-js";
 import {
+  createCardIx,
   findAgentCardPda,
   findPactPda,
   findPactVaultPda,
@@ -205,6 +206,39 @@ export async function POST(
 
   const usdcMint = new PublicKey(getUsdcMint());
 
+  // Bundle a create_card ix if the parent AgentCard doesn't exist yet.
+  // First-time hires don't need to detour through /cards/new — the same
+  // signature creates both the parent budget and the scoped pact.
+  const parentInfo = await connection.getAccountInfo(parentCardPda);
+
+  const tx = new Transaction();
+
+  if (!parentInfo) {
+    // Parent doesn't exist — create it first. Cap defaults: $50 daily,
+    // $5 per-call, 30-day expiry, empty allowlist (Pact-level allowlist
+    // will gate spend). Operators who want different parent defaults
+    // can have users open /cards/new first.
+    const parentDailyCap = 50_000_000n; // $50 USDC in lamports (6 decimals)
+    const parentPerCallMax = 5_000_000n; // $5 USDC per call
+    const parentExpiry = BigInt(currentSlot + 30 * 24 * 60 * 150); // ~30 days
+    tx.add(
+      createCardIx({
+        authority,
+        card: parentCardPda,
+        usdcMint,
+        args: {
+          agentPubkey: authority,
+          labelHash: parentLabelHash,
+          dailyCapLamports: parentDailyCap,
+          perCallMaxLamports: parentPerCallMax,
+          allowlist: [],
+          expirySlot: parentExpiry,
+          policyVersion: 1,
+        },
+      }),
+    );
+  }
+
   const ix = openPactIx({
     authority,
     parentCard: parentCardPda,
@@ -222,7 +256,7 @@ export async function POST(
   });
   void vaultPda;
 
-  const tx = new Transaction().add(ix);
+  tx.add(ix);
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
   tx.recentBlockhash = blockhash;
   tx.lastValidBlockHeight = lastValidBlockHeight;
