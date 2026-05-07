@@ -85,6 +85,29 @@ export default function HandleProfilePage() {
       cancelled = true;
     };
   }, [params.handle, connected, publicKey, router]);
+
+  // /at/<base58-pubkey> — when someone shares a wallet pubkey URL, reverse-resolve
+  // it to a claimed handle and redirect. Falls through to the "no handle claimed"
+  // empty state below if nothing is bound.
+  const looksLikePubkey =
+    typeof params.handle === "string" &&
+    /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(params.handle);
+  useEffect(() => {
+    if (!looksLikePubkey) return;
+    let cancelled = false;
+    void fetch(`/api/handles/by-pubkey?pubkey=${params.handle}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { handle?: string } | null) => {
+        if (cancelled) return;
+        if (data?.handle) router.replace(`/at/${data.handle}`);
+      })
+      .catch(() => {
+        /* fall through to empty state */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [looksLikePubkey, params.handle, router]);
   const requestedAmount = search?.get("req") ?? search?.get("amount") ?? null;
   const requestedNote = search?.get("note") ?? null;
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -200,6 +223,32 @@ export default function HandleProfilePage() {
   }
 
   if (!profile) {
+    // /at/<pubkey> with no claimed handle — surface an honest empty state
+    // that still makes the wallet reachable via /m/<pubkey> (merchant profile
+    // accepts raw pubkeys) instead of the generic "Profile unavailable".
+    if (looksLikePubkey) {
+      const short = `${params.handle.slice(0, 6)}…${params.handle.slice(-4)}`;
+      return (
+        <W6AppShell>
+          <div className="mx-auto max-w-md text-center" style={{ padding: "64px 24px" }}>
+            <h1 className="w6-heading" style={{ fontSize: 28, margin: 0 }}>
+              No handle claimed
+            </h1>
+            <p className="w6-muted" style={{ marginTop: 12, fontSize: 14 }}>
+              Wallet <code>{short}</code> hasn&apos;t claimed a Settle handle yet.
+            </p>
+            <div style={{ marginTop: 32, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href={`/m/${params.handle}`} className="w6-btn w6-btn-primary">
+                View as merchant
+              </Link>
+              <Link href={`/send?to=${params.handle}`} className="w6-btn">
+                Send to this wallet
+              </Link>
+            </div>
+          </div>
+        </W6AppShell>
+      );
+    }
     return (
       <W6AppShell>
         <div className="mx-auto max-w-md text-center" style={{ padding: "64px 24px" }}>
