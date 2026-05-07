@@ -528,9 +528,16 @@ export default function WishesPage() {
     const lamp = lamports(giftAmount);
     if (!lamp || !giftHandle || !giftEscrow)
       return toast.error("Handle + amount + escrow card required.");
+    if (!signMessage || !owner) return toast.error("Connect wallet first.");
+    let auth;
+    try {
+      auth = await fetchAuthHeaders(owner, signMessage);
+    } catch {
+      return toast.error("Wallet signature required.");
+    }
     const res = await fetch("/api/gift-sends", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
       body: JSON.stringify({
         sender_pubkey: owner,
         recipient_handle: giftHandle,
