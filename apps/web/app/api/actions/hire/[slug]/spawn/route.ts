@@ -39,28 +39,43 @@ interface TemplateRecord {
   label: string;
 }
 
+// Demo-merchant pubkeys baked in so the Hire button works out of the box
+// on any deploy, even before the operator sets the NEXT_PUBLIC_MERCHANT_*
+// env vars. These point at the user's existing devnet wallet (the one the
+// loop-state.md uses as the funded source) — judges can hire, the open_pact
+// ix is built against a real allowlist, the receipt commits on chain.
+//
+// Operators who want their own merchants for translate/summary/arxiv should
+// set the corresponding NEXT_PUBLIC_MERCHANT_* env vars on Vercel; those
+// take precedence over these defaults.
+const DEMO_MERCHANT_DEVNET = "B4cArR1M1MySM4dn4HeDdifdPiF98wTNmbzKYg6to2Cp";
+
 const FALLBACK_TEMPLATES: Record<string, TemplateRecord> = {
   research: {
     capUsdc: "0.50",
     expiryMinutes: 15,
     label: "research",
     merchantAllowlist: [
-      process.env.NEXT_PUBLIC_MERCHANT_ARXIV ?? "",
-      process.env.NEXT_PUBLIC_MERCHANT_TRANSLATE ?? "",
-      process.env.NEXT_PUBLIC_MERCHANT_SUMMARY ?? "",
+      process.env.NEXT_PUBLIC_MERCHANT_ARXIV ?? DEMO_MERCHANT_DEVNET,
+      process.env.NEXT_PUBLIC_MERCHANT_TRANSLATE ?? DEMO_MERCHANT_DEVNET,
+      process.env.NEXT_PUBLIC_MERCHANT_SUMMARY ?? DEMO_MERCHANT_DEVNET,
     ].filter(Boolean),
   },
   translate: {
     capUsdc: "0.30",
     expiryMinutes: 10,
     label: "translate",
-    merchantAllowlist: [process.env.NEXT_PUBLIC_MERCHANT_TRANSLATE ?? ""].filter(Boolean),
+    merchantAllowlist: [
+      process.env.NEXT_PUBLIC_MERCHANT_TRANSLATE ?? DEMO_MERCHANT_DEVNET,
+    ].filter(Boolean),
   },
   summary: {
     capUsdc: "0.05",
     expiryMinutes: 5,
     label: "summary",
-    merchantAllowlist: [process.env.NEXT_PUBLIC_MERCHANT_SUMMARY ?? ""].filter(Boolean),
+    merchantAllowlist: [
+      process.env.NEXT_PUBLIC_MERCHANT_SUMMARY ?? DEMO_MERCHANT_DEVNET,
+    ].filter(Boolean),
   },
 };
 
