@@ -239,6 +239,12 @@ export async function POST(
     );
   }
 
+  // Dedupe merchants — the on-chain allowlist check rejects duplicates
+  // with AnchorError OffAllowlist (6003). When the operator hasn't set
+  // distinct NEXT_PUBLIC_MERCHANT_* env vars per template, all three
+  // entries point at the same demo merchant; squash to one.
+  const dedupedAllowlist = Array.from(new Set(template.merchantAllowlist));
+
   const ix = openPactIx({
     authority,
     parentCard: parentCardPda,
@@ -247,7 +253,7 @@ export async function POST(
     args: {
       scopeLabelHash: scopeHash,
       capLamports,
-      allowlist: template.merchantAllowlist.map((p) => ({
+      allowlist: dedupedAllowlist.map((p) => ({
         merchant: new PublicKey(p),
         capabilityHash: null,
       })),
@@ -272,7 +278,7 @@ export async function POST(
   return NextResponse.json(
     {
       transaction: txBase64,
-      message: `Spawn Pact: ${template.label} (cap $${cap} USDC, ${template.merchantAllowlist.length} merchants, ${template.expiryMinutes}m). Sign to hire.`,
+      message: `Spawn Pact: ${template.label} (cap $${cap} USDC, ${dedupedAllowlist.length} merchants, ${template.expiryMinutes}m). Sign to hire.`,
     },
     { headers: CORS },
   );
