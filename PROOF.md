@@ -78,17 +78,23 @@ Output (last run):
 
 ## What still requires operator action
 
-- **Phantom dApp warning** — email `review@phantom.com` to delist `use-settle.vercel.app`.
-- **Webhook live delivery** — insert a row in `verified_merchants` for the test wallet (auth chain already proven via `handle-claim-webhook.mjs`).
-- **`SETTLE_RELAYER_PRIVKEY`** — set on Vercel for `phase5-signer` cron to fire `scheduled_send` on the post-fix binary.
+See [`docs/OPERATOR_HANDOFF.md`](./docs/OPERATOR_HANDOFF.md) for copy-paste commands.
+
+- **Phantom dApp warning** — email `review@phantom.com` to delist `use-settle.vercel.app`. Multi-stage warning chain is bypassable but is a poor first impression.
+- **`SETTLE_WEBHOOK_SIGNING_SECRET`** — currently unset on Vercel. Live webhooks ship unsigned until set; the `verifyWebhookSignature` chain (8/8 driver-proven) activates immediately when the env var lands.
+- **`agent_cards` Supabase mirror** — has hours-of-lag for fresh on-chain cards. Manual SQL seed (template in `OPERATOR_HANDOFF.md`) unblocks `phase5-signer` to fire on the post-fix binary.
 
 ## Documents
 
-- `docs/SESSION_REPORT.md` — full evidence pack with every commit hash
-- `docs/BUG_26_DEPLOY_LOG.md` — Bug #26 byte-equality proof + on-chain redeploy log
-- `apps/web/e2e/phantom-qa/MISSION.md` — original mission file, status updated this session
+- [`docs/Settle-pitch-deck.pdf`](./docs/Settle-pitch-deck.pdf) — 14-slide hackathon pitch deck
+- [`docs/SESSION_REPORT.md`](./docs/SESSION_REPORT.md) — full evidence pack with every commit hash
+- [`docs/BUG_26_DEPLOY_LOG.md`](./docs/BUG_26_DEPLOY_LOG.md) — Bug #26 byte-equality proof + on-chain redeploy log
+- [`docs/OPERATOR_HANDOFF.md`](./docs/OPERATOR_HANDOFF.md) — copy-paste commands for the 4 remaining operator-side actions
+- [`apps/web/e2e/phantom-qa/MISSION.md`](./apps/web/e2e/phantom-qa/MISSION.md) — original mission file, every ⚠️ now ✅
+- [`apps/web/e2e/phantom-qa/run-all.mjs`](./apps/web/e2e/phantom-qa/run-all.mjs) — 12-driver master orchestrator, runs against live production in ~53s
 
 ## Key wallets
 
-- **`B4cArR1M1MySM4dn4HeDdifdPiF98wTNmbzKYg6to2Cp`** — operator's `id.json`, program upgrade authority, has 19+ USDC + 7 SOL on devnet, claimed handle `@b4testv9l8cq`.
-- **Anchor program:** `HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD` (post-Bug-26 fix live at slot 460677446).
+- **`B4cArR1M1MySM4dn4HeDdifdPiF98wTNmbzKYg6to2Cp`** — operator id.json, program upgrade authority, claimed handle `@b4testvl23aa` on devnet.
+- **Anchor program:** `HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD` (post-Bug-26 fix live at slot **460677446**).
+- **Production relayer:** `C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY` (per `/api/preflight`).

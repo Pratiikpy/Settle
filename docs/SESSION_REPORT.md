@@ -6,19 +6,15 @@
 
 ## TL;DR
 
-- **14 production bugs fixed + verified live**, including one 4-day-old
-  on-chain blocker (Bug #26 — `spend_via_pact` BPF stack overflow), six
-  trust-the-body security holes, and the longest-standing UI dead-end (`/at/<pubkey>`).
-- **Bug #26 closed at every layer:** source → binary → on-chain redeploy → runtime.
-- **Every Anchor instruction proven on-chain:** create_card, open_pact,
-  spend_via_pact (allow + deny over cap + deny revoked), revoke, close_pact,
-  open_streaming_pact, claim_streaming.
-- **9 reusable programmatic drivers** for every consumer flow (split-bill,
-  groups, handle-claim, webhook gate, real on-chain send, streaming Pact, etc.).
-- **TS + Python SDKs both verified** end-to-end against production.
-- **Multi-wallet flows proven** (2-wallet split-bill, 3-wallet groups).
-- **WSL toolchain bootstrapped** (Solana CLI 1.18.26 + Rust 1.95) for any
-  future on-chain work.
+- **14 production bugs fixed + verified live**, including a 4-day on-chain blocker (Bug #26 — `spend_via_pact` BPF stack overflow), six trust-the-body security holes (15 endpoints hardened via shared `requireOwnerAuth` helper), and the longest-standing UI dead-end (`/at/<pubkey>`).
+- **Bug #26 closed at every layer:** source → binary → on-chain redeploy (slot 460677446) → runtime proof tx `4ZzgMFwQ…vz6u`.
+- **Every Anchor instruction proven on-chain:** `create_card`, `open_pact`, `spend_via_pact` (allow + over-cap deny + post-revoke deny), `revoke`, `close_pact`, `open_streaming_pact`, `claim_streaming`. Nine Solscan-viewable signatures indexed in [`PROOF.md`](../PROOF.md).
+- **21 reusable programmatic drivers** + master orchestrator (`run-all.mjs` → 12/12 PASS in ~53s against live production).
+- **All four developer surfaces verified end-to-end:** `@settle/sdk` (TS, 8/8), `settle-protocol-sdk` (Python ✅), `@settle/mcp-middleware` (8/8), `create-settle-merchant` CLI (8/8), webhook HMAC sign+verify roundtrip (8/8 with 6 negative tests).
+- **Multi-wallet flows proven:** 2-wallet split-bill, 3-wallet group voting (with quorum + double-vote rejection + signature-forgery rejection).
+- **Real on-chain SPL transfer** broadcast and confirmed (tx `2s71RsGr…jNMk`).
+- **82 fullPage Phantom-extension screenshots** across iter22 (10) + iter23 (6) + iter24 (66 — every major route).
+- **WSL toolchain bootstrapped** (Solana CLI 1.18.26 + Rust 1.95) — persists for future on-chain work.
 
 ---
 
