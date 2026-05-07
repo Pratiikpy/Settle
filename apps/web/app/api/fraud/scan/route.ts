@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireOwnerAuth } from "../../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,6 +55,10 @@ export async function POST(req: NextRequest) {
   if (!body.pubkey || !PUBKEY_RE.test(body.pubkey)) {
     return NextResponse.json({ error: "invalid_pubkey" }, { status: 400 });
   }
+  // Bug #60 — fraud_flags affects reputation/trust score. Without auth,
+  // anyone could poison victim's flags and crater their score.
+  const authFail = await requireOwnerAuth(req, body.pubkey);
+  if (authFail) return authFail;
 
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

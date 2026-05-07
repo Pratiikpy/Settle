@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { kernelCommit } from "@settle/sdk";
 import { randomUUID } from "node:crypto";
+import { requireOwnerAuth } from "../../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -171,6 +172,11 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
+  // Bug #60 — closes the dev TODO at top of file ("signed-auth version
+  // is a follow-up"). Without auth, anyone could trigger Solana RPC
+  // fetches + receipts inserts attributed to attacker-supplied caller_pubkey.
+  const authFail = await requireOwnerAuth(req, parsed.data.caller_pubkey);
+  if (authFail) return authFail;
 
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
