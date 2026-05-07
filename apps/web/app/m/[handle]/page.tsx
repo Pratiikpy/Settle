@@ -97,6 +97,20 @@ export default async function MerchantProfile({
   params: Promise<{ handle: string }>;
 }) {
   const { handle } = await params;
+
+  // /m/me — when a user types the literal "me" handle, render a
+  // client-side resolver that looks up their wallet's merchant handle
+  // (if any) or shows a "claim merchant handle" CTA. Server component
+  // can't read the wallet, so this is a small client island.
+  if (handle === "me") {
+    const { MerchantMeResolver } = await import("./me-resolver");
+    return (
+      <W6AppShell forceSurface="merchant">
+        <MerchantMeResolver />
+      </W6AppShell>
+    );
+  }
+
   const profile = await fetchProfile(handle);
   if (!profile) notFound();
 

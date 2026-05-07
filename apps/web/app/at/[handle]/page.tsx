@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Link from "next/link";
 import { HandleBadge, TrustScoreBadge } from "@settle/ui";
@@ -60,8 +60,31 @@ interface FollowStats {
 
 export default function HandleProfilePage() {
   const params = useParams<{ handle: string }>();
+  const router = useRouter();
   const search = useSearchParams();
   const { connected, publicKey, signMessage } = useWallet();
+
+  // /at/me — when a user types the literal "me" handle, transparently
+  // resolve their wallet's claimed handle and redirect. Falls through
+  // to the "@me not found" empty-state if the wallet isn't connected
+  // or has no handle, which is still the right behavior.
+  useEffect(() => {
+    if (params.handle !== "me") return;
+    if (!connected || !publicKey) return;
+    let cancelled = false;
+    void fetch(`/api/handles/by-pubkey?pubkey=${publicKey.toBase58()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { handle?: string } | null) => {
+        if (cancelled) return;
+        if (data?.handle) router.replace(`/at/${data.handle}`);
+      })
+      .catch(() => {
+        /* fall through to empty state */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.handle, connected, publicKey, router]);
   const requestedAmount = search?.get("req") ?? search?.get("amount") ?? null;
   const requestedNote = search?.get("note") ?? null;
   const [profile, setProfile] = useState<Profile | null>(null);

@@ -52,7 +52,10 @@ interface ClosedMessage {
 
 export default function EmbedPayPage() {
   const params = useSearchParams();
-  const merchant = params.get("merchant") ?? "";
+  // Accept `to=` as an alias for `merchant=` — historically /embed/pay only
+  // documented `merchant`, but `to` is the natural shorthand a developer
+  // copying the /send query shape will reach for. Either is fine.
+  const merchant = params.get("merchant") ?? params.get("to") ?? "";
   const amount = params.get("amount") ?? "";
   const note = params.get("note") ?? "";
   const capability = params.get("capability") ?? "";
