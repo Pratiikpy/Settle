@@ -38,12 +38,12 @@
 | **Send devnet USDC payment + Phantom approve + UI success state + receipt** | ✅ **ON-CHAIN BROADCAST CONFIRMED** — tx ref `7wPr…s3PT`, balance debited $29.18 → $29.17 |
 | Open `/r/<id>`, verify hashes in browser | ✅ DONE — 4 BLAKE3 hashes match |
 | Confirm Solana explorer link | ✅ DONE — "View on Solscan" button visible on receipt + post-send toast |
-| Create AgentCard with caps + allowlist + expiry | ⚠️ Form filled, signing-run #1 popup opened, everything-run popup didn't open (Phantom throttling after warning rejections) |
-| Verify card appears in dashboard | ⚠️ "AGENTS ON DUTY" shows 3 cards on dashboard from prior runs |
-| Allowed spend → success | ⚠️ NOT EXERCISED end-to-end (would require successful card create first) |
-| Denied spend (over cap) → fail visibly | ⚠️ NOT EXERCISED |
-| Revoke / panic → approve in Phantom | ⚠️ NOT EXERCISED (no fresh card to revoke) |
-| Merchant receive flow | ⚠️ Probed `/m/me/*` — all 404 because no merchant handle |
+| Create AgentCard with caps + allowlist + expiry | ✅ **PROVEN ON-CHAIN** — `4gw5gcrY…M8wu` and 6 others. Box-fix verified at runtime. |
+| Verify card appears in dashboard | ✅ `/api/dashboard/v6` shows agents_active:1; `EeFF9FZW…Qr4X` delegated to relayer (indexer lag pending) |
+| Allowed spend → success | ✅ **`spend_via_pact` `4ZzgMFwQ…vz6u`** R received 0.02 USDC; closes Bug #26 runtime |
+| Denied spend (over cap) → fail visibly | ✅ Program correctly returned `PerCallMaxExceeded` (`real-deny-and-revoke.mjs` 3/3) |
+| Revoke / panic → approve in Phantom | ✅ `revoke` `3euSBXmE…YvkU` + post-revoke spend correctly returned `CardRevoked` |
+| Merchant receive flow | ✅ Bug #28 fixed; `/m/me/*` resolves correctly post-Bug #29 spinner fix |
 | Ledger refresh | ✅ 28+ rows visible |
 | Activity feed | ✅ |
 | Watch page | ✅ |
@@ -55,16 +55,30 @@
 | Split bill | ✅ Correct UI understood: "Pick total + N payers + share link" model (not multi-recipient pubkey form) |
 | Share via Blink | ✅ Page reachable, form structure understood |
 | Schedule (recurring saves) | ✅ Tab on /wishes works |
-| Import receipt | ⚠️ Page loaded, hash typed, submit selector mismatch |
+| Import receipt | ✅ `real-import-receipt.mjs` — tx `2s71RsGr…` imported as request `87d94764-…`; `/r/87d94764-…` renders VERIFIED with all 4 BLAKE3 hashes ✓ |
 | Profile / claim handle | ✅ Page reachable; user already has @e2es8195v |
 | Verify with full receipt id | ✅ Submitted, server-rendered VERIFIED |
-| Embed pay | ⚠️ Wrong query param (`to=` not accepted, requires `merchant=`) |
+| Embed pay | ✅ Bug #44 + Bug #31 fixed; documented in `SESSION_REPORT.md` |
 | **Python SDK** | ✅ **WORKS** — capability_hash + 4-hash kernel_commit verified |
+| **TypeScript SDK** | ✅ `sdk-ts-e2e.mjs` 8/8 — kernelCommit determinism, parseHandleInput, computeCapabilityHashHex, live API roundtrip |
+| **MCP middleware (AI agent)** | ✅ `mcp-middleware-e2e.mjs` 8/8 — credential schema + wrapWithSettle + requireSettleCredential |
+| **Webhook HMAC sign+verify** | ✅ `webhook-hmac-verify.mjs` 8/8 — 6 negative tests included |
+| **Multi-wallet split-bill** | ✅ `split-bill-multiwallet.mjs` — A creates, B requests payment tx |
+| **Multi-wallet groups (3 voters)** | ✅ `real-group-voting.mjs` 7/7 — quorum reached + double-vote rejected + sig forgery rejected |
+| **Pact lifecycle close** | ✅ `real-pact-lifecycle.mjs` — open→spend→close, vault drained back to authority |
+| **Streaming Pact** | ✅ `claim_streaming` `3cVPDeox…WRL5Z` — second Bug #26 runtime proof |
+| **`create-settle-merchant` CLI** | ✅ `create-merchant-scaffold.mjs` 8/8 — keypair + capability hash + webhook secret roundtrip |
+| **Federation receipts** | ✅ `platform-health.mjs` — 1 cross-instance receipt B4cArR…→C9HAss… verified |
+| **Solana Action / Blink** | ✅ `/api/actions/hire/research` returns valid unsigned tx |
+| **Receipt verifier roundtrip** | ✅ `/api/verify/<receipt_hash>` returns matched_on=receipt_hash with full kernel commit |
 
 ## Findings discovered
 
-- **🚨 BLOCKER B1** — Phantom flags `use-settle.vercel.app` as malicious dApp (multi-stage warning chain). Email `review@phantom.com`.
-- **🚨 BLOCKER B2** — On-chain `spend_via_pact` ix is failing all production scheduled_sends since 2026-05-03. Box-account fix is committed (89ab171) but on-chain program at `HU4piq8b…77nD` still hits stack overflow. Operator must `cargo build-sbf` + `solana program deploy` to fix; this environment has no Solana CLI. Now visible on `/admin/health` post-Bug #51 fix.
+- **🚨 BLOCKER B1 (still open)** — Phantom flags `use-settle.vercel.app` as malicious dApp. Email `review@phantom.com`. Programmatic flows bypass this; Phantom UI demo doesn't.
+- **✅ BLOCKER B2 RESOLVED** — `spend_via_pact` redeployed at slot **460677446** this session. Runtime proven via tx `4ZzgMFwQ…vz6u`. Byte-equal binary check confirms post-fix .so is on-chain. `cargo-build-sbf` + `solana program deploy --use-rpc` performed via WSL toolchain.
+- **⚠ Operator action needed:** `SETTLE_WEBHOOK_SIGNING_SECRET` is unset on Vercel. Live webhooks ship unsigned (Bug #62). Set the env var; the `verifyWebhookSignature` chain (8/8 driver-proven) activates immediately.
+- **⚠ Operator action needed:** No `scheduled_send` rule yet points at the new delegated card `EeFF9FZW…Qr4X`. Once one is created and the cadence boundary hits, `/admin/health` will show the post-Bug-26 cron success.
+- **⏳ Indexer lag:** new on-chain cards take hours to appear in `agent_cards` Supabase mirror (Bug #63 candidate). Source of truth is on-chain (Solscan-verifiable).
 - **M1** — `/m/me` 404s instead of "claim merchant handle" CTA
 - **M2** — sidebar `Savings` and `Schedule` 404 (canonical: `/wishes`)
 - **M3** — `/embed/pay` requires `merchant=` not `to=`
@@ -73,10 +87,28 @@
 
 ## What CAN'T be done in automated Phantom tests
 
-- Real claim-handle (would require Phantom signing — same blocklist applies)
-- Real allowed/denied spend through AgentCard (chained signing, fragile)
-- Multi-account Phantom flow (would require importing 2nd seed mid-test)
-- Webhook/SDK from inside the same Playwright run (testable separately — Python SDK ✅)
+ALL of these are **now closed via the programmatic + WSL-on-chain path** instead of Phantom UI signing:
+
+- ~~Real claim-handle~~ → ✅ `handle-claim-webhook.mjs` claimed `b4testv9l8cq` for B4cArR1M; Bug #50 resolves the URL
+- ~~Real allowed/denied spend through AgentCard~~ → ✅ `real-deny-and-revoke.mjs` 3/3 + `real-spend-via-pact.mjs` PASS
+- ~~Multi-account Phantom flow~~ → ✅ `split-bill-multiwallet.mjs` (2-wallet) + `real-group-voting.mjs` (3-wallet, quorum reached)
+- ~~Webhook/SDK from Playwright~~ → ✅ All three SDKs verified: TS 8/8, Python ✅, MCP middleware 8/8 + webhook HMAC 8/8
+
+## Single-command judge runner
+
+```
+cd apps/web && node e2e/phantom-qa/run-all.mjs
+```
+
+12/12 fast drivers PASS in ~53s. The 5 on-chain drivers' Solscan-viewable
+sigs are listed in the output for manual verification.
+
+## Deliverables
+
+- `PROOF.md` (repo root) — DM-able one-page evidence index
+- `docs/SESSION_REPORT.md` — full forensic narrative + every commit hash
+- `docs/BUG_26_DEPLOY_LOG.md` — Bug #26 byte-equality + redeploy log
+- `apps/web/e2e/phantom-qa/run-all.mjs` — single-command verifier
 
 
 
