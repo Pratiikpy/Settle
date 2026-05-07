@@ -1,9 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { authFromRequest } from "../../../lib/wallet-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/**
+ * Bug #53 — wallet-sig auth on write paths.
+ *
+ * POST/PATCH/DELETE all take owner_pubkey from the body. Without auth
+ * any caller could spam a victim's /wishes page with unwanted buckets,
+ * rename them, or delete them. The fix: require the caller to sign as
+ * the owner_pubkey they're claiming. GETs stay public — the directory
+ * of one's own buckets is intentionally readable by anyone (no PII
+ * beyond the bucket label).
+ */
+async function requireOwnerAuth(
+  req: NextRequest,
+  claimedOwner: string,
+): Promise<{ ok: true } | { ok: false; status: number; body: object }> {
+  const auth = await authFromRequest(req);
+  if (!auth || !auth.ok) {
+    return {
+      ok: false,
+      status: 401,
+      body: { error: "auth_required", reason: auth?.ok === false ? auth.reason : "missing" },
+    };
+  }
+  if (auth.pubkey !== claimedOwner) {
+    return {
+      ok: false,
+      status: 403,
+      body: { error: "owner_mismatch", message: "signed pubkey does not match owner_pubkey in body" },
+    };
+  }
+  return { ok: true };
+}
 
 /**
  * F7.5 — Save-for-X buckets CRUD.
@@ -84,6 +117,10 @@ export async function POST(req: NextRequest) {
     );
   }
   const v = parsed.data;
+  const authCheck = await requireOwnerAuth(req, v.owner_pubkey);
+  if (!authCheck.ok) {
+    return NextResponse.json(authCheck.body, { status: authCheck.status });
+  }
   const sb = getSb();
   if (!sb) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
   const { data, error } = await sb
@@ -116,6 +153,10 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
   const v = parsed.data;
+  const authCheck = await requireOwnerAuth(req, v.owner_pubkey);
+  if (!authCheck.ok) {
+    return NextResponse.json(authCheck.body, { status: authCheck.status });
+  }
   const update: Record<string, unknown> = {};
   if (v.holding_card !== undefined) update.holding_card = v.holding_card;
   if (v.label !== undefined) update.label = v.label;
@@ -145,6 +186,10 @@ export async function DELETE(req: NextRequest) {
   }
   if (!body.bucket_id || !body.owner_pubkey) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  }
+  const authCheck = await requireOwnerAuth(req, body.owner_pubkey);
+  if (!authCheck.ok) {
+    return NextResponse.json(authCheck.body, { status: authCheck.status });
   }
   const sb = getSb();
   if (!sb) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
