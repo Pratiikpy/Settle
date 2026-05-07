@@ -614,11 +614,19 @@ export default function SendPage() {
                 </div>
                 <div
                   className="w6-heading"
-                  style={{ fontSize: 48, lineHeight: 0.95 }}
+                  style={{
+                    fontSize: 48,
+                    lineHeight: 0.95,
+                    color: parseFloat(amount || "0") === 0 ? "var(--w6-ink-3)" : undefined,
+                  }}
                 >
                   {(() => {
                     const n = parseFloat(amount || "0");
-                    if (n === 0) return "$0.00";
+                    // Empty-state framing: "Choose amount" reads as a hint,
+                    // not as a $0 wallet balance. The label below shows the
+                    // token + recipient placeholder so the panel still
+                    // explains what's happening.
+                    if (n === 0) return "Choose amount";
                     if (n < 0.01) return `$${n.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`;
                     return `$${n.toFixed(2)}`;
                   })()}

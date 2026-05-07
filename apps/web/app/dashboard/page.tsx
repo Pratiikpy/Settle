@@ -620,7 +620,25 @@ function AgentRow({
   const displayLabel =
     label && label.length > 0 ? label : `Card · ${cardPubkey.slice(0, 4)}`;
   return (
-    <div style={{ display: "flex", gap: 12 }}>
+    <Link
+      href={`/cards/${cardPubkey}`}
+      style={{
+        display: "flex",
+        gap: 12,
+        textDecoration: "none",
+        color: "inherit",
+        padding: 4,
+        marginInline: -4,
+        borderRadius: 6,
+        transition: "background 120ms ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "var(--w6-rule-2)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+    >
       <div
         style={{
           width: 32,
@@ -673,7 +691,7 @@ function AgentRow({
           />
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
