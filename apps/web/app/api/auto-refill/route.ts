@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { requireOwnerAuth } from "../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -90,6 +91,8 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
+  const authFail = await requireOwnerAuth(req, parsed.data.owner_pubkey);
+  if (authFail) return authFail;
   const sb = getSb();
   if (!sb) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
 
@@ -154,6 +157,8 @@ export async function DELETE(req: NextRequest) {
       { status: 400 },
     );
   }
+  const authFail = await requireOwnerAuth(req, parsed.data.owner_pubkey);
+  if (authFail) return authFail;
   const sb = getSb();
   if (!sb) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
 

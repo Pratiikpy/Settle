@@ -8,6 +8,7 @@ import { formatUsdc } from "@settle/sdk";
 import { W6AppShell } from "../../components/w6-app-shell";
 import { LocaleSwitcher } from "../../components/locale-switcher";
 import { useTranslate } from "../../lib/i18n";
+import { fetchAuthHeaders, asAuthHeaders } from "../../lib/client-auth";
 
 /**
  * F7.3 + F7.5 + F7.6 + F7.10 — "Wishes" page.
@@ -77,7 +78,7 @@ const ROUND_PRESETS: Array<{ value: string; label: string }> = [
 ];
 
 export default function WishesPage() {
-  const { connected, publicKey, signTransaction } = useWallet();
+  const { connected, publicKey, signTransaction, signMessage } = useWallet();
   const { connection } = useConnection();
   const { t } = useTranslate();
   const owner = publicKey?.toBase58() ?? "";
@@ -188,9 +189,16 @@ export default function WishesPage() {
     const lamp = lamports(schedAmount);
     if (!lamp) return toast.error("Enter a valid USDC amount.");
     if (!schedDest) return toast.error("Recipient pubkey required.");
+    if (!signMessage) return toast.error("Connect wallet first.");
+    let auth;
+    try {
+      auth = await fetchAuthHeaders(owner, signMessage);
+    } catch {
+      return toast.error("Wallet signature required.");
+    }
     const res = await fetch("/api/scheduled-sends", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
       body: JSON.stringify({
         owner_pubkey: owner,
         // Attach a delegated card if one is selected — without this the
@@ -216,9 +224,16 @@ export default function WishesPage() {
   }
 
   async function deleteSchedule(id: string) {
+    if (!signMessage || !owner) return toast.error("Connect wallet first.");
+    let auth;
+    try {
+      auth = await fetchAuthHeaders(owner, signMessage);
+    } catch {
+      return toast.error("Wallet signature required.");
+    }
     await fetch("/api/scheduled-sends", {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
       body: JSON.stringify({ schedule_id: id, owner_pubkey: owner }),
     });
     setSchedules(schedules.filter((s) => s.schedule_id !== id));
@@ -444,9 +459,16 @@ export default function WishesPage() {
   async function createBucket() {
     const lamp = lamports(bucketTarget);
     if (!lamp || !bucketLabel) return toast.error("Label + target required.");
+    if (!signMessage || !owner) return toast.error("Connect wallet first.");
+    let auth;
+    try {
+      auth = await fetchAuthHeaders(owner, signMessage);
+    } catch {
+      return toast.error("Wallet signature required to create a bucket.");
+    }
     const res = await fetch("/api/save-for", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
       body: JSON.stringify({
         owner_pubkey: owner,
         label: bucketLabel,
@@ -464,9 +486,16 @@ export default function WishesPage() {
 
   async function saveRoundUp() {
     if (!owner || !roundDest) return toast.error("Destination required.");
+    if (!signMessage) return toast.error("Connect wallet first.");
+    let auth;
+    try {
+      auth = await fetchAuthHeaders(owner, signMessage);
+    } catch {
+      return toast.error("Wallet signature required.");
+    }
     const res = await fetch("/api/round-up", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
       body: JSON.stringify({
         owner_pubkey: owner,
         round_to_lamports: roundChoice,
@@ -480,9 +509,16 @@ export default function WishesPage() {
   }
 
   async function disableRoundUp() {
+    if (!signMessage || !owner) return toast.error("Connect wallet first.");
+    let auth;
+    try {
+      auth = await fetchAuthHeaders(owner, signMessage);
+    } catch {
+      return toast.error("Wallet signature required.");
+    }
     await fetch("/api/round-up", {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
       body: JSON.stringify({ owner_pubkey: owner }),
     });
     setRoundRule(null);
