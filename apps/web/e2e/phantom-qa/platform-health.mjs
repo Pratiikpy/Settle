@@ -89,5 +89,42 @@ for (const f of (fed.receipts ?? []).slice(0, 3)) {
   console.log(`     • ${f.amount_lamports} ${f.asset} ${f.sender_pubkey.slice(0, 6)}…→${f.recipient_pubkey.slice(0, 6)}… status=${f.status}`);
 }
 
+// 5. Cards delegated to relayer
+const r5 = await fetch(`${PRODUCTION}/api/cards/delegated?owner=${MY_WALLET}`, {
+  signal: AbortSignal.timeout(10_000),
+});
+const delegated = await r5.json();
+const cardCount = delegated.delegated_cards?.length ?? 0;
+log(
+  r5.ok && delegated.relayer_configured === true,
+  "5. /api/cards/delegated reports relayer config",
+  `relayer=${delegated.relayer_pubkey?.slice(0, 8)}… delegated=${cardCount}`,
+);
+if (cardCount === 0) {
+  log("warn", "   informational: no cards delegated to relayer", "phase5-signer can't fire spend_via_pact for this wallet until a card is spawned with agent_pubkey=" + delegated.relayer_pubkey?.slice(0, 8) + "…");
+}
+
+// 6. Dashboard aggregation
+const r6 = await fetch(`${PRODUCTION}/api/dashboard/v6?pubkey=${MY_WALLET}`, {
+  signal: AbortSignal.timeout(15_000),
+});
+const dash = await r6.json();
+log(
+  Boolean(r6.ok && dash.today),
+  "6. /api/dashboard/v6 aggregates wallet activity",
+  `today: spent=${dash.today?.spent_usdc} received=${dash.today?.received_usdc} agents=${dash.today?.agents_active}`,
+);
+
+// 7. Balance
+const r7 = await fetch(`${PRODUCTION}/api/balance?pubkey=${MY_WALLET}`, {
+  signal: AbortSignal.timeout(10_000),
+});
+const bal = await r7.json();
+log(
+  r7.ok && bal.cluster === "devnet" && /^\d+\.\d+$/.test(bal.usdc ?? ""),
+  "7. /api/balance reports cluster + holdings",
+  `USDC=${bal.usdc} SOL=${bal.sol} on ${bal.cluster}`,
+);
+
 console.log(`\n${pass}/${pass + fail + warn} pass, ${warn} warn, ${fail} fail`);
 process.exit(fail === 0 ? 0 : 1);
