@@ -13,6 +13,7 @@
  * gone. The Sentry alerts catch live problems; this page is for
  * "let me eyeball it once after a deploy."
  */
+import { Fragment } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { W6AppShell } from "../../../components/w6-app-shell";
 
@@ -158,17 +159,28 @@ export default async function AdminHealthPage() {
           <tbody>
             {(recentExecs ?? []).map((r) => {
               const ok = r.status === "confirmed" || r.status === "sent";
+              const showWhy = !ok && r.error_message;
               return (
-                <tr key={r.execution_id} className="border-t border-[#f4f4f5]">
-                  <td className="py-1 text-[#52525b]">{fmtAge(ageSeconds(r.created_at))}</td>
-                  <td className="py-1">{r.intent_kind}</td>
-                  <td className={`py-1 ${ok ? "text-emerald-700" : "text-amber-700"}`}>
-                    {r.status}
-                  </td>
-                  <td className="py-1 text-[#71717a]">
-                    {r.signature ? `${r.signature.slice(0, 8)}…${r.signature.slice(-4)}` : "—"}
-                  </td>
-                </tr>
+                <Fragment key={r.execution_id}>
+                  <tr className="border-t border-[#f4f4f5]">
+                    <td className="py-1 text-[#52525b]">{fmtAge(ageSeconds(r.created_at))}</td>
+                    <td className="py-1">{r.intent_kind}</td>
+                    <td className={`py-1 ${ok ? "text-emerald-700" : "text-amber-700"}`}>
+                      {r.status}
+                    </td>
+                    <td className="py-1 text-[#71717a]">
+                      {r.signature ? `${r.signature.slice(0, 8)}…${r.signature.slice(-4)}` : "—"}
+                    </td>
+                  </tr>
+                  {showWhy && (
+                    <tr>
+                      <td />
+                      <td colSpan={3} className="pb-2 text-[10px] text-amber-700">
+                        ↳ {r.error_message}
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               );
             })}
             {!recentExecs?.length && (
