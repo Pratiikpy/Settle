@@ -33,6 +33,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "supabase_error", message: error.message }, { status: 502 });
   }
 
+  // Don't cache the "no handle bound" case — those responses flip to
+  // a real handle the moment the wallet claims one, and caching null
+  // for 30s+SWR makes /at/me redirects (Bug #50 fix) and /m/me lookups
+  // appear broken for up to 150s post-claim. Once a handle exists the
+  // mapping is stable, so cache the bound case normally.
+  const bound = !!data;
   return NextResponse.json(
     {
       ok: true,
@@ -40,11 +46,10 @@ export async function GET(req: NextRequest) {
       ...(data ?? { handle: null }),
     },
     {
-      // Public handle directory — pubkey → handle is stable except for
-      // claim/rename events. 30s edge cache is conservative; SWR
-      // covers the long tail.
       headers: {
-        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+        "Cache-Control": bound
+          ? "public, s-maxage=30, stale-while-revalidate=120"
+          : "no-store",
       },
     },
   );
