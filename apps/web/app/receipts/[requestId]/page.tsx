@@ -739,9 +739,15 @@ export default function ReceiptDetailPage() {
     setRefunding(true);
     setGesture("signing");
     try {
+      if (!signMessage) {
+        toast.error("Wallet does not support signing.");
+        setGesture("error");
+        return;
+      }
+      const auth = await fetchAuthHeaders(publicKey.toBase58(), signMessage);
       const buildRes = await fetch(`/api/receipts/${params.requestId}/refund`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify({
           authority: publicKey.toBase58(),
           reason,

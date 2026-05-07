@@ -17,6 +17,7 @@ import {
 } from "../../../../../lib/anchor-client";
 import { getUsdcMint } from "../../../../../lib/solana";
 import { withIdempotency } from "../../../../../lib/idempotency";
+import { requireOwnerAuth } from "../../../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 
@@ -89,6 +90,11 @@ async function refundHandler(req: NextRequest, requestId: string) {
       { status: 400 },
     );
   }
+  // Bug #57 — without auth, anyone could file refund_requests claiming
+  // any authority_pubkey, polluting merchants' dispute queues with
+  // bogus claims. Require the caller to sign as the claimed authority.
+  const authFail = await requireOwnerAuth(req, parse.data.authority);
+  if (authFail) return authFail;
 
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

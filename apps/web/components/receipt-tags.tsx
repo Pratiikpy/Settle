@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { fetchAuthHeaders, asAuthHeaders } from "../lib/client-auth";
 
 /**
  * F2.11 — receipt tagging UI.
@@ -24,7 +25,7 @@ interface ReceiptTag {
 const TAG_RE = /^[a-z0-9_-]{1,32}$/;
 
 export function ReceiptTags({ requestId }: { requestId: string }) {
-  const { publicKey, connected } = useWallet();
+  const { publicKey, connected, signMessage } = useWallet();
   const [tags, setTags] = useState<ReceiptTag[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -67,11 +68,16 @@ export function ReceiptTags({ requestId }: { requestId: string }) {
       setDraft("");
       return;
     }
+    if (!signMessage) {
+      setErr("Wallet does not support signing");
+      return;
+    }
     setBusy(true);
     try {
+      const auth = await fetchAuthHeaders(publicKey.toBase58(), signMessage);
       const res = await fetch(`/api/receipts/${encodeURIComponent(requestId)}/tags`, {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify({ pubkey: publicKey.toBase58(), tag }),
       });
       if (!res.ok) {
@@ -87,12 +93,13 @@ export function ReceiptTags({ requestId }: { requestId: string }) {
   }
 
   async function removeTag(tag: string): Promise<void> {
-    if (!publicKey) return;
+    if (!publicKey || !signMessage) return;
     setBusy(true);
     try {
+      const auth = await fetchAuthHeaders(publicKey.toBase58(), signMessage);
       const res = await fetch(`/api/receipts/${encodeURIComponent(requestId)}/tags`, {
         method: "DELETE",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify({ pubkey: publicKey.toBase58(), tag }),
       });
       if (!res.ok) {
