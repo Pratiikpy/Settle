@@ -14,6 +14,7 @@ import {
 import { getUsdcMint } from "../../../../lib/solana";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
+import { requireOwnerAuth } from "../../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -77,6 +78,12 @@ export async function POST(req: NextRequest) {
     );
   }
   const v = parsed.data;
+  // Bug #61 — caller must actually be the requester they're claiming to be.
+  // Otherwise an attacker who knows any voter's pubkey can spawn fake
+  // group_spend_requests with malicious dest/amount, hoping other voters
+  // approve without checking the specifics.
+  const authFail = await requireOwnerAuth(req, v.requester_pubkey);
+  if (authFail) return authFail;
 
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key =

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { requireOwnerAuth } from "../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -99,6 +100,13 @@ export async function POST(req: NextRequest) {
     );
   }
   const v = parsed.data;
+  // Bug #61 — caller must sign as the custodian they claim to be.
+  // Without this, anyone can pollute a victim's group list and add
+  // themselves as a voter, enabling downstream attacks via the
+  // group-accounts/* surface.
+  const authFail = await requireOwnerAuth(req, v.custodian_pubkey);
+  if (authFail) return authFail;
+
   const voters = v.members.filter((m) => m.role === "voter").length;
   if (v.quorum > voters) {
     return NextResponse.json(

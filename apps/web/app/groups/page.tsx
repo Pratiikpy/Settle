@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { formatUsdc } from "@settle/sdk";
 import { W6AppShell } from "../../components/w6-app-shell";
 import { getSolscanUrl } from "../../lib/solana";
+import { fetchAuthHeaders, asAuthHeaders } from "../../lib/client-auth";
 
 interface Group {
   group_id: string;
@@ -168,15 +169,16 @@ export default function GroupsPage() {
   }
 
   async function requestSpend(g: Group) {
-    if (!me || !signTransaction) return toast.error("Connect wallet first.");
+    if (!me || !signTransaction || !signMessage) return toast.error("Connect wallet first.");
     if (!draftDest.trim() || !draftAmount.trim()) {
       return toast.error("Recipient + amount required.");
     }
     setBusy({ ...busy, [`request-${g.group_id}`]: true });
     try {
+      const auth = await fetchAuthHeaders(me, signMessage);
       const buildRes = await fetch("/api/group-accounts/request-spend", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify({
           group_id: g.group_id,
           requester_pubkey: me,
@@ -246,11 +248,13 @@ export default function GroupsPage() {
     if (memberPubkeys.length === 0) {
       return toast.error("Add at least one member.");
     }
+    if (!signMessage) return toast.error("Connect wallet first.");
     setCreateBusy(true);
     try {
+      const auth = await fetchAuthHeaders(me, signMessage);
       const res = await fetch("/api/group-accounts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify({
           custodian_pubkey: me,
           holding_card: createHoldingCard,

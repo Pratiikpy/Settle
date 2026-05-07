@@ -20,6 +20,9 @@
 
 import { readFileSync } from "fs";
 import { Keypair } from "@solana/web3.js";
+import { ed25519 } from "@noble/curves/ed25519";
+import bs58 from "bs58";
+import { randomBytes } from "crypto";
 
 const PRODUCTION = "https://use-settle.vercel.app";
 const ID_JSON = process.platform === "win32"
@@ -29,6 +32,20 @@ const ID_JSON = process.platform === "win32"
 function loadKeypair(path) {
   const raw = JSON.parse(readFileSync(path, "utf8"));
   return Keypair.fromSecretKey(Uint8Array.from(raw));
+}
+
+function signAuth(kp) {
+  const ts = Math.floor(Date.now() / 1000);
+  const nonce = randomBytes(16).toString("hex");
+  const pubkey = kp.publicKey.toBase58();
+  const msg = `Settle Auth\nnonce=${nonce}\nts=${ts}\npubkey=${pubkey}`;
+  const sig = ed25519.sign(Buffer.from(msg, "utf8"), kp.secretKey.slice(0, 32));
+  return {
+    "x-settle-auth-pubkey": pubkey,
+    "x-settle-auth-sig": bs58.encode(sig),
+    "x-settle-auth-nonce": nonce,
+    "x-settle-auth-ts": String(ts),
+  };
 }
 
 async function main() {
@@ -54,7 +71,7 @@ async function main() {
   };
   const r1 = await fetch(`${PRODUCTION}/api/group-accounts`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...signAuth(A) },
     body: JSON.stringify(createBody),
   });
   const create = await r1.json();
@@ -82,10 +99,10 @@ async function main() {
     console.log(`     bView=${JSON.stringify(bView)}`);
   }
 
-  // 4. B proposes a spend
+  // 4. B proposes a spend (must sign as B)
   const r4 = await fetch(`${PRODUCTION}/api/group-accounts/request-spend`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...signAuth(B) },
     body: JSON.stringify({
       group_id: groupId,
       requester_pubkey: B.publicKey.toBase58(),
