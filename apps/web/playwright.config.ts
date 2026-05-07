@@ -63,7 +63,7 @@ export default defineConfig({
       // Demo-recorder specs are run via dedicated chromium-demo* projects
       // (1080p viewport + always-record video). Excluding them here keeps
       // normal Playwright runs fast and avoids spurious video artifacts.
-      testIgnore: /(demo-recorder(-(wallet|broll|landing))?|autonomous-judge|phantom-(real|signing|everything|multiwallet|final-mile|iter4|iter5|iter6|iter8-verify|iter9|iter10|iter11|iter12|iter13|iter14|iter15|iter16|iter18|iter19|iter20|iter21|iter22|iter23))\.spec\.ts$/,
+      testIgnore: /(demo-recorder(-(wallet|broll|landing))?|autonomous-judge|phantom-(real|signing|everything|multiwallet|final-mile|iter4|iter5|iter6|iter8-verify|iter9|iter10|iter11|iter12|iter13|iter14|iter15|iter16|iter18|iter19|iter20|iter21|iter22|iter23|iter24))\.spec\.ts$/,
     },
     {
       // Hackathon demo recorder — 1080p production tour. Always records
@@ -116,7 +116,7 @@ export default defineConfig({
         headless: false,
       },
       retries: 0,
-      testMatch: /phantom-(real|signing|everything|multiwallet|final-mile|iter4|iter5|iter6|iter8-verify|iter9|iter10|iter11|iter12|iter13|iter14|iter15|iter16|iter18|iter19|iter20|iter21|iter22|iter23)\.spec\.ts$/,
+      testMatch: /phantom-(real|signing|everything|multiwallet|final-mile|iter4|iter5|iter6|iter8-verify|iter9|iter10|iter11|iter12|iter13|iter14|iter15|iter16|iter18|iter19|iter20|iter21|iter22|iter23|iter24)\.spec\.ts$/,
     },
   ],
 });
