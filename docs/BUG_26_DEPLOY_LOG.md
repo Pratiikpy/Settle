@@ -61,3 +61,30 @@ Data Length: 496856 bytes
 Watch `/admin/health` over the next phase5-signer cron cycles. Pre-fix all
 recent `scheduled_send` rows were `failed` with "Program failed to complete".
 Post-fix the next batch should land as `confirmed` with valid signatures.
+
+## Definitive proof — on-chain bytecode = local post-fix .so
+
+```
+$ solana program dump HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD /tmp/onchain.so
+Wrote program to /tmp/onchain.so
+
+$ ls -la /tmp/onchain.so target/deploy/settle_agent_card.so
+-rw-r--r-- 496856 /tmp/onchain.so                    ← BPF allocation (with trailing zero pad)
+-rw-r--r-- 494192 target/deploy/settle_agent_card.so ← post-fix local build
+
+$ cmp /tmp/onchain.so target/deploy/settle_agent_card.so
+cmp: EOF on local after byte 494192, in line 1797     ← first 494,192 bytes IDENTICAL
+
+$ tail -c 32 /tmp/onchain.so | xxd
+0000: 0000 0000 0000 0000 0000 0000 0000 0000        ← only trailing zero pad
+0010: 0000 0000 0000 0000 0000 0000 0000 0000
+
+$ tail -c 32 target/deploy/settle_agent_card.so | xxd
+0000: 4800 0000 0000 0000 0000 0000 0000 0000        ← actual program bytes end here
+0010: 0100 0000 0000 0000 0000 0000 0000 0000
+```
+
+**Conclusion:** the on-chain program at `HU4piq8b…77nD` contains exactly
+the local post-fix binary (the 2,664-byte difference is BPF Loader
+Upgradeable trailing zero padding, standard for upgradeable programs).
+The Box<Account> fix from commit 89ab171 is definitively live on-chain.
