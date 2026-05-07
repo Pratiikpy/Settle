@@ -8,6 +8,7 @@ import { Transaction } from "@solana/web3.js";
 import { toast } from "sonner";
 import { W6AppShell } from "../../../../components/w6-app-shell";
 import { getSolscanUrl } from "../../../../lib/solana";
+import { fetchAuthHeaders, asAuthHeaders } from "../../../../lib/client-auth";
 
 /**
  * F4.6 + C90 — Merchant-side dispute inbox + resolution.
@@ -72,7 +73,7 @@ function timeAgo(iso: string): string {
 export default function MerchantDisputesPage() {
   const params = useParams<{ handle: string }>();
   const router = useRouter();
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signTransaction, signMessage } = useWallet();
   const { connection } = useConnection();
   const [data, setData] = useState<DisputesResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -141,17 +142,18 @@ export default function MerchantDisputesPage() {
   }
 
   async function approve(d: DisputeRow) {
-    if (!publicKey || !signTransaction) {
+    if (!publicKey || !signTransaction || !signMessage) {
       return toast.error("Connect wallet to approve.");
     }
     setBusy({ ...busy, [`approve-${d.id}`]: true });
     try {
+      const auth = await fetchAuthHeaders(publicKey.toBase58(), signMessage);
       // Phase 1: get unsigned refund tx
       const buildRes = await fetch(
         `/api/merchants/${params.handle}/disputes/resolve`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
           body: JSON.stringify({
             request_id: d.request_id,
             merchant_pubkey: publicKey.toBase58(),
@@ -188,11 +190,12 @@ export default function MerchantDisputesPage() {
       );
 
       // Phase 2: stamp the row.
+      const auth2 = await fetchAuthHeaders(publicKey.toBase58(), signMessage);
       const finalizeRes = await fetch(
         `/api/merchants/${params.handle}/disputes/resolve`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...asAuthHeaders(auth2) },
           body: JSON.stringify({
             request_id: d.request_id,
             merchant_pubkey: publicKey.toBase58(),
@@ -216,14 +219,15 @@ export default function MerchantDisputesPage() {
   }
 
   async function deny(d: DisputeRow) {
-    if (!publicKey) return toast.error("Connect wallet to deny.");
+    if (!publicKey || !signMessage) return toast.error("Connect wallet to deny.");
     setBusy({ ...busy, [`deny-${d.id}`]: true });
     try {
+      const auth = await fetchAuthHeaders(publicKey.toBase58(), signMessage);
       const r = await fetch(
         `/api/merchants/${params.handle}/disputes/resolve`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
           body: JSON.stringify({
             request_id: d.request_id,
             merchant_pubkey: publicKey.toBase58(),

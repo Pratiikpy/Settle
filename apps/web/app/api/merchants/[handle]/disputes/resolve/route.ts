@@ -14,6 +14,7 @@ import {
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { getUsdcMint } from "../../../../../../lib/solana";
+import { requireOwnerAuth } from "../../../../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -83,6 +84,11 @@ export async function POST(
     );
   }
   const v = parsed.data;
+  // Bug #56 — require the caller to actually sign as the merchant.
+  // Without this, anyone could deny a pending refund (DoS the buyer)
+  // or fake an approve with bogus refund_signature.
+  const authFail = await requireOwnerAuth(req, v.merchant_pubkey);
+  if (authFail) return authFail;
 
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key =
