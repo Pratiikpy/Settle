@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireOwnerAuth } from "../../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -121,6 +122,12 @@ export async function POST(req: NextRequest) {
   if (!body.pubkey || !PUBKEY_RE.test(body.pubkey)) {
     return NextResponse.json({ error: "invalid_pubkey" }, { status: 400 });
   }
+  // Bug #59 — without auth, attacker triggers an LLM run + writes to
+  // victim's receipts.bookkeeper_category. Both data integrity (overwrite
+  // user's curated categories) AND cost issue (paid LLM call attributed
+  // to operator using attacker-supplied pubkey).
+  const authFail = await requireOwnerAuth(req, body.pubkey);
+  if (authFail) return authFail;
   const limit = Math.max(1, Math.min(100, body.limit ?? 50));
   const refresh = Boolean(body.refresh);
 

@@ -7,6 +7,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { computeCapabilityHashHex } from "@settle/sdk";
 import { W6AppShell } from "../../../../components/w6-app-shell";
+import { fetchAuthHeaders, asAuthHeaders } from "../../../../lib/client-auth";
 
 /**
  * /m/[handle]/capabilities — merchant publishes their tool spec(s).
@@ -45,7 +46,7 @@ interface RegistryRow {
 export default function MerchantCapabilitiesPage() {
   const params = useParams<{ handle: string }>();
   const router = useRouter();
-  const { connected, publicKey } = useWallet();
+  const { connected, publicKey, signMessage } = useWallet();
   const owner = publicKey?.toBase58() ?? "";
 
   // Bug #29: avoid the perpetual "Resolving handle..." spinner — when on
@@ -150,11 +151,13 @@ export default function MerchantCapabilitiesPage() {
 
   async function publish() {
     if (!isMerchantWallet || !previewHash || !lamports) return;
+    if (!signMessage) return toast.error("Connect wallet first.");
     setBusy(true);
     try {
+      const auth = await fetchAuthHeaders(owner, signMessage);
       const r = await fetch("/api/capabilities", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify({
           capability_hash: previewHash,
           alias,

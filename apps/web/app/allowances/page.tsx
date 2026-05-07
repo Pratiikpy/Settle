@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { formatUsdc } from "@settle/sdk";
 import { W6AppShell } from "../../components/w6-app-shell";
 import { LocaleSwitcher } from "../../components/locale-switcher";
+import { fetchAuthHeaders, asAuthHeaders } from "../../lib/client-auth";
 import { useTranslate } from "../../lib/i18n";
 
 /**
@@ -45,7 +46,7 @@ interface DelegatedCard {
 }
 
 export default function AllowancesPage() {
-  const { connected, publicKey, signTransaction } = useWallet();
+  const { connected, publicKey, signTransaction, signMessage } = useWallet();
   const { connection } = useConnection();
   const { t } = useTranslate();
   const owner = publicKey?.toBase58() ?? "";
@@ -105,11 +106,13 @@ export default function AllowancesPage() {
     if (BigInt(d) > BigInt(w)) {
       return toast.error("Daily cap can't exceed weekly amount.");
     }
+    if (!signMessage) return toast.error("Connect wallet first.");
     setBusy(true);
     try {
+      const auth = await fetchAuthHeaders(owner, signMessage);
       const res = await fetch("/api/allowances", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify({
           parent_pubkey: owner,
           kid_pubkey: kid,
@@ -137,12 +140,13 @@ export default function AllowancesPage() {
   }
 
   async function deleteAllowance(a: Allowance) {
-    if (!owner) return;
+    if (!owner || !signMessage) return;
     setBusy(true);
     try {
+      const auth = await fetchAuthHeaders(owner, signMessage);
       const res = await fetch("/api/allowances", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify({
           allowance_id: a.allowance_id,
           parent_pubkey: owner,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { requireOwnerAuth } from "../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,6 +95,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
   const v = parsed.data;
+  const authFail = await requireOwnerAuth(req, v.parent_pubkey);
+  if (authFail) return authFail;
   const sb = getSb();
   if (!sb) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
 
@@ -176,6 +179,8 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
   const v = parsed.data;
+  const authFail = await requireOwnerAuth(req, v.parent_pubkey);
+  if (authFail) return authFail;
   const update: Record<string, unknown> = {};
   if (v.weekly_lamports !== undefined) update.weekly_lamports = v.weekly_lamports;
   if (v.daily_cap_lamports !== undefined) update.daily_cap_lamports = v.daily_cap_lamports;
@@ -204,6 +209,8 @@ export async function DELETE(req: NextRequest) {
   if (!body.allowance_id || !body.parent_pubkey) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
+  const authFail = await requireOwnerAuth(req, body.parent_pubkey);
+  if (authFail) return authFail;
   const sb = getSb();
   if (!sb) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
 

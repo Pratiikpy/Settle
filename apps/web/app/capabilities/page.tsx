@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { W6AppShell } from "../../components/w6-app-shell";
+import { fetchAuthHeaders, asAuthHeaders } from "../../lib/client-auth";
 
 /**
  * F9.2 + F3.4 — Capability registry browse + contribute page.
@@ -45,7 +46,7 @@ export default function CapabilitiesPage() {
   const search = useSearchParams();
   const focusedHash = search.get("h") ?? "";
   const initialQuery = search.get("q") ?? "";
-  const { connected, publicKey } = useWallet();
+  const { connected, publicKey, signMessage } = useWallet();
 
   const [query, setQuery] = useState(initialQuery);
   const [verifiedOnly, setVerifiedOnly] = useState(true);
@@ -108,9 +109,14 @@ export default function CapabilitiesPage() {
           version: Math.max(1, Math.floor(Number(formVersion) || 1)),
         };
       }
+      if (!publicKey || !signMessage) {
+        toast.error("Connect wallet to contribute.");
+        return;
+      }
+      const auth = await fetchAuthHeaders(publicKey.toBase58(), signMessage);
       const res = await fetch("/api/capabilities", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...asAuthHeaders(auth) },
         body: JSON.stringify(body),
       });
       const json = await res.json();

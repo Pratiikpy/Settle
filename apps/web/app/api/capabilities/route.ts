@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { computeCapabilityHashHex, type CapabilitySpec } from "@settle/sdk";
+import { requireOwnerAuth } from "../../../lib/require-owner-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -143,6 +144,10 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
+  // Bug #59 — without auth, attacker can attribute spam contributions
+  // to any victim's pubkey, polluting the public capability namespace.
+  const authFail = await requireOwnerAuth(req, parsed.data.contributed_by_pubkey);
+  if (authFail) return authFail;
 
   const sb = getSb();
   if (!sb) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
