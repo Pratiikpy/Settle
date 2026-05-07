@@ -16,10 +16,14 @@ export function TemplateHireButton({ slug }: { slug: string }) {
   const [gesture, setGesture] = useState<
     "idle" | "signing" | "confirming" | "success" | "error"
   >("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function handleHire() {
+    setErrorMsg(null);
     if (!connected || !publicKey || !signTransaction) {
-      toast.error("Connect a wallet to hire.");
+      const m = "Connect a wallet to hire.";
+      toast.error(m);
+      setErrorMsg(m);
       return;
     }
 
@@ -71,7 +75,9 @@ export function TemplateHireButton({ slug }: { slug: string }) {
       setTimeout(() => router.push("/cards"), 1200);
     } catch (e) {
       setGesture("error");
-      toast.error(`Failed: ${(e as Error).message}`);
+      const msg = (e as Error).message;
+      toast.error(`Failed: ${msg}`);
+      setErrorMsg(msg);
     } finally {
       setTimeout(() => setGesture("idle"), 2400);
     }
@@ -94,6 +100,23 @@ export function TemplateHireButton({ slug }: { slug: string }) {
                 ? "Spending rule open ✓"
                 : "Hire — sign rule"}
       </button>
+      {errorMsg ? (
+        <div
+          role="alert"
+          style={{
+            marginTop: 12,
+            padding: "10px 12px",
+            border: "1px solid var(--w6-rule, #e5e7eb)",
+            borderRadius: 6,
+            background: "color-mix(in srgb, var(--w6-danger, #dc2626) 6%, transparent)",
+            color: "var(--w6-danger, #dc2626)",
+            fontSize: 12.5,
+            lineHeight: 1.5,
+          }}
+        >
+          {errorMsg}
+        </div>
+      ) : null}
       <TrustGesture state={gesture} />
     </>
   );
