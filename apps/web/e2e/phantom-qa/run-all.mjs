@@ -29,6 +29,7 @@ const DRIVERS = [
   { file: "mcp-middleware-e2e.mjs",        runner: "tsx",  needsAuth: false, desc: "@settle/mcp-middleware 8 cases" },
   { file: "webhook-hmac-verify.mjs",       runner: "tsx",  needsAuth: false, desc: "Webhook HMAC sign+verify 8 cases" },
   { file: "create-merchant-scaffold.mjs",  runner: "node", needsAuth: false, desc: "create-settle-merchant CLI scaffold" },
+  { file: "platform-health.mjs",            runner: "node", needsAuth: false, desc: "Preflight + auth/challenge + federation visibility" },
 ];
 
 const results = [];
