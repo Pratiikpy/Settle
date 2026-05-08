@@ -256,13 +256,47 @@ export async function POST(
   const pactHeader = req.headers.get("x-settle-pact-pubkey");
 
   // 402 challenge if no credential — return the canonical capability hash so the agent
-  // can include it on the next call.
+  // can include it on the next call. Body shape conforms to the public x402
+  // discriminator (`x402Version` + `accepts`) so generic x402 clients (the
+  // Solana Foundation `pay` CLI, x402 SDKs) classify the response correctly,
+  // while Settle-specific fields stay alongside for native callers.
   const expectedCapabilityHash = computeCapabilityHashHex(merchant.capability_spec);
+  const merchantPubkeyForChallenge = process.env[
+    `MERCHANT_PUBKEY_${merchantSlug.toUpperCase().replace(/-/g, "_")}`
+  ];
 
   if (!headerCred) {
+    const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? "devnet";
+    const network = cluster === "mainnet" ? "solana" : "solana-devnet";
+    const usdcMint = getUsdcMint();
+    const proto = req.headers.get("x-forwarded-proto") ?? "https";
+    const host = req.headers.get("host") ?? "use-settle.vercel.app";
+    const resourceUrl = `${proto}://${host}${req.nextUrl.pathname}`;
     return NextResponse.json(
       {
-        error: "payment_required",
+        // x402 standard discriminator + accepts array (Coinbase / x402.org).
+        x402Version: 1,
+        error: "X-PAYMENT header is required",
+        accepts: [
+          {
+            scheme: "exact",
+            network,
+            maxAmountRequired: merchant.amount_lamports,
+            resource: resourceUrl,
+            description: merchant.description,
+            mimeType: "application/json",
+            outputSchema: null,
+            payTo: merchantPubkeyForChallenge ?? "",
+            maxTimeoutSeconds: 60,
+            asset: usdcMint,
+            extra: {
+              capability_hash: expectedCapabilityHash,
+              capability_spec: merchant.capability_spec,
+              settle_proxy: "v1",
+            },
+          },
+        ],
+        // Settle-native fields kept for back-compat with Settle clients.
         merchant: merchant.description,
         amount_lamports: merchant.amount_lamports,
         capability_hash: expectedCapabilityHash,
