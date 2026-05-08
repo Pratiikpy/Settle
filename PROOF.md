@@ -31,8 +31,8 @@ Last Deployed In Slot: **460677446** (this session) — byte-equal to local `tar
 | Page | Purpose |
 |---|---|
 | `/r/87d94764-cfdb-43c9-9361-18d00bde66ee` | Imported receipt — kernel hashes + Solscan crosslink |
-| `/at/b4testv9l8cq` | Claimed handle profile (B4 Test) |
-| `/at/B4cArR1M1MySM4dn4HeDdifdPiF98wTNmbzKYg6to2Cp` | Pubkey URL → redirects to `/at/b4testv9l8cq` (Bug #50/#52) |
+| `/at/b4testxb1rb9` | Claimed handle profile (B4 Test) |
+| `/at/B4cArR1M1MySM4dn4HeDdifdPiF98wTNmbzKYg6to2Cp` | Pubkey URL → redirects to `/at/b4testxb1rb9` (Bug #50/#52) |
 | `/at/29Az3i81KRa96seMfn13qH8o8eGALcyUYmcuyNaZC2xg` | Unclaimed pubkey → "No handle claimed" empty state (Bug #50) |
 | `/admin/health` | Operator dashboard with inline `↳ error_message` (Bug #51) |
 | `/api/verify/6c2b55edddae357c6b631b54e7f19c6c632b375c07cbce5432b04b19e1bf2924` | Receipt verifier round-trip (returns full kernel commit + sig) |
@@ -98,6 +98,6 @@ See [`docs/OPERATOR_HANDOFF.md`](./docs/OPERATOR_HANDOFF.md) for copy-paste comm
 
 ## Key wallets
 
-- **`B4cArR1M1MySM4dn4HeDdifdPiF98wTNmbzKYg6to2Cp`** — operator id.json, program upgrade authority, claimed handle `@b4testvl23aa` on devnet.
+- **`B4cArR1M1MySM4dn4HeDdifdPiF98wTNmbzKYg6to2Cp`** — operator id.json, program upgrade authority, claimed handle `@b4testxb1rb9` on devnet (display name "B4 Test").
 - **Anchor program:** `HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD` (post-Bug-26 fix live at slot **460677446**).
 - **Production relayer:** `C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY` (per `/api/preflight`).
