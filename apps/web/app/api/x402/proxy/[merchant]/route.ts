@@ -77,17 +77,23 @@ export const runtime = "nodejs";
  */
 
 interface MerchantEntry {
-  upstream_url: string;
+  upstream_url: string | null;
   description: string;
   capability_spec: CapabilitySpec;
   amount_lamports: string;
+  /** Canned deliverable returned when upstream_url is null (demo fallback). */
+  inline_deliverable: () => Record<string, unknown>;
+}
+
+function demoUpstream(slug: string): string | null {
+  const base = process.env.DEMO_MERCHANTS_URL;
+  if (!base) return null;
+  return `${base.replace(/\/$/, "")}/${slug}`;
 }
 
 const MERCHANT_REGISTRY: Record<string, MerchantEntry> = {
   "arxiv-fetch": {
-    upstream_url: process.env.DEMO_MERCHANTS_URL
-      ? `${process.env.DEMO_MERCHANTS_URL}/arxiv-fetch`
-      : "http://localhost:8788/arxiv-fetch",
+    upstream_url: demoUpstream("arxiv-fetch"),
     description: "ArxivFetch — fetch a paper PDF",
     capability_spec: {
       domain: "arxiv-fetch.demo.settle",
@@ -97,11 +103,21 @@ const MERCHANT_REGISTRY: Record<string, MerchantEntry> = {
       version: 1,
     },
     amount_lamports: "100000",
+    inline_deliverable: () => ({
+      ok: true,
+      merchant: "ArxivFetch",
+      deliverable: {
+        title: "Quantum decoherence and the emergence of classical physics",
+        abstract:
+          "We study quantum-to-classical transitions in many-body systems, demonstrating that decoherence rates scale exponentially with system size in the deep quantum regime…",
+        pages: 18,
+        lang_detected: "ja",
+        content_url: "ipfs://demo-paper-jp",
+      },
+    }),
   },
   translate: {
-    upstream_url: process.env.DEMO_MERCHANTS_URL
-      ? `${process.env.DEMO_MERCHANTS_URL}/translate`
-      : "http://localhost:8788/translate",
+    upstream_url: demoUpstream("translate"),
     description: "TranslateAPI — JA→EN translation",
     capability_spec: {
       domain: "translate.demo.settle",
@@ -111,11 +127,20 @@ const MERCHANT_REGISTRY: Record<string, MerchantEntry> = {
       version: 1,
     },
     amount_lamports: "300000",
+    inline_deliverable: () => ({
+      ok: true,
+      merchant: "TranslateAPI",
+      deliverable: {
+        source_lang: "ja",
+        target_lang: "en",
+        pages_translated: 18,
+        excerpt:
+          "Quantum decoherence describes the loss of quantum coherence due to interaction with the environment. In macroscopic systems this transition produces what we observe as classical behavior…",
+      },
+    }),
   },
   summarize: {
-    upstream_url: process.env.DEMO_MERCHANTS_URL
-      ? `${process.env.DEMO_MERCHANTS_URL}/summarize`
-      : "http://localhost:8788/summarize",
+    upstream_url: demoUpstream("summarize"),
     description: "SummaryLLM — ELI12 summary",
     capability_spec: {
       domain: "summarize.demo.settle",
@@ -125,6 +150,16 @@ const MERCHANT_REGISTRY: Record<string, MerchantEntry> = {
       version: 1,
     },
     amount_lamports: "50000",
+    inline_deliverable: () => ({
+      ok: true,
+      merchant: "SummaryLLM",
+      deliverable: {
+        audience: "eli12",
+        summary:
+          "Imagine a coin spinning on a table. While it's spinning fast, you can't tell which side will land up. But as soon as it touches the table and slows, gravity pulls one side down — that's a 'classical' result. Quantum decoherence is the math version of touching the table: tiny interactions with the environment force fuzzy quantum states to pick a definite answer.",
+        word_count: 73,
+      },
+    }),
   },
 };
 
@@ -764,26 +799,35 @@ export async function POST(
     );
   }
 
-  // Forward to merchant — capture call/return timestamps for capability_leaderboard.
+  // Forward to merchant (or use canned deliverable when no upstream is configured).
+  // Capture call/return timestamps for capability_leaderboard either way so the
+  // P10 timing fields stay consistent.
   let merchantResp: unknown;
   const upstreamCalledAt = new Date();
   let upstreamReturnedAt: Date | undefined;
-  try {
-    const upstreamRes = await fetch(merchant.upstream_url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Settle-Credential": headerCred,
-      },
-      body: bodyBytes,
-    });
-    merchantResp = await upstreamRes.json();
+  if (merchant.upstream_url) {
+    try {
+      const upstreamRes = await fetch(merchant.upstream_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Settle-Credential": headerCred,
+        },
+        body: bodyBytes,
+      });
+      merchantResp = await upstreamRes.json();
+      upstreamReturnedAt = new Date();
+    } catch (e) {
+      return NextResponse.json(
+        { error: "merchant_fetch_failed", message: (e as Error).message },
+        { status: 502 },
+      );
+    }
+  } else {
+    // Inline canned deliverable. The proxy IS the demo merchant in this mode —
+    // the spend ix and receipt-hash chain above are still real and on-chain.
+    merchantResp = merchant.inline_deliverable();
     upstreamReturnedAt = new Date();
-  } catch (e) {
-    return NextResponse.json(
-      { error: "merchant_fetch_failed", message: (e as Error).message },
-      { status: 502 },
-    );
   }
 
   // Persist receipt with canonical reason + policy_snapshot for honest verify.

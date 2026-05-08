@@ -38,13 +38,24 @@ app.get("/", (c) =>
   }),
 );
 
+// Capability hashes computed by computeCapabilityHashHex on the proxy's
+// MERCHANT_REGISTRY specs in apps/web/app/api/x402/proxy/[merchant]/route.ts.
+// They are the hashes a Settle-aware client will pin against this merchant
+// when calling through the use-settle proxy.
+const ARXIV_FETCH_HASH =
+  "c45734b2b7ccbde7914419c2589e7cedee90e9cd58d792b91b5bd8c8162f7e87";
+const TRANSLATE_HASH =
+  "f86d8bb555733e6843b17a94346d71e8ca04d7378dcebff51851603e62530e08";
+const SUMMARIZE_HASH =
+  "ab180f449d75d42c5974fc9023c9d388d320dd4a1907fd64eb705fb90ea1dfb3";
+
 app.post("/arxiv-fetch", async (c) => {
   const cred = c.req.header("x-settle-credential");
   if (!cred) {
     return c.json(
       { error: "payment_required", price_usdc: "0.10" },
       402,
-      REQUIRES_PAYMENT_HEADER("100000", "a".repeat(64)),
+      REQUIRES_PAYMENT_HEADER("100000", ARXIV_FETCH_HASH),
     );
   }
   const body = await c.req.json().catch(() => ({}));
@@ -72,7 +83,7 @@ app.post("/translate", async (c) => {
     return c.json(
       { error: "payment_required", price_usdc: "0.30" },
       402,
-      REQUIRES_PAYMENT_HEADER("300000", "b".repeat(64)),
+      REQUIRES_PAYMENT_HEADER("300000", TRANSLATE_HASH),
     );
   }
   const body = await c.req.json().catch(() => ({}));
@@ -97,7 +108,7 @@ app.post("/summarize", async (c) => {
     return c.json(
       { error: "payment_required", price_usdc: "0.05" },
       402,
-      REQUIRES_PAYMENT_HEADER("50000", "c".repeat(64)),
+      REQUIRES_PAYMENT_HEADER("50000", SUMMARIZE_HASH),
     );
   }
   const body = await c.req.json().catch(() => ({}));

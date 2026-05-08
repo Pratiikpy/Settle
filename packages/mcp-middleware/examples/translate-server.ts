@@ -62,8 +62,11 @@ const handler = wrapWithSettle({
   pricing: {
     translate: {
       amount_lamports: "20000", // $0.02 USDC (6 decimals)
+      // Matches the seeded entry in /api/capabilities (verified=true). Spec:
+      // domain="translate.demo.settle", method=POST, path="/v1/translate",
+      // amount_lamports="20000", version=1.
       capability_hash:
-        "a6c909df4e32976e3a05f9b6dabf024b3017afa86b34cdc0c63069e76f8e58e6",
+        "a6c909df4e32976e67abd01927fea3796ec0170b8c1e0f1c708139da7964105b",
       description: "Translate EN→<target_lang>",
     },
     // 'ping' is NOT here — it's free.
