@@ -178,8 +178,9 @@ test.describe("iter24 final UI sweep — every major route in real Phantom", () 
         results.push({ name, path, status, detail });
       } catch (e) {
         const dur = ((Date.now() - t0) / 1000).toFixed(1);
-        log(`✗ ${name.padEnd(40)} ${path.padEnd(50)} [error] (${dur}s) ${(e as Error).message.split("\n")[0].slice(0, 80)}`);
-        results.push({ name, path, status: "error", detail: (e as Error).message.split("\n")[0].slice(0, 80) });
+        const firstLine = (e as Error).message.split("\n")[0] ?? "";
+        log(`✗ ${name.padEnd(40)} ${path.padEnd(50)} [error] (${dur}s) ${firstLine.slice(0, 80)}`);
+        results.push({ name, path, status: "error", detail: firstLine.slice(0, 80) });
       }
     }
 
