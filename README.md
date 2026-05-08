@@ -22,6 +22,8 @@ Settle is the trust layer that sits between humans and the AI agents they hand a
 
 **Status:** devnet today · mainnet after audit ([`SECURITY.md`](./SECURITY.md))
 
+> **Where Settle fits relative to [`pay`](https://github.com/solana-foundation/pay) (Solana Foundation, Feb 2026):** `pay` handles the client-side 402 → sign → retry handshake — wraps `curl`, `claude`, `codex`, etc., detects MPP / x402 challenges, asks the local wallet to authorize, retries with payment proof. Settle is the layer underneath: programmable policy gate (per-call cap, daily cap, allowlist, capability pin, expiry, revocation — all enforced atomically in one Anchor instruction) plus a four-hash receipt anyone can re-derive in a browser tab without trusting Settle's server. The two compose cleanly — `pay` is the highway, Settle is the receipt and the spending limit on the credit card.
+
 ---
 
 ## Try it in 2 minutes
