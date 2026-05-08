@@ -56,11 +56,23 @@ export function addPriorityFeeAndTip(params: {
     ComputeBudgetProgram.setComputeUnitPrice({ microLamports: microLamportsPerCu }),
   );
 
-  // Append Jito tip (optional but recommended for Sender)
+  // Append a Helius Sender tip (required ≥ 200000 lamports to one of Helius's
+  // tip wallets, otherwise sendTransaction returns -32602). Rotate across the
+  // 4 published wallets so we don't all land on the same one. List source:
+  // the error message Helius returns when the tip target is wrong.
   if (jitoTipLamports !== undefined && jitoTipLamports > 0) {
-    // Jito tip accounts (mainnet) — for devnet we just transfer to the system program / a tip account
-    // Pick the first official tip account; rotate in production for fairness.
-    const tipAccount = new PublicKey("96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5");
+    const HELIUS_TIP_WALLETS = [
+      "4ACfpUFoaSD9bfPdeu6DBt89gB6ENTeHBXCAi87NhDEE",
+      "D2L6yPZ2FmmmTKPgzaMKdhu6EWZcTpLy1Vhx8uvZe7NZ",
+      "9bnz4RShgq1hAnLnZbP8kbgBg1kEmcJBYQq3gQbmnSta",
+      "5VY91ws6B2hMmBFRsXkoAAdsPHBJwRfBht4DXox3xkwn",
+      "2nyhqdwKcJZR2vcqCyrYsaPVdAnFoJjiksCXJ7hfEYgD",
+      "2q5pghRs6arqVjRvT5gfgWfWcHWmw1ZuCzphgd5KfWGJ",
+      "wyvPkWjVZz1M8fHQnMMCDTQDbkManefNNhweYk5WkcF",
+    ];
+    const tipAccount = new PublicKey(
+      HELIUS_TIP_WALLETS[Math.floor(Math.random() * HELIUS_TIP_WALLETS.length)],
+    );
     tx.instructions.push(
       SystemProgram.transfer({
         fromPubkey: feePayer,
