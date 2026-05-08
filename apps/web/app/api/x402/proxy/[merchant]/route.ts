@@ -711,7 +711,7 @@ export async function POST(
         tx,
         microLamportsPerCu: 5_000,
         computeUnitLimit: 350_000,
-        jitoTipLamports: 1_000,
+        jitoTipLamports: 200_000,
         feePayer: facilitator.publicKey,
       });
 
@@ -772,7 +772,7 @@ export async function POST(
         tx,
         microLamportsPerCu: 5_000,
         computeUnitLimit: 250_000,
-        jitoTipLamports: 1_000,
+        jitoTipLamports: 200_000,
         feePayer: facilitator.publicKey,
       });
 
