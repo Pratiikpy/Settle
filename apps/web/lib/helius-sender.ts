@@ -145,14 +145,15 @@ export async function sendViaHeliusSender(
 }
 
 /**
- * Send + confirm via Helius Sender, with vanilla-RPC fallback.
+ * Send + confirm. Race two paths in parallel and whoever lands first wins.
  *
- * Devnet observation: Sender intermittently accepts a tx (returns a sig) but
- * never propagates it, leading to "block height exceeded" on confirm. When
- * that happens we re-broadcast the same signed tx via standard RPC — the
- * blockhash is still valid since we just hit it. If the Sender path returned
- * an error, we also fall back to RPC. Caller passes the original blockhash +
- * lastValidBlockHeight pair so confirm can match.
+ * Path A: Helius Sender — fast but intermittent on devnet (sometimes accepts
+ *         a sig and never propagates).
+ * Path B: vanilla RPC sendRawTransaction with retries.
+ *
+ * They share the same signed bytes / blockhash, so the network sees a single
+ * unique signature regardless of which path delivers. We confirm with whatever
+ * sig comes back from the first successful submission and return.
  */
 export async function sendAndConfirmViaHeliusSender(
   conn: Connection,
@@ -170,52 +171,40 @@ export async function sendAndConfirmViaHeliusSender(
       ? signedTx.serialize()
       : signedTx.serialize({ requireAllSignatures: false, verifySignatures: false });
 
-  let primarySig: string | null = null;
-  let primaryError: Error | null = null;
-  try {
-    primarySig = await sendViaHeliusSender(conn, signedTx, options);
-  } catch (e) {
-    primaryError = e as Error;
-  }
+  // Submit via both paths concurrently. Either returns a signature; we
+  // confirm against the original blockhash. Sender errors silently degrade
+  // to "RPC won the race".
+  const senderPromise = sendViaHeliusSender(conn, signedTx, options).catch(
+    (e: Error) => {
+      console.warn(`[helius-sender] sender error: ${e.message}`);
+      return null as null;
+    },
+  );
+  const rpcPromise = conn
+    .sendRawTransaction(rawTx, {
+      skipPreflight: options.skipPreflight ?? true,
+      preflightCommitment: "confirmed",
+      maxRetries: 5,
+    })
+    .catch((e: Error) => {
+      console.warn(`[helius-sender] rpc error: ${e.message}`);
+      return null as null;
+    });
 
-  if (primarySig) {
-    try {
-      await conn.confirmTransaction(
-        {
-          signature: primarySig,
-          blockhash: options.blockhash,
-          lastValidBlockHeight: options.lastValidBlockHeight,
-        },
-        "confirmed",
-      );
-      return primarySig;
-    } catch (e) {
-      // Sender accepted but confirmation failed (block height exceeded etc).
-      // Fall through to RPC re-broadcast of the same signed bytes.
-      primaryError = e as Error;
-    }
+  const [senderSig, rpcSig] = await Promise.all([senderPromise, rpcPromise]);
+  const sig = senderSig ?? rpcSig;
+  if (!sig) {
+    throw new Error("both Helius Sender and RPC submission failed");
   }
-
-  // Fallback path: vanilla RPC. Same signed tx, same blockhash, fresh attempt.
-  const rpcSig = await conn.sendRawTransaction(rawTx, {
-    skipPreflight: options.skipPreflight ?? true,
-    preflightCommitment: "confirmed",
-    maxRetries: 5,
-  });
   await conn.confirmTransaction(
     {
-      signature: rpcSig,
+      signature: sig,
       blockhash: options.blockhash,
       lastValidBlockHeight: options.lastValidBlockHeight,
     },
     "confirmed",
   );
-  if (primaryError) {
-    console.warn(
-      `[helius-sender] sender path failed (${primaryError.message}); confirmed via RPC fallback as ${rpcSig}`,
-    );
-  }
-  return rpcSig;
+  return sig;
 }
 
 /**
