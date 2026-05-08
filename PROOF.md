@@ -19,6 +19,9 @@ https://solscan.io/tx/<sig>?cluster=devnet
 | `open_streaming_pact` | `3aHBKMnREevjKRAAF88y6Hm5znfR5eAPbGBJZyhN7God2JnLd7zZrP3kwwFhacnWZrZNUh9km5vH82TxLdDjVRH1` |
 | `claim_streaming` | `3cVPDeoxWbUbDAWEMQ2vmSwXaYoBVxvge5Xqx8jodhZGZQVagNGu6YTbsswAspwNuukndKc7Trem6irDvk5WRL5Z` |
 | Allowed sub-cap spend (sanity) | `2mNSArk9XdNbJZ7ZCgtekpHoFn7fVqEeKfASGQxJ3w2n8ghdXHDNTbKgoQYfFTRFf4kEhhbEsiWJLo7X3VeQzPZu` |
+| **Full ALLOW round-trip via `/api/x402/proxy/arxiv-fetch`** (proxy → on-chain spend → 0.10 USDC to merchant) | `2R6euT6Hc8NgpdaWQX3CAY1pmTWURKv1vK2s8BTA6Lj8k86NZ5s1i96bAecSp4gkyK79E8yfiXD7WzFQXXEznNbj` |
+
+**Pay-skills catalog readiness:** the round-trip tx above proves `/api/x402/proxy/arxiv-fetch` accepts a valid Settle credential, lands `spend_via_pact` on-chain, and routes the canned arXiv deliverable back to the caller in 2.5 s. Receipt verifiable at `/api/verify/1d83d34fa881b9fcc27d37b2c334381c93e66da95313b3d23c5f492d18b8f156`. Reproducible via `node_modules/.bin/tsx apps/web/e2e/phantom-qa/test-roundtrip-proxy.mjs` (deployer keypair + `~/.config/solana/id.json` required).
 
 **Anchor program:** `HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD`
 Last Deployed In Slot: **460677446** (this session) — byte-equal to local `target/deploy/settle_agent_card.so`.
