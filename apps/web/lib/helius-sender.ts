@@ -70,9 +70,8 @@ export function addPriorityFeeAndTip(params: {
       "2q5pghRs6arqVjRvT5gfgWfWcHWmw1ZuCzphgd5KfWGJ",
       "wyvPkWjVZz1M8fHQnMMCDTQDbkManefNNhweYk5WkcF",
     ];
-    const tipAccount = new PublicKey(
-      HELIUS_TIP_WALLETS[Math.floor(Math.random() * HELIUS_TIP_WALLETS.length)],
-    );
+    const idx = Math.floor(Math.random() * HELIUS_TIP_WALLETS.length);
+    const tipAccount = new PublicKey(HELIUS_TIP_WALLETS[idx]!);
     tx.instructions.push(
       SystemProgram.transfer({
         fromPubkey: feePayer,
