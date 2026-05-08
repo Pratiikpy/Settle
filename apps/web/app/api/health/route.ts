@@ -122,12 +122,17 @@ async function checkFacilitator(): Promise<CheckResult> {
 }
 
 async function checkDemoMerchants(): Promise<CheckResult> {
-  const url = process.env.DEMO_MERCHANTS_URL ?? "http://localhost:8788";
+  const url = process.env.DEMO_MERCHANTS_URL;
+  if (!url) {
+    // Inline mode: /api/x402/proxy/<merchant> returns canned deliverables itself.
+    // No upstream service needed.
+    return { ok: true, data: { mode: "inline" } };
+  }
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(2000) });
     if (!res.ok) return { ok: false, detail: `HTTP ${res.status}` };
     const json = await res.json();
-    return { ok: true, data: json };
+    return { ok: true, data: { mode: "upstream", upstream: json } };
   } catch (e) {
     return { ok: false, detail: (e as Error).message };
   }
