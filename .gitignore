@@ -98,3 +98,6 @@ infra/supabase/.temp/
 # additional funding wallets pooled past Circle's 20-USDC-per-wallet limit
 .test-funder-2.json
 .test-funder-3.json
+.vercel
+CLAUDE.md
+HALF_BAKED.md
