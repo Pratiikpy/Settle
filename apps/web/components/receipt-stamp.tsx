@@ -160,8 +160,6 @@ export function VerifiedStamp({
       >
         {rows.map((row, idx) => {
           const fired = step > idx;
-          const stamp = step >= rows.length;
-          const labelPad = row.label.padEnd(22);
           const v = row.val ? row.val.replace(/^\\x/, "") : null;
           return (
             <div
@@ -172,6 +170,7 @@ export function VerifiedStamp({
                 gap: 10,
                 opacity: 1,
                 transition: "opacity 200ms",
+                flexWrap: "wrap",
               }}
               data-testid={`verify-row-${row.key}`}
             >
@@ -182,12 +181,11 @@ export function VerifiedStamp({
                   width: 14,
                   height: 14,
                   borderRadius: "50%",
-                  border: fired
-                    ? `0`
-                    : `2px solid ${accent}66`,
+                  border: fired ? `0` : `2px solid ${accent}66`,
                   background: fired ? accent : "transparent",
                   position: "relative",
                   transition: "background 180ms, border-color 180ms",
+                  flexShrink: 0,
                 }}
               >
                 {fired ? (
@@ -220,8 +218,23 @@ export function VerifiedStamp({
                   />
                 )}
               </span>
-              <span style={{ color: "#7c93ff" }}>{labelPad}</span>
-              <span style={{ flex: 1 }}>
+              <span
+                style={{
+                  color: "#7c93ff",
+                  minWidth: 132,
+                  display: "inline-block",
+                }}
+              >
+                {row.label}
+              </span>
+              <span
+                style={{
+                  flex: "1 1 auto",
+                  wordBreak: "break-all",
+                  overflowWrap: "anywhere",
+                  minWidth: 0,
+                }}
+              >
                 {v ? `${v.slice(0, 14)}…${v.slice(-8)}` : "—"}
               </span>
               <span
@@ -229,9 +242,9 @@ export function VerifiedStamp({
                   color: fired ? accent : "#5a5f66",
                   fontSize: 11,
                   fontWeight: 600,
-                  minWidth: 96,
                   textAlign: "right",
                   transition: "color 180ms",
+                  flexShrink: 0,
                 }}
               >
                 {fired ? "✓ matches" : "computing…"}
