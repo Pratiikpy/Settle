@@ -56,6 +56,20 @@ const PREVIEW: FeedItem[] = [
   },
 ];
 
+// A clearly-labelled showcase DENY to splice in when the real feed has no
+// blocked spends yet. The receipt_hash starts with "showcase:" so renderers
+// can label it accurately and we never claim it landed on-chain.
+const SHOWCASE_DENY: FeedItem = {
+  request_id: "showcase-deny",
+  decision: "DENY",
+  deny_code: "OverCap",
+  amount_usdc: 50,
+  merchant: "TripPlanner",
+  sig: null,
+  receipt_hash: "showcase:over-cap-deny",
+  created_at: new Date().toISOString(),
+};
+
 export function WatchAgentDemo() {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [isReal, setIsReal] = useState(false);
@@ -76,7 +90,13 @@ export function WatchAgentDemo() {
         if (sig === lastSig) return;
         lastSig = sig;
         if (real.length >= 2) {
-          setItems(real.slice(0, 8));
+          // The policy engine's defining feature is blocking spends. If the
+          // real feed has no DENY in the visible window, splice in a
+          // clearly-labelled showcase row so the page demonstrates both
+          // outcomes — ALLOW and DENY — instead of looking ALLOW-only.
+          const visible = real.slice(0, 8);
+          const hasDeny = visible.some((it) => it.decision === "DENY");
+          setItems(hasDeny ? visible : [SHOWCASE_DENY, ...visible].slice(0, 8));
           setIsReal(true);
         } else {
           setItems(PREVIEW);
@@ -168,6 +188,9 @@ export function WatchAgentDemo() {
 
 function Row({ item, isReal }: { item: FeedItem; isReal: boolean }) {
   const allow = item.decision === "ALLOW";
+  const isShowcase =
+    item.request_id.startsWith("showcase-") ||
+    (item.receipt_hash ?? "").startsWith("showcase:");
   return (
     <div
       data-testid={`watch-row-${item.decision.toLowerCase()}`}
@@ -208,9 +231,24 @@ function Row({ item, isReal }: { item: FeedItem; isReal: boolean }) {
             {item.deny_code}
           </span>
         ) : null}
+        {isShowcase ? (
+          <span
+            title="Synthetic example. Real DENY events stream the same shape."
+            style={{
+              fontSize: 11,
+              padding: "2px 8px",
+              borderRadius: 6,
+              background: "rgba(255,189,46,0.12)",
+              color: "#ffbd2e",
+              fontWeight: 600,
+            }}
+          >
+            showcase
+          </span>
+        ) : null}
       </div>
       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-        {isReal && item.sig ? (
+        {isReal && !isShowcase && item.sig ? (
           <a
             data-testid="watch-tx-link"
             href={getSolscanUrl(item.sig)}
@@ -221,7 +259,9 @@ function Row({ item, isReal }: { item: FeedItem; isReal: boolean }) {
             tx ↗
           </a>
         ) : null}
-        {item.request_id && !item.request_id.startsWith("preview-") ? (
+        {!isShowcase &&
+        item.request_id &&
+        !item.request_id.startsWith("preview-") ? (
           <a
             data-testid="watch-receipt-link"
             href={`/r/${item.request_id}`}

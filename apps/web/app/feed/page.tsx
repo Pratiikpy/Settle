@@ -98,16 +98,45 @@ export default function FeedPage() {
             style={{ padding: 32, textAlign: "center" }}
           >
             <p className="w6-muted" style={{ fontSize: 13, marginBottom: 6 }}>
-              No public events yet.
+              No public events yet
             </p>
             <p
               className="w6-muted"
-              style={{ fontSize: 12, lineHeight: 1.5, maxWidth: 420, margin: "0 auto" }}
+              style={{
+                fontSize: 12,
+                lineHeight: 1.5,
+                maxWidth: 480,
+                margin: "0 auto 16px",
+              }}
             >
-              Receipts are private by default. Senders can opt-in to publish
-              an event here when they share a receipt — protecting privacy
-              for everyone else.
+              Receipts are private by default. Senders opt in to publish
+              one here when they share it — that way the public feed shows
+              real on-chain activity from people who chose to share, not
+              everyone's private history.
             </p>
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <a
+                href="/watch"
+                className="w6-btn w6-btn-secondary"
+                style={{ fontSize: 13 }}
+              >
+                Watch the live agent ledger →
+              </a>
+              <a
+                href="/leaderboard"
+                className="w6-btn w6-btn-ghost"
+                style={{ fontSize: 13 }}
+              >
+                Browse the capability heatmap →
+              </a>
+            </div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

@@ -190,6 +190,31 @@ export default function VerifierPage() {
             <code>context_hash</code>. Federation-trusted origins resolve
             automatically.
           </div>
+          <div
+            style={{
+              marginTop: 16,
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <span className="w6-muted" style={{ fontSize: 12 }}>
+              No hash on hand?
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setInput(
+                  "1d83d34fa881b9fcc27d37b2c334381c93e66da95313b3d23c5f492d18b8f156",
+                );
+              }}
+              className="w6-btn w6-btn-ghost"
+              style={{ fontSize: 12, padding: "6px 12px" }}
+            >
+              Try this sample receipt →
+            </button>
+          </div>
         </div>
 
         {/* Lifecycle / verdict */}

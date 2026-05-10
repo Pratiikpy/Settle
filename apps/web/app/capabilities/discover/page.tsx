@@ -74,7 +74,7 @@ export default function DiscoverPage() {
 
         <form
           onSubmit={search}
-          style={{ display: "flex", gap: 8, marginBottom: 18 }}
+          style={{ display: "flex", gap: 8, marginBottom: 14 }}
         >
           <input
             type="text"
@@ -93,6 +93,70 @@ export default function DiscoverPage() {
             {loading ? "Thinking…" : "Find"}
           </button>
         </form>
+
+        {results.length === 0 && !loading && !q && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              marginBottom: 24,
+            }}
+          >
+            <div
+              className="w6-eyebrow"
+              style={{ fontSize: 11, color: "var(--w6-ink-3)" }}
+            >
+              Try one of these
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {[
+                "fetch arxiv abstract",
+                "translate JA to EN",
+                "summarize a URL",
+                "OCR a receipt image",
+                "look up wallet balance",
+                "find a place by name",
+              ].map((sample) => (
+                <button
+                  key={sample}
+                  type="button"
+                  onClick={() => {
+                    setQ(sample);
+                  }}
+                  className="w6-chip"
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: 12.5,
+                    border: "1px solid var(--w6-rule)",
+                    borderRadius: 999,
+                    background: "var(--w6-paper)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {sample}
+                </button>
+              ))}
+            </div>
+            <div
+              className="w6-muted"
+              style={{ fontSize: 12, marginTop: 4, lineHeight: 1.5 }}
+            >
+              The full registry is browsable at{" "}
+              <a
+                href="/capabilities"
+                style={{
+                  color: "var(--w6-accent)",
+                  textDecoration: "underline",
+                }}
+              >
+                /capabilities
+              </a>
+              . Three demo capabilities (arxiv-fetch, translate, summarize) are
+              live on devnet today.
+            </div>
+          </div>
+        )}
 
         {error && (
           <div
