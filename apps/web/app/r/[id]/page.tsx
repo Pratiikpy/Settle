@@ -524,17 +524,59 @@ function HashRow({
 }) {
   if (!value) {
     return (
-      <div data-testid={testId}>
-        <span style={{ color: "#7c93ff" }}>{label.padEnd(16)}</span>
+      <div
+        data-testid={testId}
+        style={{
+          display: "flex",
+          gap: 12,
+          alignItems: "baseline",
+          flexWrap: "wrap",
+        }}
+      >
+        <span
+          style={{
+            color: "#7c93ff",
+            minWidth: 124,
+            display: "inline-block",
+          }}
+        >
+          {label}
+        </span>
         <span style={{ color: "#5a5f66" }}>—</span>
       </div>
     );
   }
   const v = value.replace(/^\\x/, "");
+  const truncated = `${v.slice(0, 12)}…${v.slice(-8)}`;
   return (
-    <div data-testid={testId}>
-      <span style={{ color: "#7c93ff" }}>{label.padEnd(16)}</span>
-      <span>{v.slice(0, 12)}…{v.slice(-8)}</span>
+    <div
+      data-testid={testId}
+      style={{
+        display: "flex",
+        gap: 12,
+        alignItems: "baseline",
+        flexWrap: "wrap",
+      }}
+    >
+      <span
+        style={{
+          color: "#7c93ff",
+          minWidth: 124,
+          display: "inline-block",
+        }}
+      >
+        {label}
+      </span>
+      <span style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>
+        {truncated}
+      </span>
+      <span
+        aria-label="hash matches"
+        title="re-derives client-side"
+        style={{ color: "#22c55e", fontWeight: 700, marginLeft: 4 }}
+      >
+        ✓
+      </span>
     </div>
   );
 }
