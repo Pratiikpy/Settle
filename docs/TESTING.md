@@ -1,6 +1,6 @@
 # Testing Guide
 
-This document covers test infrastructure for the Settle Anchor program and the broader monorepo. For the strategy of WHAT to test, see [STRATEGY.md](./STRATEGY.md).
+This document covers test infrastructure for the Settle Anchor program and the broader monorepo.
 
 ## Anchor program tests (24 tests, 14 ix coverage)
 
@@ -72,4 +72,4 @@ pnpm --filter @settle/indexer exec tsc --noEmit
 
 ## End-to-end smoke test
 
-`scripts/bootstrap-test-wallet.ts` generates a dedicated test wallet and outputs a Circle-faucet URL. After fauceting USDC (manual one-time), the wallet at `.test-wallet.json` (gitignored) is reusable forever for E2E tests. See `docs/STRATEGY.md` §15 for the verification gates this satisfies.
+`scripts/bootstrap-test-wallet.ts` generates a dedicated test wallet and outputs a Circle-faucet URL. After fauceting USDC (manual one-time), the wallet at `.test-wallet.json` (gitignored) is reusable forever for E2E tests.

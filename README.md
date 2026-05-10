@@ -16,7 +16,7 @@ Settle is the trust layer that sits between humans and the AI agents they hand a
 
 **[use-settle.vercel.app](https://use-settle.vercel.app)** · [▶ Watch the 4-min demo](https://youtu.be/UB_qD_q6Kes) · [Verify a receipt](https://use-settle.vercel.app/verify) · Anchor program [`HU4piq8…77nD`](https://solscan.io/account/HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD?cluster=devnet) on devnet
 
-**🏆 Solana Frontier Hackathon submission** — [📊 Pitch deck (PDF)](./docs/Settle-pitch-deck.pdf) · [🧪 Verify everything in 53s](#judge-fastest-path-to-verify-everything) · [📋 PROOF.md](./PROOF.md) · [📖 Session report](./docs/SESSION_REPORT.md) · [🛠 Operator handoff](./docs/OPERATOR_HANDOFF.md)
+**Solana Frontier Hackathon submission.** Pitch deck: [`docs/Settle-pitch-deck.pdf`](./docs/Settle-pitch-deck.pdf). On-chain evidence: [`PROOF.md`](./PROOF.md). Reproducible verification: [Verify everything in 53s](#judge-fastest-path-to-verify-everything).
 
 **In the box:** 2 Anchor programs (settle-agent-card 0.31, settle-dwallet-router 1.0 cross-chain) · 15 instructions on the main program · 4 hashes per receipt · 3 SDK runtimes (TS / Python on PyPI / Rust, byte-identical) · 1 cross-chain extension via [Ika](https://ika.xyz) (Solana → Ethereum Sepolia) · on-chain bytecode verification at [`/verify-build`](https://use-settle.vercel.app/verify-build) · 199 SDK unit tests + Playwright E2E + cross-language parity in CI
 
@@ -196,9 +196,9 @@ A sibling Anchor 1.0 program (`programs-ika/settle-dwallet-router`) extends the 
 | Cross-chain UI | `/start/agent-crosschain`, `/cards/crosschain/<pda>`, `/watch-crosschain` | live |
 | Tests | 68 across the integration (15 Rust + 12 SDK + 11 validation + 21 EIP-1559 + 9 Playwright) | all green |
 
-Full integration story: [`docs/IKA-INTEGRATION.md`](docs/IKA-INTEGRATION.md). Test evidence: [`docs/IKA-TEST-REPORT.md`](docs/IKA-TEST-REPORT.md).
+Full integration story: [`docs/IKA-INTEGRATION.md`](docs/IKA-INTEGRATION.md).
 
-> **Status note.** The Settle-side router program, policy gate, and EIP-1559 receipt envelope are deployed and unit-tested on devnet (15/15 router tests, 21/21 EIP-1559 tests). Live cross-chain signing through the Ika dWallet network is currently blocked on their pre-alpha gRPC endpoint (NGHTTP2_PROTOCOL_ERROR / ALPN handshake failure across Node and Bun, [`docs/IKA-TEST-REPORT.md`](docs/IKA-TEST-REPORT.md)). The Settle-side architecture is independently verifiable today; the round-trip will go live as Ika promotes to a stable RPC.
+> **Status note.** The Settle-side router program, policy gate, and EIP-1559 receipt envelope are deployed and unit-tested on devnet (15/15 router tests, 21/21 EIP-1559 tests). Live cross-chain signing through the Ika dWallet network is currently blocked on their pre-alpha gRPC endpoint (NGHTTP2_PROTOCOL_ERROR / ALPN handshake failure across Node and Bun). The Settle-side architecture is independently verifiable today; the round-trip will go live once Ika promotes to a stable RPC.
 
 ---
 
@@ -367,8 +367,8 @@ settle-protocol/
 ├── infra/supabase/migrations/    schema + RLS + receipt views
 └── docs/
     ├── IKA-INTEGRATION.md    Cross-chain integration story
-    ├── IKA-TEST-REPORT.md    Test evidence + reproduction commands
-    └── PRODUCT_SPEC.md       Full feature decomp + primitive inventory
+    ├── PRODUCT_SPEC.md       Full feature decomp + primitive inventory
+    └── TESTING.md            Test infrastructure overview
 ```
 
 ---

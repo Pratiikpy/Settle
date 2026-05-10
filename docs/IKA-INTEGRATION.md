@@ -5,7 +5,7 @@
 
 This document is the user-facing technical story for Settle's submission to
 the Encrypt and Ika sidetrack. Test evidence lives in
-[`IKA-TEST-REPORT.md`](./IKA-TEST-REPORT.md).
+`apps/web/e2e/phantom-qa/` (run with `pnpm tsx`).
 
 ---
 
@@ -160,7 +160,6 @@ psql "$SUPABASE_URL" -f infra/supabase/migrations/0051_crosschain_receipts.sql
 
 ### Run the test matrix
 
-See [`IKA-TEST-REPORT.md`](./IKA-TEST-REPORT.md) for the full evidence package.
 Quick summary of what to run:
 
 ```bash
@@ -230,7 +229,7 @@ Recommended takes for the submission demo:
 | 65–80s | **DENY path.** Trigger a $200 over-cap spend. Show: Solana program denies → no MessageApproval PDA created → receipt at `/r/<id>` shows `Blocked ✓` with deny reason and "no tx — signature was not produced". | "Policy fails. No signature is ever produced. Same proof, opposite outcome." |
 | 80–90s | Cut back to `/watch-crosschain` ALLOW + DENY split panel. Camera on the trust-boundary footer. | "Solana defines the policy. Ika enforces custody. Settle shows the proof." |
 
-Submission claim language must match `docs/IKA-TEST-REPORT.md` §6. Use:
+Submission claim language. Use:
 > **Phases A through E shipped. 68 tests across the integration green (15 router + 12 receipt-kernel + 11 validation + 21 EIP-1559 + 9 UI). Live Ika devnet roundtrip verified via `scripts/ika-roundtrip.ts`.**
 
 If the live roundtrip is not verified at submission time, downgrade the claim to:

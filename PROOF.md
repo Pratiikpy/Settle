@@ -79,21 +79,12 @@ Output (last run):
 | 60 | fraud/scan reputation poisoning + import/solana-pay | **Security HIGH** | `cd407ba` |
 | 61 | group-accounts + request-spend trusted body | Security | `455332f` |
 
-## What still requires operator action
-
-See [`docs/OPERATOR_HANDOFF.md`](./docs/OPERATOR_HANDOFF.md) for copy-paste commands.
-
-- **Phantom dApp warning** — email `review@phantom.com` to delist `use-settle.vercel.app`. Multi-stage warning chain is bypassable but is a poor first impression.
-- **`SETTLE_WEBHOOK_SIGNING_SECRET`** — currently unset on Vercel. Live webhooks ship unsigned until set; the `verifyWebhookSignature` chain (8/8 driver-proven) activates immediately when the env var lands.
-- **`agent_cards` Supabase mirror** — has hours-of-lag for fresh on-chain cards. Manual SQL seed (template in `OPERATOR_HANDOFF.md`) unblocks `phase5-signer` to fire on the post-fix binary.
-
 ## Documents
 
 - [`docs/Settle-pitch-deck.pdf`](./docs/Settle-pitch-deck.pdf) — 14-slide hackathon pitch deck
-- [`docs/SESSION_REPORT.md`](./docs/SESSION_REPORT.md) — full evidence pack with every commit hash
-- [`docs/BUG_26_DEPLOY_LOG.md`](./docs/BUG_26_DEPLOY_LOG.md) — Bug #26 byte-equality proof + on-chain redeploy log
-- [`docs/OPERATOR_HANDOFF.md`](./docs/OPERATOR_HANDOFF.md) — copy-paste commands for the 4 remaining operator-side actions
-- [`apps/web/e2e/phantom-qa/MISSION.md`](./apps/web/e2e/phantom-qa/MISSION.md) — original mission file, every ⚠️ now ✅
+- [`docs/PRODUCT_SPEC.md`](./docs/PRODUCT_SPEC.md) — feature decomposition and primitive inventory
+- [`docs/IKA-INTEGRATION.md`](./docs/IKA-INTEGRATION.md) — cross-chain integration story
+- [`docs/TESTING.md`](./docs/TESTING.md) — test infrastructure overview
 - [`apps/web/e2e/phantom-qa/run-all.mjs`](./apps/web/e2e/phantom-qa/run-all.mjs) — 12-driver master orchestrator, runs against live production in ~53s
 
 ## Key wallets
