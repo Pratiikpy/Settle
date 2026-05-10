@@ -53,13 +53,14 @@ Output (last run):
 ▶ handle-claim-webhook.mjs             ✓  PASS (5.7s)
 ▶ verify-bug-53.mjs                    ✓  PASS (2.2s)
 ▶ sdk-ts-e2e.mjs                       ✓  8/8 (2.6s)
-▶ full-feature-driver.mjs              ✓  11/11 (10.6s)
-▶ real-import-receipt.mjs              ✓  PASS (1.7s)
-▶ real-group-voting.mjs                ✓  7/7 (10.1s)
+▶ full-feature-driver.mjs              ✓  11/11 (10.2s)
+▶ real-import-receipt.mjs              ✓  PASS (1.5s)
+▶ real-group-voting.mjs                ✓  7/7 (9.7s)
 ▶ mcp-middleware-e2e.mjs               ✓  8/8 (1.2s)
 ▶ webhook-hmac-verify.mjs              ✓  8/8 (1.2s)
-▶ create-merchant-scaffold.mjs         ✓  8/8 (0.6s)
-11/11 drivers PASSED in 46.6s
+▶ create-merchant-scaffold.mjs         ✓  8/8 (0.7s)
+▶ platform-health.mjs                  ✓  PASS (8.8s)
+12/12 drivers PASSED in 59.1s
 ```
 
 ## Bug fixes (commit hashes)
