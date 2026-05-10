@@ -1,28 +1,26 @@
 # Settle
 
-## The programmable spending card for AI agents.
-
-**Caps. Allowlists. Expiry. Instant revoke.** Every payment leaves a four-hash receipt on Solana that anyone can re-derive in a browser tab. No Settle server in the trust path; on-chain policy enforcement is independent of our database.
-
-Settle is the trust layer that sits between humans and the AI agents they hand a budget to. It also works for plain consumer USDC sends and merchant accept-payments flows — but the spine is the agent card.
+**Programmable USDC spending for AI agents on Solana.** Set a per-call cap, a daily cap, an allowlist of merchants, an expiry, and a one-tap revoke. Every spend writes a receipt on-chain whose four BLAKE3 hashes anyone can re-derive in a browser tab.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Built on Solana](https://img.shields.io/badge/built%20on-Solana-9945FF.svg)](https://solana.com)
 [![CI](https://github.com/Pratiikpy/Settle/actions/workflows/ci.yml/badge.svg)](https://github.com/Pratiikpy/Settle/actions/workflows/ci.yml)
-[![npm: settle-merchant](https://img.shields.io/npm/v/create-settle-merchant.svg?label=create-settle-merchant)](https://www.npmjs.com/package/create-settle-merchant)
-[![PyPI](https://img.shields.io/pypi/v/settle-protocol-sdk.svg?label=settle-protocol-sdk)](https://pypi.org/project/settle-protocol-sdk/)
+[![npm: create-settle-merchant](https://img.shields.io/npm/v/create-settle-merchant.svg?label=create-settle-merchant)](https://www.npmjs.com/package/create-settle-merchant)
+[![PyPI: settle-protocol-sdk](https://img.shields.io/pypi/v/settle-protocol-sdk.svg?label=settle-protocol-sdk)](https://pypi.org/project/settle-protocol-sdk/)
 
 ![Settle landing](docs/screenshots/hero.png)
 
-**[use-settle.vercel.app](https://use-settle.vercel.app)** · [▶ Watch the 4-min demo](https://youtu.be/UB_qD_q6Kes) · [Verify a receipt](https://use-settle.vercel.app/verify) · Anchor program [`HU4piq8…77nD`](https://solscan.io/account/HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD?cluster=devnet) on devnet
+**[use-settle.vercel.app](https://use-settle.vercel.app)** · [Watch the 4-min demo](https://youtu.be/UB_qD_q6Kes) · [Verify a receipt](https://use-settle.vercel.app/verify) · Program [`HU4piq8…77nD`](https://solscan.io/account/HU4piq8bwYFast81U6e8huYVb8JaY44chWE8QVGT77nD?cluster=devnet) on devnet
 
-**Solana Frontier Hackathon submission.** Pitch deck: [`docs/Settle-pitch-deck.pdf`](./docs/Settle-pitch-deck.pdf). On-chain evidence: [`PROOF.md`](./PROOF.md). Reproducible verification: [Verify everything in 53s](#judge-fastest-path-to-verify-everything).
+Solana Frontier Hackathon submission. Pitch deck: [`docs/Settle-pitch-deck.pdf`](./docs/Settle-pitch-deck.pdf). On-chain evidence: [`PROOF.md`](./PROOF.md). Reproducible verification: [Verify everything in 53s](#judge-fastest-path-to-verify-everything).
 
-**In the box:** 2 Anchor programs (settle-agent-card 0.31, settle-dwallet-router 1.0 cross-chain) · 15 instructions on the main program · 4 hashes per receipt · 3 SDK runtimes (TS / Python on PyPI / Rust, byte-identical) · 1 cross-chain extension via [Ika](https://ika.xyz) (Solana → Ethereum Sepolia) · on-chain bytecode verification at [`/verify-build`](https://use-settle.vercel.app/verify-build) · 199 SDK unit tests + Playwright E2E + cross-language parity in CI
+**In the box:** two Anchor programs (`settle-agent-card` 0.31, `settle-dwallet-router` 1.0 for cross-chain), 15 instructions on the main program, four BLAKE3 hashes per receipt, three SDK runtimes (TypeScript, Python on PyPI, Rust on crates.io — byte-identical kernels), one cross-chain extension via [Ika](https://ika.xyz) (Solana to Ethereum Sepolia), on-chain bytecode verification at [`/verify-build`](https://use-settle.vercel.app/verify-build), and a CI job covering 199 SDK unit tests plus Playwright E2E plus cross-language parity.
 
-**Status:** devnet today · mainnet after audit ([`SECURITY.md`](./SECURITY.md))
+**Status:** devnet today, mainnet after audit. See [`SECURITY.md`](./SECURITY.md).
 
-> **Where Settle fits relative to [`pay`](https://github.com/solana-foundation/pay) (Solana Foundation, Feb 2026):** `pay` handles the client-side 402 → sign → retry handshake — wraps `curl`, `claude`, `codex`, etc., detects MPP / x402 challenges, asks the local wallet to authorize, retries with payment proof. Settle is the layer underneath: programmable policy gate (per-call cap, daily cap, allowlist, capability pin, expiry, revocation — all enforced atomically in one Anchor instruction) plus a four-hash receipt anyone can re-derive in a browser tab without trusting Settle's server. The two compose cleanly — `pay` is the highway, Settle is the receipt and the spending limit on the credit card.
+### How Settle relates to `pay`
+
+The Solana Foundation's [`pay`](https://github.com/solana-foundation/pay) CLI handles the client-side 402 handshake: it wraps `curl`, `claude`, `codex`, and similar tools, detects MPP and x402 challenges, asks the local wallet to authorize, then retries with payment proof. Settle is the layer underneath. It runs the policy gate (per-call cap, daily cap, allowlist, capability pin, expiry, revocation — all enforced atomically in one Anchor instruction) and produces the four-hash receipt anyone can re-derive without trusting Settle's server. The two compose: `pay` is the highway, Settle is the spending limit on the card and the receipt.
 
 ---
 
@@ -253,32 +251,18 @@ A non-exhaustive view of what runs today on devnet:
 
 **Off-chain:** Helius RPC + WebSocket · Helius Sender (priority transaction submission) · Jupiter Lite (quote + swap) · Pyth Hermes · Photon RPC (compressed accounts) · Solana Attestation Service · Solana Actions / Blinks · VAPID Web Push · jsQR + Solana Pay URL parsing.
 
-Eighteen Solana primitives composed under one policy gate. Every decision the gate makes, ALLOW or DENY, commits a hash-anchored receipt anyone can verify in their browser.
-
----
-
-## How Settle compares
-
-| | Stripe | Helio | [x402 raw](https://github.com/coinbase/x402) | **Settle** |
-|---|:-:|:-:|:-:|:-:|
-| Agent-native credentials (cap, allowlist, expiry, revocation) | — | — | partial | ✅ |
-| On-chain receipts (kernel-committed) | — | partial | — | ✅ |
-| Revocable in one tx | — | — | — | ✅ |
-| Verifiable without provider servers | — | — | — | ✅ |
-| Cross-chain signing under one policy | — | — | — | ✅ |
+Every ALLOW or DENY decision commits a hash-anchored receipt anyone can verify in their browser without trusting Settle's server.
 
 ---
 
 ## Architecture
 
-The on-chain core is the `settle-agent-card` Anchor 0.31 program (15 instructions). A sibling program, `settle-dwallet-router` (Anchor 1.0), extends the policy gate cross-chain via Ika. Hash-committed receipts. USDC mint pinned at create-time. Per-call cap, daily cap, allowlist, capability pin, expiry, and revocation are all enforced atomically in one ix, removing the TOCTOU window between policy decision and transfer.
+The on-chain core is the `settle-agent-card` Anchor 0.31 program: 15 instructions, hash-committed receipts, USDC mint pinned at create-time. Per-call cap, daily cap, allowlist, capability pin, expiry, and revocation are evaluated in the same instruction as the SPL transfer, so there is no TOCTOU window between policy decision and settlement. A sibling program, `settle-dwallet-router` (Anchor 1.0), extends the policy gate across chains via Ika.
 
 <details>
-<summary><b>Instruction list (14)</b></summary>
+<summary><b>Instruction list (15)</b></summary>
 
-`create_card`, `spend`, `spend_via_pact`, `revoke`, `record_denial`, `open_pact`, `close_pact`,
-`open_streaming_pact`, `claim_streaming`, `pause_streaming`, `resume_streaming`,
-`open_delivery_escrow`, `release_delivery_escrow`, `dispute_delivery_escrow`.
+`create_card`, `spend`, `spend_via_pact`, `record_receipt`, `revoke`, `record_denial`, `open_pact`, `close_pact`, `open_streaming_pact`, `claim_streaming`, `pause_streaming`, `resume_streaming`, `open_delivery_escrow`, `release_delivery_escrow`, `dispute_delivery_escrow`.
 
 `Pact.mode` is a `PactMode` enum: `OneShot`, `Streaming` (rate-per-slot with pause/resume), or `DeliveryEscrow` (pinned merchant + dispute window + permissionless post-deadline release).
 
@@ -287,7 +271,7 @@ The on-chain core is the `settle-agent-card` Anchor 0.31 program (15 instruction
 <details>
 <summary><b>Hash-committed receipts</b></summary>
 
-Every `PolicyDecisionEvent` commits 3 × 32-byte BLAKE3 hashes on-chain (`receipt_hash`, `reason_hash`, `policy_snapshot_hash`). The off-chain `purpose_hash` binds them to HTTP context. `@settle/sdk::verifyReceipt` re-derives every hash from the canonical JSON in any environment that can run JS.
+Every `PolicyDecisionEvent` commits three 32-byte BLAKE3 hashes on-chain (`receipt_hash`, `reason_hash`, `policy_snapshot_hash`). A fourth hash (`purpose_hash`) binds the receipt to its HTTP request context off-chain. `@settle/sdk::verifyReceipt` re-derives every hash from the canonical JSON in any JS environment.
 
 </details>
 
