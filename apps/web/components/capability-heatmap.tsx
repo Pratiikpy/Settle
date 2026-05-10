@@ -258,11 +258,8 @@ export function CapabilityHeatmap() {
           {simulate
             ? "Simulator warming up… events should land in 1–2 seconds."
             : "No ALLOW receipts in the last 60 s yet. Open this page on the right side of your screen and fire some agent traffic — the grid will light up in real time."}
-          {!simulate && (
-            <div className="mt-3 text-[11px] text-[#71717a]">
-              Demo rehearsal? Append <code className="rounded bg-[#e4e4e7] px-1 py-0.5">?simulate=1</code> to the URL.
-            </div>
-          )}
+          {/* The simulator query param is internal — never advertise it on
+              the public surface. */}
         </div>
       ) : (
         <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">

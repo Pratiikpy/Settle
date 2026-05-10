@@ -22,7 +22,7 @@ export function GET() {
       name: "Settle Receipts",
       symbol: "SETTLE",
       description:
-        "Cryptographic receipts for AI-agent payments on Solana. Every receipt commits 3 BLAKE3 hashes on-chain plus a binding off-chain purpose_hash. Verifiable by anyone via @settle/sdk verifyReceipt() â€” no Settle servers required.",
+        "Cryptographic receipts for AI-agent payments on Solana. Every receipt commits 3 BLAKE3 hashes on-chain plus a binding off-chain purpose_hash. Verifiable by anyone via @settle/sdk verifyReceipt() — no Settle servers required.",
       image: `${baseUrl}/og/cnft-collection.png`,
       external_url: baseUrl,
       attributes: [

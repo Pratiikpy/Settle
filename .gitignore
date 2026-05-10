@@ -130,3 +130,11 @@ apps/web/e2e/audit-screenshots/
 apps/web/e2e/autonomous-judge-screenshots/
 .playwright-mcp/
 .tmp/
+apps/web/e2e/phantom-qa/judge-multi-viewport.spec.ts
+apps/web/e2e/phantom-qa/judge-cold-visit.spec.ts
+apps/web/e2e/phantom-qa/judge-cold-shots/
+apps/web/e2e/phantom-qa/judge-deny-probes.mjs
+apps/web/e2e/phantom-qa/test-roundtrip-proxy.mjs
+apps/web/e2e/phantom-qa/setup-merchant-atas.mjs
+apps/web/e2e/phantom-qa/judge-multi-viewport-shots/
+apps/web/e2e/phantom-qa/judge-multi-viewport-findings.json

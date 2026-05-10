@@ -96,7 +96,7 @@ test("smoke", async ({ browser }) => {
       const r = await page.request.get(`${BURNER}${path}`);
       if (!r.ok()) continue;
       const html = await r.text();
-      if (/â†|Â/.test(html)) return `mojibake on ${path}`;
+      if (/â†|/.test(html)) return `mojibake on ${path}`;
     }
     return true;
   });

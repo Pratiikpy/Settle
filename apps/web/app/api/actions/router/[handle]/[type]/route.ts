@@ -227,7 +227,7 @@ export async function POST(
 
   const tx = new Transaction();
 
-  // Recipient ATA may not exist yet â€” sender pays rent.
+  // Recipient ATA may not exist yet — sender pays rent.
   let toAtaExists = true;
   try {
     await getAccount(connection, toAta);

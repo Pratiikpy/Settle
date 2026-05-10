@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const dynamic = "force-static";
 export const metadata = {
-  title: "Get started Â· Settle",
+  title: "Get started · Settle",
   description:
     "Choose how you'll use Settle: send money safely, accept payments, or build with AI agents.",
 };

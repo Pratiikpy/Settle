@@ -334,7 +334,7 @@ if (!verifyWebhookSignature(req.rawBody, sig, mySharedSecret)) {
             framework. Custom element handles wallet popup + receipt
             creation + confirmation.
           </p>
-          <Code lang="HTML">{`<script src="https://settle.app/pay.js"></script>
+          <Code lang="HTML">{`<script src="https://use-settle.vercel.app/pay.js"></script>
 <settle-pay
   merchant="<base58-pubkey>"
   amount="0.50"
@@ -376,7 +376,7 @@ document.querySelector("settle-pay")
 }`}</Code>
           <Code lang="TypeScript">{`import { createGraphqlClient } from "@settle/sdk";
 
-const client = createGraphqlClient("https://settle.app/api/graphql");
+const client = createGraphqlClient("https://use-settle.vercel.app/api/graphql");
 const data = await client<{ receipt: Receipt | null }>(query, { id });`}</Code>
         </Section>
 
@@ -437,7 +437,7 @@ const data = await client<{ receipt: Receipt | null }>(query, { id });`}</Code>
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <a
-              href="https://github.com/settle-protocol/settle"
+              href="https://github.com/Pratiikpy/Settle"
               target="_blank"
               rel="noreferrer"
               className="rounded-full border border-[#e4e4e7] px-3 py-1.5 text-[11px] text-[#52525b] hover:bg-[#f4f4f5]"

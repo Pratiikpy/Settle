@@ -17,7 +17,7 @@ import { createClient } from "@supabase/supabase-js";
 export const runtime = "nodejs";
 
 /**
- * F10 â€” One-time-use payment link claim (buyer side).
+ * F10 — One-time-use payment link claim (buyer side).
  *
  *   GET  /api/payment-links/[token]  → public preview (label, amount, creator, claimed?)
  *   POST /api/payment-links/[token]  → buyer pays. Body: { account: <buyer_pubkey> }
@@ -91,7 +91,7 @@ export async function GET(
   const isClaimed = row.claimed_at !== null;
   return NextResponse.json(
     {
-      label: `Settle Â· ${row.label}`,
+      label: `Settle · ${row.label}`,
       icon: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://use-settle.vercel.app"}/icon-512`,
       title: row.label,
       description:
@@ -100,7 +100,7 @@ export async function GET(
           ? "This link has already been claimed."
           : isExpired
             ? "This link has expired."
-            : `Pay $${row.amount_usdc.toFixed(2)} to ${row.creator_pubkey.slice(0, 6)}â€¦`),
+            : `Pay $${row.amount_usdc.toFixed(2)} to ${row.creator_pubkey.slice(0, 6)}…`),
       amount_usdc: row.amount_usdc,
       claimed: isClaimed,
       expired: isExpired,

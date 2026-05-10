@@ -27,7 +27,7 @@ import { W6AppShell } from "../../components/w6-app-shell";
 const DEMO_MERCHANT = "C9HAssvFBtEgHvZRVGdfxcUwrGfu5iK4Z3FKn52Ns7yY";
 
 export default function PayLandingPage() {
-  const [hostname, setHostname] = useState("https://settle.app");
+  const [hostname, setHostname] = useState("https://use-settle.vercel.app");
   // Snippet uses the production hostname by default; user can paste
   // their own deployment URL.
 
@@ -98,7 +98,7 @@ useEffect(() => {
               const props: Record<string, string> = {
                 merchant: DEMO_MERCHANT,
                 amount: "0.50",
-                note: "settle.app demo",
+                note: "use-settle demo",
               };
               return createElement("settle-pay", props);
             })()}

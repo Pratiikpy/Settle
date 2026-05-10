@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        // Don't crawl wallet-protected or per-user surfaces â€” not useful
+        // Don't crawl wallet-protected or per-user surfaces — not useful
         // in search and bots can't authenticate. Public surfaces stay
         // crawlable: /, /watch, /start/*, /r/*, /m/[handle],
         // /at/[handle], /verify, /leaderboard, /docs/*, /help,
@@ -36,7 +36,7 @@ export default function robots(): MetadataRoute.Robots {
           // would just see the connect prompt. /start/* is the
           // public, informational alternative.
           "/onboarding/",
-          // /embed/* are iframe widgets â€” no standalone product
+          // /embed/* are iframe widgets — no standalone product
           // meaning. The hosting page is what should be discoverable.
           "/embed/",
         ],

@@ -7,7 +7,7 @@ import { authFromRequest } from "../../../lib/wallet-auth";
 export const runtime = "nodejs";
 
 /**
- * F10 â€” One-time-use payment link creation (creator side).
+ * F10 — One-time-use payment link creation (creator side).
  *
  *   POST /api/payment-links     create a fresh single-use link (auth = creator)
  *   GET  /api/payment-links?creator=<pk>   list creator's links

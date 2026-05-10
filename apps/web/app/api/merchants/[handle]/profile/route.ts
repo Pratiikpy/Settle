@@ -139,8 +139,8 @@ export async function GET(
     joined_at: handleRow.created_at,
     recent_receipts: recent,
     embed: {
-      pay_button: `<script src="https://settle.app/pay.js"></script>\n<settle-pay to="${handleRow.handle}" amount="1.00"></settle-pay>`,
-      verify_button: `<script src="https://settle.app/verify.js"></script>\n<settle-verify request-id="REQUEST_ID_HERE"></settle-verify>`,
+      pay_button: `<script src="https://use-settle.vercel.app/pay.js"></script>\n<settle-pay to="${handleRow.handle}" amount="1.00"></settle-pay>`,
+      verify_button: `<script src="https://use-settle.vercel.app/verify.js"></script>\n<settle-verify request-id="REQUEST_ID_HERE"></settle-verify>`,
     },
   };
 

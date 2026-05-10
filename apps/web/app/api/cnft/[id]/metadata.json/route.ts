@@ -15,7 +15,7 @@ export const runtime = "nodejs";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Cache-Control": "public, max-age=300", // 5min â€” receipts are immutable but Supabase reads aren't free
+  "Cache-Control": "public, max-age=300", // 5min — receipts are immutable but Supabase reads aren't free
 };
 
 export async function GET(
@@ -52,13 +52,13 @@ export async function GET(
         .maybeSingle();
       receipt = data;
     } catch {
-      // Ignore â€” fall through to placeholder
+      // Ignore — fall through to placeholder
     }
   }
 
   if (receipt) {
     const usdc = (Number(receipt.amount_lamports) / 1_000_000).toFixed(2);
-    const merchant = `${receipt.merchant_pubkey.slice(0, 6)}â€¦${receipt.merchant_pubkey.slice(-4)}`;
+    const merchant = `${receipt.merchant_pubkey.slice(0, 6)}…${receipt.merchant_pubkey.slice(-4)}`;
     const receiptHashStr =
       typeof receipt.receipt_hash === "string"
         ? receipt.receipt_hash.startsWith("\\x")
@@ -78,7 +78,7 @@ export async function GET(
           { trait_type: "Amount (USDC)", value: usdc },
           { trait_type: "Decision Slot", value: receipt.decision_slot },
           { trait_type: "HTTP", value: `${receipt.target_method} ${receipt.target_path}` },
-          { trait_type: "Receipt Hash", value: receiptHashStr.slice(0, 16) + "â€¦" },
+          { trait_type: "Receipt Hash", value: receiptHashStr.slice(0, 16) + "…" },
           { trait_type: "Created", value: receipt.created_at },
           { trait_type: "Verifiable", value: "@settle/sdk verifyReceipt()" },
         ],

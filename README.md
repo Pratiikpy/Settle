@@ -14,7 +14,7 @@
 
 Solana Frontier Hackathon submission. Pitch deck: [`docs/Settle-pitch-deck.pdf`](./docs/Settle-pitch-deck.pdf). On-chain evidence: [`PROOF.md`](./PROOF.md). Reproducible verification: [Verify everything in 53s](#judge-fastest-path-to-verify-everything).
 
-**In the box:** two Anchor programs (`settle-agent-card` 0.31, `settle-dwallet-router` 1.0 for cross-chain), 15 instructions on the main program, four BLAKE3 hashes per receipt, three SDK runtimes (TypeScript, Python on PyPI, Rust on crates.io — byte-identical kernels), one cross-chain extension via [Ika](https://ika.xyz) (Solana to Ethereum Sepolia), on-chain bytecode verification at [`/verify-build`](https://use-settle.vercel.app/verify-build), and a CI job covering 199 SDK unit tests plus Playwright E2E plus cross-language parity.
+**In the box:** two Anchor programs (`settle-agent-card` 0.31, `settle-dwallet-router` 1.0 for cross-chain), 15 instructions on the main program, four BLAKE3 hashes per receipt, three SDK runtimes (TypeScript on npm, Python on PyPI, Rust in repo — byte-identical kernels enforced by parity tests), one cross-chain extension via [Ika](https://ika.xyz) (Solana to Ethereum Sepolia), on-chain bytecode verification at [`/verify-build`](https://use-settle.vercel.app/verify-build), and 199 SDK vitest cases that run on every push.
 
 **Status:** devnet today, mainnet after audit. See [`SECURITY.md`](./SECURITY.md).
 
@@ -244,7 +244,7 @@ A non-exhaustive view of what runs today on devnet:
 - Real-time indexer over Helius onLogs WebSocket + webhook worker + escrow cron for permissionless post-deadline release
 - VAPID Web Push for receipt notifications
 - Sealed-box (curve25519) encryption for off-chain purpose strings
-- 150+ tests across Anchor program · Vitest unit suites on `@settle/sdk` · cross-language parity · Playwright E2E flows · Ika integration
+- Test coverage: 199 vitest cases on `@settle/sdk` (run on every push), 26 Anchor mocha tests, 28 Python parity tests, 67 cross-chain integration tests (15 Rust + 12 SDK + 11 validation + 21 EIP-1559 + 9 Playwright), plus end-to-end Playwright flows
 
 ### Solana primitives composed
 **On-chain:** Anchor 0.31 · SPL Token + ATA · SPL Memo · Solana Pay · Compressed NFTs (Bubblegum V1) · Address Lookup Tables · Versioned transactions · Lighthouse tx assertions · MPL Core soulbound badges · Light Protocol compressed tokens.

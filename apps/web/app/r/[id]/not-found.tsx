@@ -40,7 +40,7 @@ export default function ReceiptNotFound() {
             color: "var(--w6-ink-3, #5a5f66)",
           }}
         >
-          SETTLE Â· RECEIPT
+          SETTLE · RECEIPT
         </div>
         <h1
           style={{

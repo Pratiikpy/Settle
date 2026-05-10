@@ -2,7 +2,7 @@ import { PersonaPage } from "../../../components/persona-page";
 
 export const dynamic = "force-static";
 export const metadata = {
-  title: "Accept payments Â· Settle",
+  title: "Accept payments · Settle",
   description:
     "Three steps to your first verified sale on Solana. Claim a merchant handle, generate a payment QR or link, wire your webhook for instant settlement signals.",
 };

@@ -112,7 +112,7 @@ export default async function PrintReceiptPage({
         ? "Denied"
         : "In review";
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://settle.app";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://use-settle.vercel.app";
 
   return (
     <html lang="en">

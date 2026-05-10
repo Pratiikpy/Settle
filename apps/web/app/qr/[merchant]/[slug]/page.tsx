@@ -47,7 +47,7 @@ export default function QrPage() {
           label: (j.title ?? j.label) as string,
           description: (j.description as string | null) ?? null,
           // Amount isn't surfaced through GET (it's only resolved on POST), so we read
-          // a server-rendered hint via a separate cheap route â€” fall back to "â€”" otherwise.
+          // a server-rendered hint via a separate cheap route — fall back to "—" otherwise.
           amount_usdc: 0,
           paused: false,
         });
@@ -91,7 +91,7 @@ export default function QrPage() {
         </Link>
 
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">
-          {data?.label ?? "Loadingâ€¦"}
+          {data?.label ?? "Loading…"}
         </h1>
         {data?.description && (
           <p className="mt-2 text-sm text-[#52525b]">{data.description}</p>
@@ -102,7 +102,7 @@ export default function QrPage() {
         </div>
 
         <p className="mt-4 text-center text-[11px] text-[#71717a]">
-          Scan with any Solana Pay wallet Â· price resolves at scan time
+          Scan with any Solana Pay wallet · price resolves at scan time
         </p>
 
         <div className="mt-6 flex gap-2">
@@ -133,7 +133,7 @@ export default function QrPage() {
         <p className="mt-10 text-[11px] leading-relaxed text-[#71717a]">
           The QR encodes a Solana Pay transaction-request URL pointing at Settle&apos;s
           server. The amount lives in the merchant&apos;s pricelist row, not in the QR
-          itself â€” change the price, the same QR updates everywhere.
+          itself — change the price, the same QR updates everywhere.
         </p>
       </div>
     </W6AppShell>

@@ -48,7 +48,27 @@ function fmtAge(s: number): string {
   return `${Math.floor(s / 86400)}d`;
 }
 
-export default async function AdminHealthPage() {
+export default async function AdminHealthPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ key?: string }>;
+}) {
+  const params = (await searchParams) ?? {};
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || params.key !== cronSecret) {
+    return (
+      <W6AppShell forceSurface="operator">
+        <div style={{ maxWidth: 720 }}>
+          <h1 className="w6-heading" style={{ fontSize: 32, margin: 0 }}>
+            Not found
+          </h1>
+          <p className="w6-muted" style={{ marginTop: 8, fontSize: 14 }}>
+            The page you requested does not exist on this deployment.
+          </p>
+        </div>
+      </W6AppShell>
+    );
+  }
   const sb = getSb();
   if (!sb) {
     return (

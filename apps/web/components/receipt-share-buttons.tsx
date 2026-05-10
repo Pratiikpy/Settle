@@ -41,7 +41,7 @@ export function ReceiptShareButtons({
         setTimeout(() => setCopied(false), 2_000);
       }
     } catch {
-      /* ignore â€” clipboard may be blocked in sandboxed contexts */
+      /* ignore — clipboard may be blocked in sandboxed contexts */
     }
   }
 
