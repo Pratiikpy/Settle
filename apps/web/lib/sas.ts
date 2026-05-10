@@ -27,9 +27,9 @@
  *   4. Validates expiry hasn't passed
  *   5. Cross-checks nonce == merchant pubkey (must be true by Settle's setup convention)
  *
- * Fallback to Supabase verified_merchants table (trusted_db) when SAS env vars are unset
- * or when SETTLE_SAS_FAIL_OPEN=1. Reading verified_merchants is the responsibility of
- * upstream code in the proxy — see /api/x402/proxy/[merchant]/route.ts.
+ * Fallback to Supabase verified_merchants table (trusted_db) when SAS env vars are unset.
+ * Reading verified_merchants is the responsibility of upstream code in the proxy —
+ * see /api/x402/proxy/[merchant]/route.ts.
  */
 
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -113,7 +113,13 @@ export function deriveSettleMerchantAttestationPda(
  * If both are set → derives attestation PDA, fetches, decodes, validates expiry.
  * If decode succeeds and expiry is in the future (or 0 = never expires), returns
  * `verified: true, source: "sas_attestation"`. Otherwise returns
- * `verified: false, source: "not_verified"` (unless SETTLE_SAS_FAIL_OPEN=1).
+ * `verified: false, source: "not_verified"`.
+ *
+ * When SAS env vars are not configured, returns `verified: false` with
+ * `source: "trusted_db"` so the caller (typically the x402 proxy) can fall
+ * back to its own verified_merchants Supabase lookup. The `verified` field
+ * is intentionally false in that case so callers that don't perform their
+ * own lookup default to denying, not allowing.
  */
 export async function checkMerchantSasAttestation(
   connection: Connection,
@@ -121,10 +127,9 @@ export async function checkMerchantSasAttestation(
 ): Promise<SasVerificationResult> {
   const credentialStr = process.env.SETTLE_SAS_CREDENTIAL_PDA;
   const schemaStr = process.env.SETTLE_SAS_SCHEMA_PDA;
-  const failOpen = process.env.SETTLE_SAS_FAIL_OPEN === "1";
 
   if (!credentialStr || !schemaStr) {
-    return { verified: true, source: "trusted_db" };
+    return { verified: false, source: "trusted_db" };
   }
 
   let credential: PublicKey;
@@ -133,9 +138,7 @@ export async function checkMerchantSasAttestation(
     credential = new PublicKey(credentialStr);
     schema = new PublicKey(schemaStr);
   } catch {
-    return failOpen
-      ? { verified: true, source: "trusted_db" }
-      : { verified: false, source: "not_verified" };
+    return { verified: false, source: "not_verified" };
   }
 
   const [attestationPda] = deriveSettleMerchantAttestationPda(credential, schema, merchantPubkey);
@@ -144,9 +147,7 @@ export async function checkMerchantSasAttestation(
   try {
     info = await connection.getAccountInfo(attestationPda, "confirmed");
   } catch {
-    return failOpen
-      ? { verified: true, source: "trusted_db" }
-      : { verified: false, source: "not_verified" };
+    return { verified: false, source: "not_verified" };
   }
 
   if (!info) {

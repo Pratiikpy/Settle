@@ -30,6 +30,18 @@ const nextConfig = {
   experimental: {
     typedRoutes: false,
   },
+  async redirects() {
+    // Common URL guesses that match what the sidebar labels suggest.
+    // The sidebar shows "Receipts", "Pacts", "Profile" but the actual
+    // routes are /ledger, /cards, /at/me. Redirecting the bare URLs
+    // means a judge typing the obvious guess lands on the right page
+    // instead of a 404.
+    return [
+      { source: "/receipts", destination: "/ledger", permanent: true },
+      { source: "/pacts", destination: "/cards", permanent: true },
+      { source: "/profile", destination: "/at/me", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

@@ -186,23 +186,58 @@ function Hero() {
           >
             Caps. Allowlists. Expiry. Instant revoke. Every payment leaves a
             four-hash receipt on Solana that anyone can re-derive in a browser
-            tab — no Settle server in the trust path.
+            tab. No Settle server in the trust path.
           </p>
-          <div id="request-access" style={{ marginTop: 32 }}>
-            <LandingWaitlistForm source="landing" />
-          </div>
-          <Link
-            href="/dashboard?demo=1"
-            className="w6-btn w6-btn-ghost"
+          <div
             style={{
-              marginTop: 16,
-              padding: 0,
-              height: "auto",
-              display: "inline-flex",
+              marginTop: 32,
+              display: "flex",
+              gap: 12,
+              flexWrap: "wrap",
             }}
           >
-            Open product preview →
-          </Link>
+            <Link href="/watch" className="w6-btn w6-btn-primary">
+              Watch an agent spend →
+            </Link>
+            <Link href="/verify" className="w6-btn w6-btn-secondary">
+              Verify a receipt
+            </Link>
+          </div>
+          <div
+            style={{
+              marginTop: 16,
+              display: "flex",
+              gap: 18,
+              flexWrap: "wrap",
+              fontSize: 13,
+              color: "var(--w6-ink-3)",
+            }}
+          >
+            <Link
+              href="/start/consumer"
+              className="w6-link-quiet"
+              style={{ color: "var(--w6-ink-3)", textDecoration: "underline" }}
+            >
+              Send a payment →
+            </Link>
+            <Link
+              href="/start/agent"
+              className="w6-link-quiet"
+              style={{ color: "var(--w6-ink-3)", textDecoration: "underline" }}
+            >
+              Hire an agent →
+            </Link>
+            <Link
+              href="/docs"
+              className="w6-link-quiet"
+              style={{ color: "var(--w6-ink-3)", textDecoration: "underline" }}
+            >
+              Read the docs →
+            </Link>
+          </div>
+          <div id="request-access" style={{ marginTop: 28 }}>
+            <LandingWaitlistForm source="landing" />
+          </div>
           <div
             style={{
               display: "flex",

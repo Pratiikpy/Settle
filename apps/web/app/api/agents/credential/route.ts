@@ -28,6 +28,7 @@ export const runtime = "nodejs";
  * Returns the `settle://` URI ready to paste into demo-agent/.env as SETTLE_CREDENTIAL.
  */
 
+const MAX_CREDENTIAL_TTL_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 const BodySchema = z.object({
   card_pubkey: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/),
   agent_pubkey: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/),
@@ -35,6 +36,25 @@ const BodySchema = z.object({
   capabilities: z.array(z.string().regex(/^[0-9a-f]{64}$/)).max(20),
   authority_signature_b58: z.string().optional(),
 });
+
+interface UpstashResp {
+  result: number | string | null;
+}
+async function upstash(command: string[]): Promise<UpstashResp | null> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  try {
+    const res = await fetch(`${url}/${command.join("/")}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as UpstashResp;
+  } catch {
+    return null;
+  }
+}
 
 function getRpcUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_RPC_URL;
@@ -69,6 +89,42 @@ export async function POST(req: NextRequest) {
     );
   }
   const body = parse.data;
+
+  // Cap credential lifetime so a caller can't mint a forever-credential.
+  const expiresMs = new Date(body.expires_at_iso).getTime();
+  if (Number.isNaN(expiresMs)) {
+    return NextResponse.json({ error: "invalid_expires_at" }, { status: 400 });
+  }
+  if (expiresMs - Date.now() > MAX_CREDENTIAL_TTL_MS) {
+    return NextResponse.json(
+      {
+        error: "expires_at_too_far",
+        message: "expires_at_iso must be within 90 days of now",
+      },
+      { status: 400 },
+    );
+  }
+  if (expiresMs <= Date.now()) {
+    return NextResponse.json(
+      { error: "expires_at_in_past" },
+      { status: 400 },
+    );
+  }
+
+  // Per-card rate limit: 60 credential mints per 10 minutes. Defense in
+  // depth against an attacker who acquired one valid signature trying to
+  // spam-generate credentials with different capability lists.
+  const rlKey = `cred:${body.card_pubkey}`;
+  const rlIncr = await upstash(["incr", rlKey]);
+  if (rlIncr && Number(rlIncr.result) === 1) {
+    await upstash(["expire", rlKey, "600"]);
+  }
+  if (rlIncr && Number(rlIncr.result) > 60) {
+    return NextResponse.json(
+      { error: "rate_limited", retry_after_seconds: 600 },
+      { status: 429, headers: { "Retry-After": "600" } },
+    );
+  }
 
   // 1. Fetch on-chain AgentCard to validate ownership + agent_pubkey
   const conn = new Connection(getRpcUrl(), { commitment: "confirmed" });

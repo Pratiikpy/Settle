@@ -339,10 +339,14 @@ export default async function ReceiptPoster({
             />
           </div>
 
-          {r.context_hash ? (
+          {r.receipt_hash ||
+          r.reason_hash ||
+          r.policy_snapshot_hash ||
+          r.purpose_hash ||
+          r.context_hash ? (
             <div style={{ marginTop: 32 }}>
               <div style={{ fontSize: 12, color: "#5a5f66", fontWeight: 600 }}>
-                CONTEXT HASH
+                4 × BLAKE3 ON SOLANA
               </div>
               <div
                 style={{
@@ -354,13 +358,48 @@ export default async function ReceiptPoster({
                   fontFamily: "ui-monospace, monospace",
                   fontSize: 12,
                   lineHeight: 1.7,
+                  overflowX: "auto",
                 }}
               >
-                <HashRow label="context_hash" value={r.context_hash} testId="hash-context" />
+                {r.receipt_hash ? (
+                  <HashRow
+                    label="receipt"
+                    value={r.receipt_hash}
+                    testId="hash-receipt"
+                  />
+                ) : null}
+                {r.reason_hash ? (
+                  <HashRow
+                    label="reason"
+                    value={r.reason_hash}
+                    testId="hash-reason"
+                  />
+                ) : null}
+                {r.policy_snapshot_hash ? (
+                  <HashRow
+                    label="policy_snapshot"
+                    value={r.policy_snapshot_hash}
+                    testId="hash-policy"
+                  />
+                ) : null}
+                {r.purpose_hash ? (
+                  <HashRow
+                    label="purpose"
+                    value={r.purpose_hash}
+                    testId="hash-purpose"
+                  />
+                ) : null}
+                {r.context_hash ? (
+                  <HashRow
+                    label="context"
+                    value={r.context_hash}
+                    testId="hash-context"
+                  />
+                ) : null}
               </div>
               <div style={{ fontSize: 11, color: "#5a5f66", marginTop: 6 }}>
-                BLAKE3 of (kind, sender, recipient, amount, request_id). Indexable
-                identity for cross-protocol lookup.
+                Anyone with the canonical JSON can re-derive these hashes via{" "}
+                <code>verifyReceipt()</code>. Zero servers in the trust path.
               </div>
             </div>
           ) : null}

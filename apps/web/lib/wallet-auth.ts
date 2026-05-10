@@ -67,10 +67,27 @@ export async function verifyWalletSignature(input: VerifyWalletSigInput): Promis
     return { ok: false, reason: "ts_skew" };
   }
 
-  // Replay check via Upstash (best-effort — if not configured, skip)
+  // Replay check via Upstash. Fail-closed: if Upstash is unconfigured or
+  // unreachable we refuse to authenticate at all rather than silently letting
+  // the signature be replayed forever.
+  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!upstashUrl || !upstashToken) {
+    return { ok: false, reason: "replay_check_unavailable" };
+  }
   const nonceKey = `auth:${input.pubkey}:${input.nonce}`;
-  const setRes = await upstash(["set", nonceKey, "1", "EX", String(CHALLENGE_TTL_SECONDS), "NX"]);
-  if (setRes && setRes.result !== "OK") {
+  const setRes = await upstash([
+    "set",
+    nonceKey,
+    "1",
+    "EX",
+    String(CHALLENGE_TTL_SECONDS),
+    "NX",
+  ]);
+  if (!setRes) {
+    return { ok: false, reason: "replay_check_failed" };
+  }
+  if (setRes.result !== "OK") {
     return { ok: false, reason: "nonce_replay" };
   }
 
