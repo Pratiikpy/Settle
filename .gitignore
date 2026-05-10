@@ -129,3 +129,4 @@ apps/web/e2e/phantom-qa/judge-screenshot-tour.spec.ts
 apps/web/e2e/audit-screenshots/
 apps/web/e2e/autonomous-judge-screenshots/
 .playwright-mcp/
+.tmp/
