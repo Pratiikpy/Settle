@@ -35,14 +35,6 @@ const PROGRAM_ID = new PublicKey(
 interface BuildInfo {
   sha256: string;
   size_bytes: number;
-  commit: string;
-  dirty: boolean;
-  built_at: string;
-  builder: {
-    hostname: string;
-    platform: string;
-    arch: string;
-  };
 }
 
 function getRpcUrl(): string {
@@ -197,10 +189,6 @@ export async function GET() {
       ? {
           sha256: buildInfo.sha256,
           size_bytes: buildInfo.size_bytes,
-          commit: buildInfo.commit,
-          dirty: buildInfo.dirty,
-          built_at: buildInfo.built_at,
-          builder: buildInfo.builder,
         }
       : null,
     matches: buildInfo ? buildInfo.sha256 === onChainHashHex : null,
