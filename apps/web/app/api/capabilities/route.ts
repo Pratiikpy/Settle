@@ -62,7 +62,15 @@ export async function GET(req: NextRequest) {
   const hash = url.searchParams.get("hash");
   const q = url.searchParams.get("q")?.trim();
   const domain = url.searchParams.get("domain")?.trim();
-  const verifiedOnly = url.searchParams.get("verified_only") === "1";
+  // Default to verified-only for the list view. The public capability
+  // catalog is consumed by agent runtimes, demo-merchant pickers, and the
+  // pay-skills registry — they want trustworthy entries only. Unverified
+  // contributions are still queryable via ?include_unverified=1 (or the
+  // legacy verified_only=0). Single-hash lookup (?hash=…) always returns
+  // all aliases because disambiguation is the point of that path.
+  const verifiedOnly =
+    url.searchParams.get("include_unverified") !== "1" &&
+    url.searchParams.get("verified_only") !== "0";
   const limit = Math.max(1, Math.min(100, Number(url.searchParams.get("limit") ?? 50)));
 
   // Single-hash lookup — short-circuit + return all aliases for that hash.
@@ -107,6 +115,9 @@ export async function GET(req: NextRequest) {
   if (domain) qb = qb.eq("spec_domain", domain);
   if (verifiedOnly) qb = qb.eq("verified", true);
   const { data, error } = await qb;
+  // Expose what filter was applied so clients (and the docs) can introspect
+  // whether they're seeing the catalog or the full registry.
+  const filterApplied = verifiedOnly ? "verified_only" : "include_unverified";
   if (error) {
     return NextResponse.json(
       { error: "supabase_error", message: error.message },
@@ -117,6 +128,7 @@ export async function GET(req: NextRequest) {
     {
       ok: true,
       count: data?.length ?? 0,
+      filter: filterApplied,
       entries: data ?? [],
     },
     {

@@ -72,7 +72,10 @@ export default function CapabilitiesPage() {
     if (focusedHash) params.set("hash", focusedHash);
     else {
       if (query) params.set("q", query);
-      if (verifiedOnly) params.set("verified_only", "1");
+      // Default API behavior is now verified-only; pass include_unverified=1
+      // when the toggle is OFF so the page can still surface all entries
+      // for contributors/moderators.
+      if (!verifiedOnly) params.set("include_unverified", "1");
     }
     if (Array.from(params).length > 0) url += "?" + params.toString();
 

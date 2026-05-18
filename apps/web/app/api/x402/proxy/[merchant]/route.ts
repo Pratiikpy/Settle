@@ -217,7 +217,62 @@ function decodeCredential(cred: string): {
   }
 }
 
+// CORS headers — x402 proxy is intentionally a public, cross-origin surface.
+// Any browser-based agent (wallet in-app browsers, MCP webviews, Blink unfurls)
+// must be able to read the 402 challenge AND submit the paid retry with custom
+// headers. We allow * for origin because the challenge itself doesn't depend
+// on identity — the signed credential is what authorizes spend, not the origin.
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": [
+    "Content-Type",
+    "X-Payment",
+    "X-PAYMENT",
+    "X-Settle-Credential",
+    "X-Settle-Sig",
+    "X-Settle-Ts",
+    "X-Settle-Nonce",
+    "X-Settle-Request-Id",
+    "X-Settle-Capability-Hash",
+    "X-Settle-Amount-Lamports",
+    "X-Settle-Purpose",
+    "X-Settle-Pact-Pubkey",
+  ].join(", "),
+  // Expose the receipt-binding headers so browser-based callers can read them
+  // off the 402 challenge response without parsing the body. Mirrors what
+  // standard x402 facilitators expose.
+  "Access-Control-Expose-Headers": [
+    "X-402-Capability-Hash",
+    "X-402-Amount-Lamports",
+    "X-402-Capability-Spec",
+    "X-Settle-Receipt-Hash",
+    "X-Settle-Request-Id",
+    "X-Settle-Tx-Signature",
+  ].join(", "),
+  "Access-Control-Max-Age": "86400",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function POST(
+  req: NextRequest,
+  ctx: { params: Promise<{ merchant: string }> },
+) {
+  // Wrap the real handler so every NextResponse — 200, 402, 4xx, 5xx — gets
+  // CORS headers attached without having to thread CORS_HEADERS through 30+
+  // individual return sites. Reviewer flagged this gap; agents running in
+  // a browser context couldn't read challenge responses cross-origin.
+  const res = await handlePost(req, ctx);
+  for (const [k, v] of Object.entries(CORS_HEADERS)) {
+    res.headers.set(k, v);
+  }
+  return res;
+}
+
+async function handlePost(
   req: NextRequest,
   { params }: { params: Promise<{ merchant: string }> },
 ) {
